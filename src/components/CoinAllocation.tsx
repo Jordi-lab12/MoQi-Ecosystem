@@ -222,31 +222,31 @@ export const CoinAllocation = ({ startups, onComplete }: CoinAllocationProps) =>
             left: coin.x,
             top: coin.y,
             transform: 'translate(-50%, -50%)',
-            animation: `flyToTarget 1s ease-out forwards`,
-            '--target-x': `${coin.targetX - coin.x}px`,
-            '--target-y': `${coin.targetY - coin.y}px`
-          } as any}
+            animation: `flyToTarget-${coin.id} 1s ease-out forwards`,
+          }}
         >
           <Coins className="w-6 h-6 text-yellow-500 drop-shadow-lg" />
         </div>
       ))}
 
-      <style jsx>{`
-        @keyframes flyToTarget {
-          0% {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 1;
+      <style>
+        {flyingCoins.map((coin) => `
+          @keyframes flyToTarget-${coin.id} {
+            0% {
+              transform: translate(-50%, -50%) scale(1);
+              opacity: 1;
+            }
+            50% {
+              transform: translate(calc(-50% + ${(coin.targetX - coin.x) * 0.5}px), calc(-50% + ${(coin.targetY - coin.y) * 0.5}px)) scale(1.2);
+              opacity: 0.8;
+            }
+            100% {
+              transform: translate(calc(-50% + ${coin.targetX - coin.x}px), calc(-50% + ${coin.targetY - coin.y}px)) scale(0.5);
+              opacity: 0;
+            }
           }
-          50% {
-            transform: translate(calc(-50% + var(--target-x) * 0.5), calc(-50% + var(--target-y) * 0.5)) scale(1.2);
-            opacity: 0.8;
-          }
-          100% {
-            transform: translate(calc(-50% + var(--target-x)), calc(-50% + var(--target-y))) scale(0.5);
-            opacity: 0;
-          }
-        }
-      `}</style>
+        `).join('\n')}
+      </style>
     </div>
   );
 };
