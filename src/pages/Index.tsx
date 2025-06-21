@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { StartupSwiper } from "@/components/StartupSwiper";
 import { CoinAllocation } from "@/components/CoinAllocation";
@@ -109,8 +110,9 @@ const Index = () => {
     }
   };
 
-  const handleAllocationComplete = (allocations: Record<string, number>) => {
+  const handleAllocationComplete = (allocations: Record<string, number>, finalFeedbackPreferences: Record<string, FeedbackType>) => {
     setCoinAllocations(allocations);
+    setFeedbackPreferences(finalFeedbackPreferences);
     setCurrentStage("results");
   };
 
@@ -130,6 +132,7 @@ const Index = () => {
       {currentStage === "allocation" && (
         <CoinAllocation 
           startups={likedStartups} 
+          feedbackPreferences={feedbackPreferences}
           onComplete={handleAllocationComplete}
         />
       )}

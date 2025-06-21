@@ -2,60 +2,24 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Coins, ArrowRight, Zap, Target, Sparkles, Plus, Minus, MessageSquare, Users, UserX, ChevronDown } from "lucide-react";
+import { Coins, ArrowRight, Zap, Target, Sparkles, MessageSquare, Users, UserX, ChevronDown } from "lucide-react";
 import type { Startup, FeedbackType } from "@/pages/Index";
 
 interface CoinAllocationProps {
   startups: Startup[];
-  onComplete: (allocations: Record<string, number>) => void;
+  feedbackPreferences: Record<string, FeedbackType>;
+  onComplete: (allocations: Record<string, number>, feedbackPreferences: Record<string, FeedbackType>) => void;
 }
 
-interface FlyingCoin {
-  id: string;
-  x: number;
-  y: number;
-  targetX: number;
-  targetY: number;
-  startupId: string;
-}
-
-export const CoinAllocation = ({ startups, onComplete }: CoinAllocationProps) => {
+export const CoinAllocation = ({ startups, feedbackPreferences: initialFeedbackPreferences, onComplete }: CoinAllocationProps) => {
   const [allocations, setAllocations] = useState<Record<string, number>>(
     startups.reduce((acc, startup) => ({ ...acc, [startup.id]: 0 }), {})
   );
-  const [feedbackPreferences, setFeedbackPreferences] = useState<Record<string, FeedbackType>>(
-    startups.reduce((acc, startup) => ({ ...acc, [startup.id]: 'no' }), {})
-  );
-  const [flyingCoins, setFlyingCoins] = useState<FlyingCoin[]>([]);
+  const [feedbackPreferences, setFeedbackPreferences] = useState<Record<string, FeedbackType>>(initialFeedbackPreferences);
   const [expandedFeedback, setExpandedFeedback] = useState<string | null>(null);
 
   const totalAllocated = Object.values(allocations).reduce((sum, val) => sum + val, 0);
   const remainingCoins = 100 - totalAllocated;
-
-  const createFlyingCoin = (startupId: string) => {
-    const coinSource = document.getElementById('coin-source');
-    const targetCard = document.getElementById(`startup-${startupId}`);
-    
-    if (!coinSource || !targetCard) return;
-
-    const sourceRect = coinSource.getBoundingClientRect();
-    const targetRect = targetCard.getBoundingClientRect();
-
-    const newCoin: FlyingCoin = {
-      id: `${Date.now()}-${Math.random()}`,
-      x: sourceRect.left + sourceRect.width / 2,
-      y: sourceRect.top + sourceRect.height / 2,
-      targetX: targetRect.left + targetRect.width / 2,
-      targetY: targetRect.top + targetRect.height / 2,
-      startupId
-    };
-
-    setFlyingCoins(prev => [...prev, newCoin]);
-
-    setTimeout(() => {
-      setFlyingCoins(prev => prev.filter(coin => coin.id !== newCoin.id));
-    }, 1000);
-  };
 
   const updateAllocation = (startupId: string, change: number) => {
     const currentValue = allocations[startupId];
@@ -63,10 +27,6 @@ export const CoinAllocation = ({ startups, onComplete }: CoinAllocationProps) =>
     
     if (newValue !== currentValue && (change < 0 || remainingCoins >= Math.abs(change))) {
       setAllocations(prev => ({ ...prev, [startupId]: newValue }));
-      
-      if (change > 0) {
-        createFlyingCoin(startupId);
-      }
     }
   };
 
@@ -89,7 +49,7 @@ export const CoinAllocation = ({ startups, onComplete }: CoinAllocationProps) =>
   };
 
   const handleComplete = () => {
-    onComplete(allocations);
+    onComplete(allocations, feedbackPreferences);
   };
 
   const canComplete = totalAllocated === 100;
@@ -144,7 +104,7 @@ export const CoinAllocation = ({ startups, onComplete }: CoinAllocationProps) =>
 
         <div className="grid gap-8 mb-8">
           {startups.map((startup) => {
-            const currentFeedback = feedbackPreferences[startup.id];
+            const currentFeedback = feedbackPreferences[startup.id] || 'no';
             const feedbackOption = getFeedbackOption(currentFeedback);
             
             return (
@@ -239,7 +199,7 @@ export const CoinAllocation = ({ startups, onComplete }: CoinAllocationProps) =>
                       </button>
                       
                       {expandedFeedback === startup.id && (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-blue-200 z-10">
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-blue-200 z-50 max-h-32 overflow-y-auto">
                           {feedbackOptions.map((option) => (
                             <button
                               key={option.type}
@@ -296,41 +256,6 @@ export const CoinAllocation = ({ startups, onComplete }: CoinAllocationProps) =>
           )}
         </div>
       </div>
-
-      {/* Flying Coins Animation */}
-      {flyingCoins.map((coin) => (
-        <div
-          key={coin.id}
-          className="fixed pointer-events-none z-50"
-          style={{
-            left: coin.x,
-            top: coin.y,
-            transform: 'translate(-50%, -50%)',
-            animation: `flyToTarget-${coin.id} 1s ease-out forwards`,
-          }}
-        >
-          <Coins className="w-8 h-8 text-yellow-500 drop-shadow-2xl animate-spin" />
-        </div>
-      ))}
-
-      <style>
-        {flyingCoins.map((coin) => `
-          @keyframes flyToTarget-${coin.id} {
-            0% {
-              transform: translate(-50%, -50%) scale(1) rotate(0deg);
-              opacity: 1;
-            }
-            50% {
-              transform: translate(calc(-50% + ${(coin.targetX - coin.x) * 0.5}px), calc(-50% + ${(coin.targetY - coin.y) * 0.5}px)) scale(1.5) rotate(180deg);
-              opacity: 0.9;
-            }
-            100% {
-              transform: translate(calc(-50% + ${coin.targetX - coin.x}px), calc(-50% + ${coin.targetY - coin.y}px)) scale(0.5) rotate(360deg);
-              opacity: 0;
-            }
-          }
-        `).join('\n')}
-      </style>
     </div>
   );
 };

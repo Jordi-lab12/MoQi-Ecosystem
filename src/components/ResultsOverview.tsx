@@ -40,6 +40,12 @@ export const ResultsOverview = ({
     (coinAllocations[b.id] || 0) - (coinAllocations[a.id] || 0)
   );
 
+  // Correctly count startups that want feedback (not "no")
+  const startupsWithFeedback = likedStartups.filter(s => {
+    const feedback = feedbackPreferences[s.id] || 'no';
+    return feedback !== 'no';
+  }).length;
+
   return (
     <div className="min-h-screen p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
       <div className="max-w-4xl mx-auto">
@@ -78,7 +84,7 @@ export const ResultsOverview = ({
                 <div className="text-center">
                   <Heart className="w-8 h-8 text-red-500 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-green-700">
-                    {likedStartups.filter(s => feedbackPreferences[s.id] !== 'no').length}
+                    {startupsWithFeedback}
                   </div>
                   <div className="text-sm text-green-600">Getting Feedback</div>
                 </div>

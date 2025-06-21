@@ -1,20 +1,42 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Heart, X, Users, Calendar } from "lucide-react";
-import type { Startup } from "@/pages/Index";
+import { Heart, X, Users, Calendar, ChevronDown, MessageSquare, UserX } from "lucide-react";
+import { useState } from "react";
+import type { Startup, FeedbackType } from "@/pages/Index";
 
 interface StartupModalProps {
   startup: Startup;
   onClose: () => void;
   onLike: () => void;
   onDislike: () => void;
+  feedbackPreference: FeedbackType;
+  onFeedbackChange: (feedbackType: FeedbackType) => void;
 }
 
-export const StartupModal = ({ startup, onClose, onLike, onDislike }: StartupModalProps) => {
+export const StartupModal = ({ 
+  startup, 
+  onClose, 
+  onLike, 
+  onDislike, 
+  feedbackPreference, 
+  onFeedbackChange 
+}: StartupModalProps) => {
+  const [showFeedbackDropdown, setShowFeedbackDropdown] = useState(false);
+
+  const feedbackOptions = [
+    { type: "no" as FeedbackType, icon: UserX, label: "No help", emoji: "🤐" },
+    { type: "group" as FeedbackType, icon: Users, label: "Group help", emoji: "👥" },
+    { type: "all" as FeedbackType, icon: MessageSquare, label: "Full help", emoji: "💬" }
+  ];
+
+  const getCurrentFeedbackOption = () => {
+    return feedbackOptions.find(option => option.type === feedbackPreference) || feedbackOptions[0];
+  };
+
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-2xl">
             <span className="text-3xl">{startup.logo}</span>
@@ -65,6 +87,41 @@ export const StartupModal = ({ startup, onClose, onLike, onDislike }: StartupMod
             <div className="bg-purple-50 p-4 rounded-lg">
               <h4 className="font-semibold text-purple-900 mb-2">Vision</h4>
               <p className="text-purple-800 text-sm">{startup.vision}</p>
+            </div>
+          </div>
+
+          {/* Feedback selector */}
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-200">
+            <div className="text-sm font-medium mb-2 text-purple-700">Feedback preference:</div>
+            <div className="relative">
+              <button
+                onClick={() => setShowFeedbackDropdown(!showFeedbackDropdown)}
+                className="w-full flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-purple-200 hover:border-purple-300 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <span>{getCurrentFeedbackOption().emoji}</span>
+                  <span className="font-medium text-sm">{getCurrentFeedbackOption().label}</span>
+                </div>
+                <ChevronDown className={`w-4 h-4 transition-transform ${showFeedbackDropdown ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {showFeedbackDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-purple-200 z-50 max-h-32 overflow-y-auto">
+                  {feedbackOptions.map((option) => (
+                    <button
+                      key={option.type}
+                      onClick={() => {
+                        onFeedbackChange(option.type);
+                        setShowFeedbackDropdown(false);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 hover:bg-purple-50 transition-colors first:rounded-t-lg last:rounded-b-lg text-sm"
+                    >
+                      <span>{option.emoji}</span>
+                      <span className="font-medium">{option.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
