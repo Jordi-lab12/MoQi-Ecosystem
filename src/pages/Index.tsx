@@ -1,8 +1,6 @@
-
 import { useState } from "react";
 import { StartupSwiper } from "@/components/StartupSwiper";
 import { CoinAllocation } from "@/components/CoinAllocation";
-import { FeedbackSelector } from "@/components/FeedbackSelector";
 import { ResultsOverview } from "@/components/ResultsOverview";
 
 export type Startup = {
@@ -96,13 +94,14 @@ const mockStartups: Startup[] = [
 ];
 
 const Index = () => {
-  const [currentStage, setCurrentStage] = useState<"swiping" | "allocation" | "feedback" | "results">("swiping");
+  const [currentStage, setCurrentStage] = useState<"swiping" | "allocation" | "results">("swiping");
   const [likedStartups, setLikedStartups] = useState<Startup[]>([]);
   const [coinAllocations, setCoinAllocations] = useState<Record<string, number>>({});
   const [feedbackType, setFeedbackType] = useState<FeedbackType>("no");
 
-  const handleSwipeComplete = (liked: Startup[]) => {
+  const handleSwipeComplete = (liked: Startup[], feedback: FeedbackType) => {
     setLikedStartups(liked);
+    setFeedbackType(feedback);
     if (liked.length > 0) {
       setCurrentStage("allocation");
     } else {
@@ -112,11 +111,6 @@ const Index = () => {
 
   const handleAllocationComplete = (allocations: Record<string, number>) => {
     setCoinAllocations(allocations);
-    setCurrentStage("feedback");
-  };
-
-  const handleFeedbackSelected = (type: FeedbackType) => {
-    setFeedbackType(type);
     setCurrentStage("results");
   };
 
@@ -138,10 +132,6 @@ const Index = () => {
           startups={likedStartups} 
           onComplete={handleAllocationComplete}
         />
-      )}
-      
-      {currentStage === "feedback" && (
-        <FeedbackSelector onSelect={handleFeedbackSelected} />
       )}
       
       {currentStage === "results" && (

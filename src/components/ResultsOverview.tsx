@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Coins, RefreshCw, Heart } from "lucide-react";
+import { Coins, RefreshCw, Heart, Star } from "lucide-react";
 import type { Startup, FeedbackType } from "@/pages/Index";
 
 interface ResultsOverviewProps {
@@ -32,9 +32,9 @@ export const ResultsOverview = ({
     <div className="min-h-screen p-4">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Your Investment Portfolio</h1>
+          <h1 className="text-3xl font-bold mb-2">Your Startup Portfolio</h1>
           <p className="text-gray-600 mb-6">
-            Here's your final allocation across {likedStartups.length} startups
+            Here's your final portfolio allocation across {likedStartups.length} innovative startups
           </p>
           
           {/* Summary stats */}
@@ -42,9 +42,9 @@ export const ResultsOverview = ({
             <Card>
               <CardContent className="flex items-center justify-center p-6">
                 <div className="text-center">
-                  <Heart className="w-8 h-8 text-red-500 mx-auto mb-2" />
+                  <Star className="w-8 h-8 text-purple-500 mx-auto mb-2" />
                   <div className="text-2xl font-bold">{likedStartups.length}</div>
-                  <div className="text-sm text-gray-600">Startups Liked</div>
+                  <div className="text-sm text-gray-600">Startups in Portfolio</div>
                 </div>
               </CardContent>
             </Card>
@@ -62,6 +62,7 @@ export const ResultsOverview = ({
             <Card>
               <CardContent className="flex items-center justify-center p-6">
                 <div className="text-center">
+                  <Heart className="w-8 h-8 text-red-500 mx-auto mb-2" />
                   <div className="text-2xl font-bold">{feedbackLabels[feedbackType]}</div>
                   <div className="text-sm text-gray-600">Feedback Preference</div>
                 </div>
@@ -70,9 +71,10 @@ export const ResultsOverview = ({
           </div>
         </div>
 
-        {/* Startup allocations */}
+        {/* Portfolio allocations */}
         {likedStartups.length > 0 ? (
           <div className="space-y-4 mb-8">
+            <h2 className="text-xl font-semibold mb-4">Portfolio Breakdown</h2>
             {sortedStartups.map((startup, index) => {
               const coins = coinAllocations[startup.id] || 0;
               const percentage = coins;
@@ -87,8 +89,8 @@ export const ResultsOverview = ({
                           <div className="flex items-center gap-2">
                             {startup.name}
                             {index === 0 && coins > 0 && (
-                              <Badge className="bg-yellow-500 text-white">
-                                Top Pick
+                              <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-white">
+                                Top Holding
                               </Badge>
                             )}
                           </div>
@@ -102,17 +104,24 @@ export const ResultsOverview = ({
                           <Coins className="w-5 h-5 text-yellow-500" />
                           {coins}
                         </div>
-                        <div className="text-sm text-gray-600">{percentage}%</div>
+                        <div className="text-sm text-gray-600">{percentage}% of portfolio</div>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
                       <div 
-                        className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-500"
+                        className="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-500 flex items-center justify-end pr-2"
                         style={{ width: `${percentage}%` }}
-                      />
+                      >
+                        {percentage > 15 && (
+                          <span className="text-white text-xs font-bold">
+                            {percentage}%
+                          </span>
+                        )}
+                      </div>
                     </div>
+                    <p className="text-sm text-gray-600">{startup.description}</p>
                   </CardContent>
                 </Card>
               );
@@ -121,9 +130,9 @@ export const ResultsOverview = ({
         ) : (
           <Card className="mb-8">
             <CardContent className="text-center py-12">
-              <h3 className="text-xl font-semibold mb-2">No Startups Selected</h3>
+              <h3 className="text-xl font-semibold mb-2">Empty Portfolio</h3>
               <p className="text-gray-600">
-                You didn't like any startups this time. Try again to discover more!
+                You didn't add any startups to your portfolio this time. Try again to discover exciting opportunities!
               </p>
             </CardContent>
           </Card>
@@ -133,7 +142,7 @@ export const ResultsOverview = ({
         <div className="text-center">
           <Button 
             onClick={onRestart}
-            className="px-8 py-3 text-lg flex items-center gap-2 mx-auto"
+            className="px-8 py-3 text-lg flex items-center gap-2 mx-auto bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
           >
             <RefreshCw className="w-5 h-5" />
             Discover More Startups
