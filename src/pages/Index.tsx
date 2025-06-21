@@ -97,11 +97,11 @@ const Index = () => {
   const [currentStage, setCurrentStage] = useState<"swiping" | "allocation" | "results">("swiping");
   const [likedStartups, setLikedStartups] = useState<Startup[]>([]);
   const [coinAllocations, setCoinAllocations] = useState<Record<string, number>>({});
-  const [feedbackType, setFeedbackType] = useState<FeedbackType>("no");
+  const [feedbackPreferences, setFeedbackPreferences] = useState<Record<string, FeedbackType>>({});
 
-  const handleSwipeComplete = (liked: Startup[], feedback: FeedbackType) => {
+  const handleSwipeComplete = (liked: Startup[], preferences: Record<string, FeedbackType>) => {
     setLikedStartups(liked);
-    setFeedbackType(feedback);
+    setFeedbackPreferences(preferences);
     if (liked.length > 0) {
       setCurrentStage("allocation");
     } else {
@@ -118,7 +118,7 @@ const Index = () => {
     setCurrentStage("swiping");
     setLikedStartups([]);
     setCoinAllocations({});
-    setFeedbackType("no");
+    setFeedbackPreferences({});
   };
 
   return (
@@ -138,7 +138,7 @@ const Index = () => {
         <ResultsOverview 
           likedStartups={likedStartups}
           coinAllocations={coinAllocations}
-          feedbackType={feedbackType}
+          feedbackPreferences={feedbackPreferences}
           onRestart={handleRestart}
         />
       )}
