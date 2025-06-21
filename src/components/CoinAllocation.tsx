@@ -111,7 +111,7 @@ export const CoinAllocation = ({ startups, feedbackPreferences: initialFeedbackP
               <Card 
                 key={startup.id} 
                 id={`startup-${startup.id}`}
-                className="overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.01] border-2 hover:border-purple-200"
+                className="overflow-visible hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.01] border-2 hover:border-purple-200 relative"
               >
                 <CardHeader className="pb-4 bg-gradient-to-r from-gray-50 to-white">
                   <CardTitle className="flex items-center justify-between">
@@ -183,8 +183,8 @@ export const CoinAllocation = ({ startups, feedbackPreferences: initialFeedbackP
                     </Button>
                   </div>
 
-                  {/* Feedback selector */}
-                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-200">
+                  {/* Feedback selector - with higher z-index and proper positioning */}
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-200 relative">
                     <div className="text-sm font-medium mb-2 text-blue-700">Feedback preference:</div>
                     <div className="relative">
                       <button
@@ -199,12 +199,12 @@ export const CoinAllocation = ({ startups, feedbackPreferences: initialFeedbackP
                       </button>
                       
                       {expandedFeedback === startup.id && (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-blue-200 z-50 max-h-32 overflow-y-auto">
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-2xl border border-blue-200 z-[9999] overflow-hidden">
                           {feedbackOptions.map((option) => (
                             <button
                               key={option.type}
                               onClick={() => setFeedbackForStartup(startup.id, option.type)}
-                              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-blue-50 transition-colors first:rounded-t-lg last:rounded-b-lg text-sm"
+                              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-blue-50 transition-colors text-sm"
                             >
                               <span>{option.emoji}</span>
                               <span className="font-medium">{option.label}</span>
