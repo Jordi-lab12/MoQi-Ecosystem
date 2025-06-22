@@ -7,14 +7,14 @@ import type { Startup, FeedbackType } from "@/pages/Index";
 
 interface ResultsOverviewProps {
   likedStartups: Startup[];
-  coinAllocation: Record<string, number>;
+  coinAllocations: Record<string, number>;
   feedbackPreferences: Record<string, FeedbackType>;
   onRestart: () => void;
 }
 
 export const ResultsOverview = ({ 
   likedStartups, 
-  coinAllocation, 
+  coinAllocations, 
   feedbackPreferences, 
   onRestart 
 }: ResultsOverviewProps) => {
@@ -37,7 +37,7 @@ export const ResultsOverview = ({
   };
 
   const sortedStartups = likedStartups.sort((a, b) => 
-    (coinAllocation[b.id] || 0) - (coinAllocation[a.id] || 0)
+    (coinAllocations[b.id] || 0) - (coinAllocations[a.id] || 0)
   );
 
   const startupsWithFeedback = likedStartups.filter(s => {
@@ -46,35 +46,35 @@ export const ResultsOverview = ({
   }).length;
 
   return (
-    <div className="min-h-screen p-2 sm:p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-4 sm:mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2 sm:mb-4">
+    <div className="min-h-screen p-3 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
+      <div className="max-w-2xl mx-auto">
+        <div className="text-center mb-4">
+          <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
             Your Portfolio ✨
           </h1>
           
           {/* Compact summary stats */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
+          <div className="grid grid-cols-3 gap-2 mb-4">
             <Card className="bg-gradient-to-br from-purple-100 to-pink-100 border-purple-200">
-              <CardContent className="p-3 sm:p-4 text-center">
-                <Star className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500 mx-auto mb-1" />
-                <div className="text-lg sm:text-xl font-bold text-purple-700">{likedStartups.length}</div>
+              <CardContent className="p-2 text-center">
+                <Star className="w-4 h-4 text-purple-500 mx-auto mb-1" />
+                <div className="text-lg font-bold text-purple-700">{likedStartups.length}</div>
                 <div className="text-xs text-purple-600">Startups</div>
               </CardContent>
             </Card>
             
             <Card className="bg-gradient-to-br from-yellow-100 to-orange-100 border-yellow-200">
-              <CardContent className="p-3 sm:p-4 text-center">
-                <Coins className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 mx-auto mb-1" />
-                <div className="text-lg sm:text-xl font-bold text-yellow-700">100</div>
+              <CardContent className="p-2 text-center">
+                <Coins className="w-4 h-4 text-yellow-500 mx-auto mb-1" />
+                <div className="text-lg font-bold text-yellow-700">100</div>
                 <div className="text-xs text-yellow-600">Coins</div>
               </CardContent>
             </Card>
             
             <Card className="bg-gradient-to-br from-green-100 to-emerald-100 border-green-200">
-              <CardContent className="p-3 sm:p-4 text-center">
-                <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 mx-auto mb-1" />
-                <div className="text-lg sm:text-xl font-bold text-green-700">{startupsWithFeedback}</div>
+              <CardContent className="p-2 text-center">
+                <Heart className="w-4 h-4 text-red-500 mx-auto mb-1" />
+                <div className="text-lg font-bold text-green-700">{startupsWithFeedback}</div>
                 <div className="text-xs text-green-600">Feedback</div>
               </CardContent>
             </Card>
@@ -83,47 +83,47 @@ export const ResultsOverview = ({
 
         {/* Compact portfolio breakdown */}
         {likedStartups.length > 0 ? (
-          <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
+          <div className="space-y-2 mb-6">
             {sortedStartups.map((startup, index) => {
-              const coins = coinAllocation[startup.id] || 0;
+              const coins = coinAllocations[startup.id] || 0;
               const feedbackType = feedbackPreferences[startup.id] || 'no';
               const FeedbackIcon = getFeedbackIcon(feedbackType);
               
               return (
-                <Card key={startup.id} className="overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
-                  <CardContent className="p-3 sm:p-4">
-                    <div className="flex items-center gap-3 sm:gap-4">
+                <Card key={startup.id} className="overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-3">
                       {/* Logo and basic info */}
-                      <div className="text-2xl sm:text-3xl">{startup.logo}</div>
+                      <div className="text-2xl">{startup.logo}</div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-bold text-sm sm:text-base truncate">{startup.name}</h3>
+                          <h3 className="font-bold text-sm truncate">{startup.name}</h3>
                           {index === 0 && coins > 0 && (
-                            <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs">
-                              🏆 Top
+                            <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-1 py-0">
+                              🏆
                             </Badge>
                           )}
                         </div>
-                        <p className="text-xs sm:text-sm text-gray-600 line-clamp-1">{startup.tagline}</p>
+                        <p className="text-xs text-gray-600 line-clamp-1 mb-1">{startup.tagline}</p>
                         
                         {/* Progress bar */}
-                        <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3 mt-2 overflow-hidden">
+                        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                           <div 
-                            className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 sm:h-3 rounded-full transition-all duration-500"
+                            className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-500"
                             style={{ width: `${coins}%` }}
                           />
                         </div>
                       </div>
                       
                       {/* Coins and feedback */}
-                      <div className="text-right">
-                        <div className="flex items-center gap-1 mb-1">
-                          <Coins className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />
-                          <span className="font-bold text-purple-600 text-sm sm:text-base">{coins}</span>
+                      <div className="text-right flex flex-col items-end gap-1">
+                        <div className="flex items-center gap-1">
+                          <Coins className="w-3 h-3 text-yellow-500" />
+                          <span className="font-bold text-purple-600 text-sm">{coins}</span>
                         </div>
-                        <div className="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-lg">
+                        <div className="flex items-center gap-1 bg-blue-50 px-1 py-0.5 rounded text-xs">
                           <FeedbackIcon className="w-3 h-3 text-blue-600" />
-                          <span className="text-xs text-blue-700">{getFeedbackLabel(feedbackType)}</span>
+                          <span className="text-blue-700">{getFeedbackLabel(feedbackType)}</span>
                         </div>
                       </div>
                     </div>
@@ -133,10 +133,10 @@ export const ResultsOverview = ({
             })}
           </div>
         ) : (
-          <Card className="mb-6 sm:mb-8">
-            <CardContent className="text-center py-8 sm:py-12">
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">Empty Portfolio</h3>
-              <p className="text-gray-600 text-sm sm:text-base">
+          <Card className="mb-6">
+            <CardContent className="text-center py-6">
+              <h3 className="text-lg font-semibold mb-2">Empty Portfolio</h3>
+              <p className="text-gray-600 text-sm">
                 You didn't add any startups to your portfolio this time. Try again to discover exciting opportunities!
               </p>
             </CardContent>
@@ -147,9 +147,9 @@ export const ResultsOverview = ({
         <div className="text-center">
           <Button 
             onClick={onRestart}
-            className="px-6 sm:px-12 py-3 sm:py-4 text-base sm:text-xl font-bold rounded-2xl flex items-center gap-2 sm:gap-3 mx-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-2xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300"
+            className="px-6 py-3 text-base font-bold rounded-2xl flex items-center gap-2 mx-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300"
           >
-            <RefreshCw className="w-4 h-4 sm:w-6 sm:h-6" />
+            <RefreshCw className="w-4 h-4" />
             Discover More Startups ✨
           </Button>
         </div>
