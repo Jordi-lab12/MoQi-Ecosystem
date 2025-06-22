@@ -84,49 +84,53 @@ export const CoinAllocation = ({ startups, feedbackPreferences, onComplete }: Co
   };
 
   return (
-    <div className="min-h-screen p-3 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-4">
-          <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+    <div className="min-h-screen p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
             Distribute Your Coins 💰
           </h1>
-          <p className="text-sm text-gray-600 mb-3">
-            Allocate 100 coins among your selected startups
+          <p className="text-gray-600 mb-6">
+            Allocate 100 coins among your selected startups based on your interest level
           </p>
           
-          {/* Compact total display */}
-          <Card className="bg-gradient-to-r from-yellow-100 to-orange-100 border-yellow-200 mb-4">
-            <CardContent className="p-3 text-center">
-              <div className="flex items-center justify-center gap-2">
-                <Coins className="w-5 h-5 text-yellow-600" />
-                <span className="text-lg font-bold text-yellow-700">{totalAllocated}/100</span>
-                <span className="text-sm text-yellow-600">coins allocated</span>
+          <Card className="bg-gradient-to-r from-yellow-100 to-orange-100 border-yellow-200 shadow-lg">
+            <CardContent className="p-6 text-center">
+              <div className="flex items-center justify-center gap-3">
+                <Coins className="w-8 h-8 text-yellow-600" />
+                <span className="text-2xl font-bold text-yellow-700">{totalAllocated}/100</span>
+                <span className="text-yellow-600">coins allocated</span>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Compact startup cards */}
-        <div className="space-y-3 mb-6">
+        <div className="space-y-6 mb-8">
           {startups.map((startup) => (
-            <Card key={startup.id} className="overflow-hidden shadow-sm">
-              <CardContent className="p-3">
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="text-2xl">{startup.logo}</div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-sm mb-1">{startup.name}</h3>
-                    <p className="text-xs text-gray-600 line-clamp-2">{startup.tagline}</p>
+            <Card key={startup.id} className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <CardHeader className="pb-4">
+                <div className="flex items-start gap-4">
+                  <div className="text-4xl">{startup.logo}</div>
+                  <div className="flex-1">
+                    <CardTitle className="text-xl mb-2">{startup.name}</CardTitle>
+                    <p className="text-gray-600">{startup.tagline}</p>
+                    <p className="text-sm text-gray-500 mt-2">{startup.description}</p>
                   </div>
                   <div className="text-right">
-                    <div className="flex items-center gap-1 mb-1">
-                      <Coins className="w-3 h-3 text-yellow-500" />
-                      <span className="font-bold text-purple-600 text-sm">{allocations[startup.id]}</span>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Coins className="w-5 h-5 text-yellow-500" />
+                      <span className="text-2xl font-bold text-purple-600">{allocations[startup.id]}</span>
                     </div>
+                    <div className="text-xs text-gray-500">coins</div>
                   </div>
                 </div>
-                
-                {/* Compact slider */}
-                <div className="mb-3">
+              </CardHeader>
+              
+              <CardContent className="pt-0">
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Coin Allocation: {allocations[startup.id]} coins
+                  </label>
                   <Slider
                     value={[allocations[startup.id]]}
                     onValueChange={(value) => handleSliderChange(startup.id, value)}
@@ -137,7 +141,6 @@ export const CoinAllocation = ({ startups, feedbackPreferences, onComplete }: Co
                   />
                 </div>
                 
-                {/* Compact feedback selector */}
                 <div className="relative z-10">
                   <FeedbackSelector
                     value={currentFeedbackPreferences[startup.id] || 'no'}
@@ -149,17 +152,16 @@ export const CoinAllocation = ({ startups, feedbackPreferences, onComplete }: Co
           ))}
         </div>
 
-        {/* Action button */}
         <div className="text-center">
           <Button 
             onClick={handleComplete}
             disabled={totalAllocated !== 100}
-            className="px-6 py-3 text-base font-bold rounded-2xl flex items-center gap-2 mx-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:transform-none"
+            className="px-8 py-4 text-lg font-bold rounded-2xl flex items-center gap-3 mx-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:transform-none"
           >
-            Complete Allocation <ArrowRight className="w-4 h-4" />
+            Complete Allocation <ArrowRight className="w-5 h-5" />
           </Button>
           {totalAllocated !== 100 && (
-            <p className="text-xs text-red-500 mt-2">
+            <p className="text-red-500 mt-4">
               Please allocate exactly 100 coins to continue
             </p>
           )}
