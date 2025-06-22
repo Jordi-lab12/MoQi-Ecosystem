@@ -5,10 +5,11 @@ import { MessageSquare, Users, UserX } from "lucide-react";
 import type { FeedbackType } from "@/pages/Index";
 
 interface FeedbackSelectorProps {
-  onSelect: (type: FeedbackType) => void;
+  value: FeedbackType;
+  onChange: (type: FeedbackType) => void;
 }
 
-export const FeedbackSelector = ({ onSelect }: FeedbackSelectorProps) => {
+export const FeedbackSelector = ({ value, onChange }: FeedbackSelectorProps) => {
   const feedbackOptions = [
     {
       type: "no" as FeedbackType,
@@ -34,45 +35,45 @@ export const FeedbackSelector = ({ onSelect }: FeedbackSelectorProps) => {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Feedback Preferences</h1>
-          <p className="text-gray-600">
-            Would you like to provide feedback to the startups you've allocated coins to?
-          </p>
-        </div>
-
-        <div className="grid gap-6">
-          {feedbackOptions.map((option) => {
-            const IconComponent = option.icon;
-            return (
-              <Card 
-                key={option.type} 
-                className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
-                onClick={() => onSelect(option.type)}
-              >
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <div className={`p-2 rounded-full ${option.color} text-white`}>
-                      <IconComponent className="w-6 h-6" />
-                    </div>
-                    {option.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">{option.description}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        <div className="text-center mt-8">
-          <p className="text-sm text-gray-500">
-            Your feedback helps startups improve and grow
-          </p>
-        </div>
+    <div className="space-y-3">
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Feedback Preference
+      </label>
+      <div className="grid gap-2">
+        {feedbackOptions.map((option) => {
+          const IconComponent = option.icon;
+          const isSelected = value === option.type;
+          return (
+            <Button
+              key={option.type}
+              variant={isSelected ? "default" : "outline"}
+              className={`h-auto p-3 justify-start text-left ${
+                isSelected 
+                  ? option.color 
+                  : "bg-white hover:bg-gray-50 border-gray-200"
+              }`}
+              onClick={() => onChange(option.type)}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`p-1.5 rounded-full ${
+                  isSelected 
+                    ? "bg-white/20 text-white" 
+                    : "bg-gray-100 text-gray-600"
+                }`}>
+                  <IconComponent className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="font-medium text-sm">{option.title}</div>
+                  <div className={`text-xs ${
+                    isSelected ? "text-white/80" : "text-gray-500"
+                  }`}>
+                    {option.description}
+                  </div>
+                </div>
+              </div>
+            </Button>
+          );
+        })}
       </div>
     </div>
   );
