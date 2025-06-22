@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -80,7 +79,7 @@ export const CoinAllocation = ({ startups, feedbackPreferences: initialFeedbackP
         </div>
 
         <div className="grid gap-4 sm:gap-8 mb-6 sm:mb-8">
-          {startups.map((startup) => {
+          {startups.map((startup, index) => {
             const currentFeedback = feedbackPreferences[startup.id] || 'no';
             const feedbackOption = getFeedbackOption(currentFeedback);
             
@@ -89,6 +88,7 @@ export const CoinAllocation = ({ startups, feedbackPreferences: initialFeedbackP
                 key={startup.id} 
                 id={`startup-${startup.id}`}
                 className="overflow-visible hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.01] border-2 hover:border-purple-200 relative"
+                style={{ zIndex: startups.length - index + 10 }}
               >
                 <CardHeader className="pb-2 sm:pb-4 bg-gradient-to-r from-gray-50 to-white">
                   <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
@@ -160,13 +160,13 @@ export const CoinAllocation = ({ startups, feedbackPreferences: initialFeedbackP
                     </Button>
                   </div>
 
-                  {/* Feedback selector */}
+                  {/* Fixed feedback selector with proper z-index */}
                   <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-3 sm:p-4 border border-blue-200 relative">
                     <div className="text-xs sm:text-sm font-medium mb-2 text-blue-700">Feedback preference:</div>
-                    <div className="relative">
+                    <div className="relative" style={{ zIndex: 1000 + index }}>
                       <button
                         onClick={() => setExpandedFeedback(expandedFeedback === startup.id ? null : startup.id)}
-                        className="w-full flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-blue-200 hover:border-blue-300 transition-colors"
+                        className="w-full flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-blue-200 hover:border-blue-300 transition-colors relative z-10"
                       >
                         <div className="flex items-center gap-2">
                           <span className="text-sm sm:text-base">{feedbackOption.emoji}</span>
@@ -176,7 +176,10 @@ export const CoinAllocation = ({ startups, feedbackPreferences: initialFeedbackP
                       </button>
                       
                       {expandedFeedback === startup.id && (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-2xl border border-blue-200 z-[99999] overflow-hidden">
+                        <div 
+                          className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-2xl border border-blue-200 overflow-hidden"
+                          style={{ zIndex: 9999 }}
+                        >
                           {feedbackOptions.map((option) => (
                             <button
                               key={option.type}

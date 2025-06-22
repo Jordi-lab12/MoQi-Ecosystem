@@ -7,14 +7,14 @@ import type { Startup, FeedbackType } from "@/pages/Index";
 
 interface ResultsOverviewProps {
   likedStartups: Startup[];
-  coinAllocations: Record<string, number>;
+  coinAllocation: Record<string, number>;
   feedbackPreferences: Record<string, FeedbackType>;
   onRestart: () => void;
 }
 
 export const ResultsOverview = ({ 
   likedStartups, 
-  coinAllocations, 
+  coinAllocation, 
   feedbackPreferences, 
   onRestart 
 }: ResultsOverviewProps) => {
@@ -37,126 +37,94 @@ export const ResultsOverview = ({
   };
 
   const sortedStartups = likedStartups.sort((a, b) => 
-    (coinAllocations[b.id] || 0) - (coinAllocations[a.id] || 0)
+    (coinAllocation[b.id] || 0) - (coinAllocation[a.id] || 0)
   );
 
-  // Correctly count startups that want feedback (not "no")
   const startupsWithFeedback = likedStartups.filter(s => {
     const feedback = feedbackPreferences[s.id] || 'no';
     return feedback !== 'no';
   }).length;
 
   return (
-    <div className="min-h-screen p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
+    <div className="min-h-screen p-2 sm:p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
-            Your Startup Portfolio ✨
+        <div className="text-center mb-4 sm:mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2 sm:mb-4">
+            Your Portfolio ✨
           </h1>
-          <p className="text-gray-600 mb-6 text-lg">
-            Here's your final portfolio allocation across {likedStartups.length} innovative startups
-          </p>
           
-          {/* Summary stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {/* Compact summary stats */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
             <Card className="bg-gradient-to-br from-purple-100 to-pink-100 border-purple-200">
-              <CardContent className="flex items-center justify-center p-6">
-                <div className="text-center">
-                  <Star className="w-8 h-8 text-purple-500 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-purple-700">{likedStartups.length}</div>
-                  <div className="text-sm text-purple-600">Startups in Portfolio</div>
-                </div>
+              <CardContent className="p-3 sm:p-4 text-center">
+                <Star className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500 mx-auto mb-1" />
+                <div className="text-lg sm:text-xl font-bold text-purple-700">{likedStartups.length}</div>
+                <div className="text-xs text-purple-600">Startups</div>
               </CardContent>
             </Card>
             
             <Card className="bg-gradient-to-br from-yellow-100 to-orange-100 border-yellow-200">
-              <CardContent className="flex items-center justify-center p-6">
-                <div className="text-center">
-                  <Coins className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-yellow-700">100</div>
-                  <div className="text-sm text-yellow-600">Coins Allocated</div>
-                </div>
+              <CardContent className="p-3 sm:p-4 text-center">
+                <Coins className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 mx-auto mb-1" />
+                <div className="text-lg sm:text-xl font-bold text-yellow-700">100</div>
+                <div className="text-xs text-yellow-600">Coins</div>
               </CardContent>
             </Card>
             
             <Card className="bg-gradient-to-br from-green-100 to-emerald-100 border-green-200">
-              <CardContent className="flex items-center justify-center p-6">
-                <div className="text-center">
-                  <Heart className="w-8 h-8 text-red-500 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-green-700">
-                    {startupsWithFeedback}
-                  </div>
-                  <div className="text-sm text-green-600">Getting Feedback</div>
-                </div>
+              <CardContent className="p-3 sm:p-4 text-center">
+                <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 mx-auto mb-1" />
+                <div className="text-lg sm:text-xl font-bold text-green-700">{startupsWithFeedback}</div>
+                <div className="text-xs text-green-600">Feedback</div>
               </CardContent>
             </Card>
           </div>
         </div>
 
-        {/* Portfolio breakdown */}
+        {/* Compact portfolio breakdown */}
         {likedStartups.length > 0 ? (
-          <div className="space-y-6 mb-8">
-            <h2 className="text-2xl font-bold text-center mb-6">Portfolio Breakdown</h2>
+          <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
             {sortedStartups.map((startup, index) => {
-              const coins = coinAllocations[startup.id] || 0;
+              const coins = coinAllocation[startup.id] || 0;
               const feedbackType = feedbackPreferences[startup.id] || 'no';
               const FeedbackIcon = getFeedbackIcon(feedbackType);
               
               return (
-                <Card key={startup.id} className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
-                  <CardHeader className="pb-4 bg-gradient-to-r from-gray-50 to-white">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-4">
-                        <div className="text-4xl p-3 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl">
-                          {startup.logo}
+                <Card key={startup.id} className="overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      {/* Logo and basic info */}
+                      <div className="text-2xl sm:text-3xl">{startup.logo}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-bold text-sm sm:text-base truncate">{startup.name}</h3>
+                          {index === 0 && coins > 0 && (
+                            <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs">
+                              🏆 Top
+                            </Badge>
+                          )}
                         </div>
-                        <div>
-                          <div className="flex items-center gap-3 mb-1">
-                            <span className="text-2xl font-bold">{startup.name}</span>
-                            {index === 0 && coins > 0 && (
-                              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-                                🏆 Top Holding
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-base text-gray-600 font-normal">
-                            {startup.tagline}
-                          </p>
+                        <p className="text-xs sm:text-sm text-gray-600 line-clamp-1">{startup.tagline}</p>
+                        
+                        {/* Progress bar */}
+                        <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3 mt-2 overflow-hidden">
+                          <div 
+                            className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 sm:h-3 rounded-full transition-all duration-500"
+                            style={{ width: `${coins}%` }}
+                          />
                         </div>
-                      </CardTitle>
+                      </div>
+                      
+                      {/* Coins and feedback */}
                       <div className="text-right">
-                        <div className="text-3xl font-bold flex items-center gap-2">
-                          <Coins className="w-6 h-6 text-yellow-500" />
-                          <span className="text-purple-600">{coins}</span>
+                        <div className="flex items-center gap-1 mb-1">
+                          <Coins className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />
+                          <span className="font-bold text-purple-600 text-sm sm:text-base">{coins}</span>
                         </div>
-                        <div className="text-sm text-gray-600">{coins}% of portfolio</div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0 pb-6">
-                    {/* Progress bar */}
-                    <div className="w-full bg-gray-200 rounded-2xl h-4 mb-4 overflow-hidden shadow-inner">
-                      <div 
-                        className="bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 h-4 rounded-2xl transition-all duration-700 flex items-center justify-end pr-3 relative"
-                        style={{ width: `${coins}%` }}
-                      >
-                        <div className="absolute inset-0 bg-white/20 animate-pulse rounded-2xl"></div>
-                        {coins > 15 && (
-                          <span className="text-white text-sm font-bold relative z-10">
-                            {coins}%
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Description and feedback */}
-                    <div className="flex justify-between items-end">
-                      <p className="text-gray-600 leading-relaxed flex-1 mr-4">{startup.description}</p>
-                      <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-purple-50 px-4 py-2 rounded-xl border border-blue-200">
-                        <FeedbackIcon className="w-4 h-4 text-blue-600" />
-                        <span className="text-sm font-medium text-blue-700">
-                          {getFeedbackLabel(feedbackType)}
-                        </span>
+                        <div className="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-lg">
+                          <FeedbackIcon className="w-3 h-3 text-blue-600" />
+                          <span className="text-xs text-blue-700">{getFeedbackLabel(feedbackType)}</span>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -165,23 +133,23 @@ export const ResultsOverview = ({
             })}
           </div>
         ) : (
-          <Card className="mb-8">
-            <CardContent className="text-center py-12">
-              <h3 className="text-xl font-semibold mb-2">Empty Portfolio</h3>
-              <p className="text-gray-600">
+          <Card className="mb-6 sm:mb-8">
+            <CardContent className="text-center py-8 sm:py-12">
+              <h3 className="text-lg sm:text-xl font-semibold mb-2">Empty Portfolio</h3>
+              <p className="text-gray-600 text-sm sm:text-base">
                 You didn't add any startups to your portfolio this time. Try again to discover exciting opportunities!
               </p>
             </CardContent>
           </Card>
         )}
 
-        {/* Action buttons */}
+        {/* Action button */}
         <div className="text-center">
           <Button 
             onClick={onRestart}
-            className="px-12 py-4 text-xl font-bold rounded-2xl flex items-center gap-3 mx-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-2xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300"
+            className="px-6 sm:px-12 py-3 sm:py-4 text-base sm:text-xl font-bold rounded-2xl flex items-center gap-2 sm:gap-3 mx-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-2xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300"
           >
-            <RefreshCw className="w-6 h-6" />
+            <RefreshCw className="w-4 h-4 sm:w-6 sm:h-6" />
             Discover More Startups ✨
           </Button>
         </div>
