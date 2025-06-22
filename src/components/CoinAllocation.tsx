@@ -1,7 +1,10 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Coins, ArrowRight, Zap, Sparkles, MessageSquare, Users, UserX, ChevronDown } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Coins, ArrowRight } from "lucide-react";
+import { FeedbackSelector } from "./FeedbackSelector";
 import type { Startup, FeedbackType } from "@/pages/Index";
 
 interface CoinAllocationProps {
@@ -10,229 +13,155 @@ interface CoinAllocationProps {
   onComplete: (allocations: Record<string, number>, feedbackPreferences: Record<string, FeedbackType>) => void;
 }
 
-export const CoinAllocation = ({ startups, feedbackPreferences: initialFeedbackPreferences, onComplete }: CoinAllocationProps) => {
-  const [allocations, setAllocations] = useState<Record<string, number>>(
-    startups.reduce((acc, startup) => ({ ...acc, [startup.id]: 0 }), {})
-  );
-  const [feedbackPreferences, setFeedbackPreferences] = useState<Record<string, FeedbackType>>(initialFeedbackPreferences);
-  const [expandedFeedback, setExpandedFeedback] = useState<string | null>(null);
+export const CoinAllocation = ({ startups, feedbackPreferences, onComplete }: CoinAllocationProps) => {
+  const [allocations, setAllocations] = useState<Record<string, number>>(() => {
+    const initialAllocations: Record<string, number> = {};
+    const equalShare = Math.floor(100 / startups.length);
+    const remainder = 100 - (equalShare * startups.length);
+    
+    startups.forEach((startup, index) => {
+      initialAllocations[startup.id] = equalShare + (index < remainder ? 1 : 0);
+    });
+    
+    return initialAllocations;
+  });
+
+  const [currentFeedbackPreferences, setCurrentFeedbackPreferences] = useState<Record<string, FeedbackType>>(feedbackPreferences);
 
   const totalAllocated = Object.values(allocations).reduce((sum, val) => sum + val, 0);
-  const remainingCoins = 100 - totalAllocated;
 
-  const updateAllocation = (startupId: string, change: number) => {
+  const handleSliderChange = (startupId: string, value: number[]) => {
+    const newValue = value[0];
     const currentValue = allocations[startupId];
-    const newValue = Math.max(0, Math.min(100, currentValue + change));
+    const difference = newValue - currentValue;
     
-    if (newValue !== currentValue && (change < 0 || remainingCoins >= Math.abs(change))) {
-      setAllocations(prev => ({ ...prev, [startupId]: newValue }));
+    if (difference === 0) return;
+    
+    const otherStartups = startups.filter(s => s.id !== startupId);
+    const totalOtherAllocations = otherStartups.reduce((sum, s) => sum + allocations[s.id], 0);
+    
+    if (totalOtherAllocations === 0 && difference > 0) return;
+    
+    const newAllocations = { ...allocations };
+    newAllocations[startupId] = newValue;
+    
+    // Distribute the difference proportionally among other startups
+    if (difference !== 0 && otherStartups.length > 0) {
+      let remaining = -difference;
+      
+      for (let i = 0; i < otherStartups.length && Math.abs(remaining) > 0; i++) {
+        const startup = otherStartups[i];
+        const currentAllocation = newAllocations[startup.id];
+        
+        if (remaining > 0) {
+          // Adding coins to others
+          const maxCanAdd = Math.min(remaining, 100 - currentAllocation);
+          const toAdd = i === otherStartups.length - 1 ? remaining : Math.floor(maxCanAdd);
+          newAllocations[startup.id] = currentAllocation + toAdd;
+          remaining -= toAdd;
+        } else {
+          // Removing coins from others
+          const maxCanRemove = Math.min(-remaining, currentAllocation);
+          const toRemove = i === otherStartups.length - 1 ? -remaining : Math.floor(maxCanRemove);
+          newAllocations[startup.id] = currentAllocation - toRemove;
+          remaining += toRemove;
+        }
+      }
     }
+    
+    setAllocations(newAllocations);
   };
 
-  const setFeedbackForStartup = (startupId: string, feedbackType: FeedbackType) => {
-    setFeedbackPreferences(prev => ({ ...prev, [startupId]: feedbackType }));
-    setExpandedFeedback(null);
+  const handleFeedbackChange = (startupId: string, feedbackType: FeedbackType) => {
+    setCurrentFeedbackPreferences(prev => ({
+      ...prev,
+      [startupId]: feedbackType
+    }));
   };
 
   const handleComplete = () => {
-    onComplete(allocations, feedbackPreferences);
-  };
-
-  const canComplete = totalAllocated === 100;
-
-  const feedbackOptions = [
-    { type: "no" as FeedbackType, icon: UserX, label: "No help", emoji: "🤐" },
-    { type: "group" as FeedbackType, icon: Users, label: "Group help", emoji: "👥" },
-    { type: "all" as FeedbackType, icon: MessageSquare, label: "Full help", emoji: "💬" }
-  ];
-
-  const getFeedbackOption = (type: FeedbackType) => {
-    return feedbackOptions.find(option => option.type === type) || feedbackOptions[0];
+    onComplete(allocations, currentFeedbackPreferences);
   };
 
   return (
-    <div className="min-h-screen p-2 sm:p-4 relative bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-4 sm:mb-8">
-          <div className="flex items-center justify-center gap-2 mb-2 sm:mb-4">
-            <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-purple-500" />
-            <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              Build Your Portfolio
-            </h1>
-            <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-pink-500" />
-          </div>
-          <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-lg px-4">
-            Distribute 100 coins across your selected startups ✨
+    <div className="min-h-screen p-3 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
+      <div className="max-w-2xl mx-auto">
+        <div className="text-center mb-4">
+          <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+            Distribute Your Coins 💰
+          </h1>
+          <p className="text-sm text-gray-600 mb-3">
+            Allocate 100 coins among your selected startups
           </p>
           
-          {/* Coin Counter */}
-          <div className="flex items-center justify-center mb-4 sm:mb-6">
-            <div 
-              id="coin-source"
-              className="inline-flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-white px-4 sm:px-8 py-2 sm:py-4 rounded-2xl text-lg sm:text-2xl font-bold shadow-xl hover:shadow-2xl transition-all duration-300"
-            >
-              <Coins className="w-6 h-6 sm:w-8 sm:h-8 animate-spin" style={{ animationDuration: '3s' }} />
-              <span>{remainingCoins}</span>
-              <span className="text-sm sm:text-lg opacity-90">coins left</span>
-            </div>
-          </div>
+          {/* Compact total display */}
+          <Card className="bg-gradient-to-r from-yellow-100 to-orange-100 border-yellow-200 mb-4">
+            <CardContent className="p-3 text-center">
+              <div className="flex items-center justify-center gap-2">
+                <Coins className="w-5 h-5 text-yellow-600" />
+                <span className="text-lg font-bold text-yellow-700">{totalAllocated}/100</span>
+                <span className="text-sm text-yellow-600">coins allocated</span>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="grid gap-4 sm:gap-8 mb-6 sm:mb-8">
-          {startups.map((startup, index) => {
-            const currentFeedback = feedbackPreferences[startup.id] || 'no';
-            const feedbackOption = getFeedbackOption(currentFeedback);
-            
-            return (
-              <Card 
-                key={startup.id} 
-                id={`startup-${startup.id}`}
-                className="overflow-visible hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.01] border-2 hover:border-purple-200 relative"
-                style={{ zIndex: startups.length - index + 10 }}
-              >
-                <CardHeader className="pb-2 sm:pb-4 bg-gradient-to-r from-gray-50 to-white">
-                  <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
-                    <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
-                      <div className="text-2xl sm:text-4xl p-2 sm:p-3 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl">
-                        {startup.logo}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-lg sm:text-2xl font-bold truncate">{startup.name}</div>
-                        <p className="text-xs sm:text-sm text-gray-600 font-normal leading-relaxed line-clamp-2">
-                          {startup.tagline}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                      <div className="text-right">
-                        <div className="text-xl sm:text-3xl font-bold flex items-center gap-1 sm:gap-2 text-purple-600">
-                          <Coins className="w-4 h-4 sm:w-6 sm:h-6 text-yellow-500" />
-                          {allocations[startup.id]}
-                        </div>
-                        <div className="text-xs sm:text-sm text-gray-500 font-medium">
-                          {allocations[startup.id]}% of portfolio
-                        </div>
-                      </div>
-                    </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0 pb-4 sm:pb-6">
-                  {/* Simplified allocation controls */}
-                  <div className="flex items-center justify-center gap-3 sm:gap-6 mb-4 sm:mb-6">
-                    <Button
-                      onClick={() => updateAllocation(startup.id, -10)}
-                      disabled={allocations[startup.id] < 10}
-                      className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-red-400 to-red-500 hover:from-red-500 hover:to-red-600 text-white font-bold text-sm sm:text-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50"
-                    >
-                      -10
-                    </Button>
-                    
-                    <div className="flex-1 max-w-xs sm:max-w-md">
-                      <div className="text-center mb-2">
-                        <span className="text-2xl sm:text-4xl font-bold text-purple-600">
-                          {allocations[startup.id]}
-                        </span>
-                        <span className="text-sm sm:text-xl text-gray-500 ml-1 sm:ml-2">coins</span>
-                      </div>
-                      
-                      {/* Progress bar */}
-                      <div className="w-full bg-gray-200 rounded-2xl h-4 sm:h-6 overflow-hidden shadow-inner">
-                        <div 
-                          className="bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 h-4 sm:h-6 rounded-2xl transition-all duration-700 flex items-center justify-center relative"
-                          style={{ width: `${allocations[startup.id]}%` }}
-                        >
-                          <div className="absolute inset-0 bg-white/20 animate-pulse rounded-2xl"></div>
-                          {allocations[startup.id] > 15 && (
-                            <span className="text-white text-xs sm:text-sm font-bold relative z-10">
-                              {allocations[startup.id]}%
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <Button
-                      onClick={() => updateAllocation(startup.id, 10)}
-                      disabled={remainingCoins < 10}
-                      className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-white font-bold text-sm sm:text-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50"
-                    >
-                      +10
-                    </Button>
+        {/* Compact startup cards */}
+        <div className="space-y-3 mb-6">
+          {startups.map((startup) => (
+            <Card key={startup.id} className="overflow-hidden shadow-sm">
+              <CardContent className="p-3">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="text-2xl">{startup.logo}</div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-sm mb-1">{startup.name}</h3>
+                    <p className="text-xs text-gray-600 line-clamp-2">{startup.tagline}</p>
                   </div>
-
-                  {/* Fixed feedback selector with proper z-index */}
-                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-3 sm:p-4 border border-blue-200 relative">
-                    <div className="text-xs sm:text-sm font-medium mb-2 text-blue-700">Feedback preference:</div>
-                    <div className="relative" style={{ zIndex: 1000 + index }}>
-                      <button
-                        onClick={() => setExpandedFeedback(expandedFeedback === startup.id ? null : startup.id)}
-                        className="w-full flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-blue-200 hover:border-blue-300 transition-colors relative z-10"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm sm:text-base">{feedbackOption.emoji}</span>
-                          <span className="font-medium text-xs sm:text-sm">{feedbackOption.label}</span>
-                        </div>
-                        <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform ${expandedFeedback === startup.id ? 'rotate-180' : ''}`} />
-                      </button>
-                      
-                      {expandedFeedback === startup.id && (
-                        <div 
-                          className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-2xl border border-blue-200 overflow-hidden"
-                          style={{ zIndex: 9999 }}
-                        >
-                          {feedbackOptions.map((option) => (
-                            <button
-                              key={option.type}
-                              onClick={() => setFeedbackForStartup(startup.id, option.type)}
-                              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-blue-50 transition-colors text-xs sm:text-sm"
-                            >
-                              <span>{option.emoji}</span>
-                              <span className="font-medium">{option.label}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                  <div className="text-right">
+                    <div className="flex items-center gap-1 mb-1">
+                      <Coins className="w-3 h-3 text-yellow-500" />
+                      <span className="font-bold text-purple-600 text-sm">{allocations[startup.id]}</span>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                </div>
+                
+                {/* Compact slider */}
+                <div className="mb-3">
+                  <Slider
+                    value={[allocations[startup.id]]}
+                    onValueChange={(value) => handleSliderChange(startup.id, value)}
+                    min={0}
+                    max={100}
+                    step={1}
+                    className="w-full"
+                  />
+                </div>
+                
+                {/* Compact feedback selector */}
+                <div className="relative z-10">
+                  <FeedbackSelector
+                    value={currentFeedbackPreferences[startup.id] || 'no'}
+                    onChange={(value) => handleFeedbackChange(startup.id, value)}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
+        {/* Action button */}
         <div className="text-center">
           <Button 
             onClick={handleComplete}
-            disabled={!canComplete}
-            className={`px-6 sm:px-12 py-3 sm:py-4 text-lg sm:text-xl font-bold rounded-2xl flex items-center gap-2 sm:gap-3 mx-auto transition-all duration-300 ${
-              canComplete 
-                ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-2xl hover:shadow-green-500/25 transform hover:scale-105' 
-                : 'bg-gray-300 cursor-not-allowed'
-            }`}
+            disabled={totalAllocated !== 100}
+            className="px-6 py-3 text-base font-bold rounded-2xl flex items-center gap-2 mx-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:transform-none"
           >
-            {canComplete ? (
-              <>
-                <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
-                Complete Portfolio
-                <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
-              </>
-            ) : (
-              <>
-                <Coins className="w-5 h-5 sm:w-6 sm:h-6" />
-                Allocate All Coins
-              </>
-            )}
+            Complete Allocation <ArrowRight className="w-4 h-4" />
           </Button>
-          
-          {!canComplete && (
-            <div className="mt-4">
-              <p className="text-xs sm:text-sm text-gray-500">
-                You need to allocate exactly 100 coins to continue
-              </p>
-              <p className="text-base sm:text-lg font-bold text-purple-600 mt-1">
-                {remainingCoins} coins remaining
-              </p>
-            </div>
+          {totalAllocated !== 100 && (
+            <p className="text-xs text-red-500 mt-2">
+              Please allocate exactly 100 coins to continue
+            </p>
           )}
         </div>
       </div>

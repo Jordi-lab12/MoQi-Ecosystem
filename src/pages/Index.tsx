@@ -3,6 +3,7 @@ import { StartupSwiper } from "@/components/StartupSwiper";
 import { CoinAllocation } from "@/components/CoinAllocation";
 import { ResultsOverview } from "@/components/ResultsOverview";
 import { LoginScreen } from "@/components/LoginScreen";
+import { Dashboard } from "@/components/Dashboard";
 
 export type Startup = {
   id: string;
@@ -96,13 +97,18 @@ const mockStartups: Startup[] = [
 
 const Index = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentStage, setCurrentStage] = useState<"swiping" | "allocation" | "results">("swiping");
+  const [currentStage, setCurrentStage] = useState<"dashboard" | "swiping" | "allocation" | "results">("dashboard");
   const [likedStartups, setLikedStartups] = useState<Startup[]>([]);
   const [coinAllocations, setCoinAllocations] = useState<Record<string, number>>({});
   const [feedbackPreferences, setFeedbackPreferences] = useState<Record<string, FeedbackType>>({});
 
   const handleLogin = () => {
     setIsLoggedIn(true);
+    setCurrentStage("dashboard");
+  };
+
+  const handleStartSwiping = () => {
+    setCurrentStage("swiping");
   };
 
   const handleSwipeComplete = (liked: Startup[], preferences: Record<string, FeedbackType>) => {
@@ -122,7 +128,7 @@ const Index = () => {
   };
 
   const handleRestart = () => {
-    setCurrentStage("swiping");
+    setCurrentStage("dashboard");
     setLikedStartups([]);
     setCoinAllocations({});
     setFeedbackPreferences({});
@@ -134,6 +140,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+      {currentStage === "dashboard" && (
+        <Dashboard onStartSwiping={handleStartSwiping} />
+      )}
+      
       {currentStage === "swiping" && (
         <StartupSwiper startups={mockStartups} onComplete={handleSwipeComplete} />
       )}
