@@ -11,6 +11,7 @@ interface DashboardProps {
 
 export const Dashboard = ({ onStartSwiping }: DashboardProps) => {
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
+  const [isWhyStartupMixerOpen, setIsWhyStartupMixerOpen] = useState(false);
 
   const handleContact = () => {
     // For now, just show an alert - can be replaced with actual contact functionality
@@ -45,16 +46,16 @@ export const Dashboard = ({ onStartSwiping }: DashboardProps) => {
         </div>
 
         {/* Collapsible How it works section */}
-        <div className="mb-12">
+        <div className="mb-8">
           <Collapsible open={isHowItWorksOpen} onOpenChange={setIsHowItWorksOpen}>
             <CollapsibleTrigger asChild>
               <Button 
                 variant="outline" 
-                className="w-full p-6 border-2 border-purple-200 hover:border-purple-300 hover:bg-purple-50 text-purple-700 hover:text-purple-800 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3"
+                className="w-full p-4 border-2 border-purple-200 hover:border-purple-300 hover:bg-purple-50 text-purple-700 hover:text-purple-800 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3"
               >
-                <Info className="w-5 h-5" />
+                <Info className="w-4 h-4" />
                 How It Works
-                {isHowItWorksOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                {isHowItWorksOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent>
@@ -93,40 +94,50 @@ export const Dashboard = ({ onStartSwiping }: DashboardProps) => {
           </Collapsible>
         </div>
 
-        {/* Features section - compact */}
-        <Card className="bg-white/60 backdrop-blur-sm border-pink-200 mb-8">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-pink-700 text-lg">
-              <TrendingUp className="w-5 h-5" />
-              Why StartupMixer?
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="flex items-center gap-2">
-                <Star className="w-4 h-4 text-yellow-500 flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-sm">Curated Startups</p>
-                  <p className="text-xs text-gray-600">Hand-picked companies</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-sm">Connect Directly</p>
-                  <p className="text-xs text-gray-600">Get in touch with founders</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <MessageCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-sm">Personalized Feedback</p>
-                  <p className="text-xs text-gray-600">Choose how to engage</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Collapsible Why StartupMixer section */}
+        <div className="mb-8">
+          <Collapsible open={isWhyStartupMixerOpen} onOpenChange={setIsWhyStartupMixerOpen}>
+            <CollapsibleTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="w-full p-4 border-2 border-pink-200 hover:border-pink-300 hover:bg-pink-50 text-pink-700 hover:text-pink-800 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3"
+              >
+                <TrendingUp className="w-4 h-4" />
+                Why StartupMixer?
+                {isWhyStartupMixerOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <Card className="mt-4 bg-white/60 backdrop-blur-sm border-pink-200">
+                <CardContent className="pt-6">
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div className="flex items-center gap-2">
+                      <Star className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                      <div>
+                        <p className="font-semibold text-sm">Curated Startups</p>
+                        <p className="text-xs text-gray-600">Hand-picked companies</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                      <div>
+                        <p className="font-semibold text-sm">Connect Directly</p>
+                        <p className="text-xs text-gray-600">Get in touch with founders</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <div>
+                        <p className="font-semibold text-sm">Personalized Feedback</p>
+                        <p className="text-xs text-gray-600">Choose how to engage</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
 
         {/* Contact button - smaller */}
         <div className="text-center">

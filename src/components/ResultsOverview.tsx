@@ -2,10 +2,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Coins, RefreshCw, Heart, Star, MessageSquare, Users, UserX } from "lucide-react";
+import { Coins, RefreshCw, Heart, Star, MessageSquare, Users, UserX, ThumbsDown } from "lucide-react";
 import type { Startup, FeedbackType } from "@/pages/Index";
 
 interface ResultsOverviewProps {
+  allStartups: Startup[];
   likedStartups: Startup[];
   coinAllocations: Record<string, number>;
   feedbackPreferences: Record<string, FeedbackType>;
@@ -13,6 +14,7 @@ interface ResultsOverviewProps {
 }
 
 export const ResultsOverview = ({ 
+  allStartups,
   likedStartups, 
   coinAllocations, 
   feedbackPreferences, 
@@ -36,11 +38,14 @@ export const ResultsOverview = ({
     }
   };
 
-  const sortedStartups = likedStartups.sort((a, b) => 
+  const likedStartupIds = new Set(likedStartups.map(s => s.id));
+  const dislikedStartups = allStartups.filter(s => !likedStartupIds.has(s.id));
+  
+  const sortedLikedStartups = likedStartups.sort((a, b) => 
     (coinAllocations[b.id] || 0) - (coinAllocations[a.id] || 0)
   );
 
-  const startupsWithFeedback = likedStartups.filter(s => {
+  const startupsWithFeedback = allStartups.filter(s => {
     const feedback = feedbackPreferences[s.id] || 'no';
     return feedback !== 'no';
   }).length;
@@ -59,7 +64,7 @@ export const ResultsOverview = ({
               <CardContent className="p-2 text-center">
                 <Star className="w-4 h-4 text-purple-500 mx-auto mb-1" />
                 <div className="text-lg font-bold text-purple-700">{likedStartups.length}</div>
-                <div className="text-xs text-purple-600">Startups</div>
+                <div className="text-xs text-purple-600">Liked</div>
               </CardContent>
             </Card>
             
@@ -81,10 +86,11 @@ export const ResultsOverview = ({
           </div>
         </div>
 
-        {/* Compact portfolio breakdown */}
-        {likedStartups.length > 0 ? (
+        {/* Liked startups with coins */}
+        {likedStartups.length > 0 && (
           <div className="space-y-2 mb-6">
-            {sortedStartups.map((startup, index) => {
+            <h2 className="text-lg font-semibold text-gray-700 mb-3">💰 Startups You Invested In</h2>
+            {sortedLikedStartups.map((startup, index) => {
               const coins = coinAllocations[startup.id] || 0;
               const feedbackType = feedbackPreferences[startup.id] || 'no';
               const FeedbackIcon = getFeedbackIcon(feedbackType);
@@ -132,7 +138,44 @@ export const ResultsOverview = ({
               );
             })}
           </div>
-        ) : (
+        )}
+
+        {/* Disliked startups */}
+        {dislikedStartups.length > 0 && (
+          <div className="space-y-2 mb-6">
+            <h2 className="text-lg font-semibold text-gray-700 mb-3">👎 Startups You Passed On</h2>
+            {dislikedStartups.map((startup) => {
+              const feedbackType = feedbackPreferences[startup.id] || 'no';
+              const FeedbackIcon = getFeedbackIcon(feedbackType);
+              
+              return (
+                <Card key={startup.id} className="overflow-hidden shadow-sm bg-gray-50 border-gray-200">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl opacity-50">{startup.logo}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-bold text-sm truncate text-gray-600">{startup.name}</h3>
+                          <ThumbsDown className="w-3 h-3 text-gray-400" />
+                        </div>
+                        <p className="text-xs text-gray-500 line-clamp-1">{startup.tagline}</p>
+                      </div>
+                      
+                      <div className="text-right">
+                        <div className="flex items-center gap-1 bg-gray-100 px-1 py-0.5 rounded text-xs">
+                          <FeedbackIcon className="w-3 h-3 text-gray-500" />
+                          <span className="text-gray-600">{getFeedbackLabel(feedbackType)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+
+        {likedStartups.length === 0 && (
           <Card className="mb-6">
             <CardContent className="text-center py-6">
               <h3 className="text-lg font-semibold mb-2">Empty Portfolio</h3>

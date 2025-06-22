@@ -2,8 +2,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { Coins, ArrowRight } from "lucide-react";
+import { Coins, ArrowRight, Plus } from "lucide-react";
 import { FeedbackSelector } from "./FeedbackSelector";
 import type { Startup, FeedbackType } from "@/pages/Index";
 
@@ -16,13 +15,9 @@ interface CoinAllocationProps {
 export const CoinAllocation = ({ startups, feedbackPreferences, onComplete }: CoinAllocationProps) => {
   const [allocations, setAllocations] = useState<Record<string, number>>(() => {
     const initialAllocations: Record<string, number> = {};
-    const equalShare = Math.floor(100 / startups.length);
-    const remainder = 100 - (equalShare * startups.length);
-    
-    startups.forEach((startup, index) => {
-      initialAllocations[startup.id] = equalShare + (index < remainder ? 1 : 0);
+    startups.forEach((startup) => {
+      initialAllocations[startup.id] = 0;
     });
-    
     return initialAllocations;
   });
 
@@ -30,46 +25,13 @@ export const CoinAllocation = ({ startups, feedbackPreferences, onComplete }: Co
 
   const totalAllocated = Object.values(allocations).reduce((sum, val) => sum + val, 0);
 
-  const handleSliderChange = (startupId: string, value: number[]) => {
-    const newValue = value[0];
-    const currentValue = allocations[startupId];
-    const difference = newValue - currentValue;
-    
-    if (difference === 0) return;
-    
-    const otherStartups = startups.filter(s => s.id !== startupId);
-    const totalOtherAllocations = otherStartups.reduce((sum, s) => sum + allocations[s.id], 0);
-    
-    if (totalOtherAllocations === 0 && difference > 0) return;
-    
-    const newAllocations = { ...allocations };
-    newAllocations[startupId] = newValue;
-    
-    // Distribute the difference proportionally among other startups
-    if (difference !== 0 && otherStartups.length > 0) {
-      let remaining = -difference;
-      
-      for (let i = 0; i < otherStartups.length && Math.abs(remaining) > 0; i++) {
-        const startup = otherStartups[i];
-        const currentAllocation = newAllocations[startup.id];
-        
-        if (remaining > 0) {
-          // Adding coins to others
-          const maxCanAdd = Math.min(remaining, 100 - currentAllocation);
-          const toAdd = i === otherStartups.length - 1 ? remaining : Math.floor(maxCanAdd);
-          newAllocations[startup.id] = currentAllocation + toAdd;
-          remaining -= toAdd;
-        } else {
-          // Removing coins from others
-          const maxCanRemove = Math.min(-remaining, currentAllocation);
-          const toRemove = i === otherStartups.length - 1 ? -remaining : Math.floor(maxCanRemove);
-          newAllocations[startup.id] = currentAllocation - toRemove;
-          remaining += toRemove;
-        }
-      }
+  const handleAddCoins = (startupId: string) => {
+    if (totalAllocated + 10 <= 100) {
+      setAllocations(prev => ({
+        ...prev,
+        [startupId]: prev[startupId] + 10
+      }));
     }
-    
-    setAllocations(newAllocations);
   };
 
   const handleFeedbackChange = (startupId: string, feedbackType: FeedbackType) => {
@@ -91,7 +53,7 @@ export const CoinAllocation = ({ startups, feedbackPreferences, onComplete }: Co
             Distribute Your Coins 💰
           </h1>
           <p className="text-gray-600 mb-6">
-            Allocate 100 coins among your selected startups based on your interest level
+            Add 10 coins at a time to your selected startups based on your interest level
           </p>
           
           <Card className="bg-gradient-to-r from-yellow-100 to-orange-100 border-yellow-200 shadow-lg">
@@ -100,6 +62,12 @@ export const CoinAllocation = ({ startups, feedbackPreferences, onComplete }: Co
                 <Coins className="w-8 h-8 text-yellow-600" />
                 <span className="text-2xl font-bold text-yellow-700">{totalAllocated}/100</span>
                 <span className="text-yellow-600">coins allocated</span>
+              </div>
+              <div className="w-full bg-yellow-200 rounded-full h-3 mt-3 overflow-hidden">
+                <div 
+                  className="bg-gradient-to-r from-yellow-500 to-orange-500 h-3 rounded-full transition-all duration-500"
+                  style={{ width: `${totalAllocated}%` }}
+                />
               </div>
             </CardContent>
           </Card>
@@ -116,31 +84,24 @@ export const CoinAllocation = ({ startups, feedbackPreferences, onComplete }: Co
                     <p className="text-gray-600">{startup.tagline}</p>
                     <p className="text-sm text-gray-500 mt-2">{startup.description}</p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex flex-col items-end gap-2">
                     <div className="flex items-center gap-2 mb-2">
                       <Coins className="w-5 h-5 text-yellow-500" />
                       <span className="text-2xl font-bold text-purple-600">{allocations[startup.id]}</span>
                     </div>
-                    <div className="text-xs text-gray-500">coins</div>
+                    <Button
+                      onClick={() => handleAddCoins(startup.id)}
+                      disabled={totalAllocated >= 100}
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
+                    >
+                      <Plus className="w-4 h-4" />
+                      +10 coins
+                    </Button>
                   </div>
                 </div>
               </CardHeader>
               
               <CardContent className="pt-0">
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Coin Allocation: {allocations[startup.id]} coins
-                  </label>
-                  <Slider
-                    value={[allocations[startup.id]]}
-                    onValueChange={(value) => handleSliderChange(startup.id, value)}
-                    min={0}
-                    max={100}
-                    step={1}
-                    className="w-full"
-                  />
-                </div>
-                
                 <div className="relative z-10">
                   <FeedbackSelector
                     value={currentFeedbackPreferences[startup.id] || 'no'}
@@ -162,7 +123,7 @@ export const CoinAllocation = ({ startups, feedbackPreferences, onComplete }: Co
           </Button>
           {totalAllocated !== 100 && (
             <p className="text-red-500 mt-4">
-              Please allocate exactly 100 coins to continue
+              Please allocate exactly 100 coins to continue ({100 - totalAllocated} coins remaining)
             </p>
           )}
         </div>

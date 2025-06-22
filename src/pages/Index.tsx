@@ -99,6 +99,7 @@ const Index = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentStage, setCurrentStage] = useState<"dashboard" | "swiping" | "allocation" | "results">("dashboard");
   const [likedStartups, setLikedStartups] = useState<Startup[]>([]);
+  const [allStartups] = useState<Startup[]>(mockStartups);
   const [coinAllocations, setCoinAllocations] = useState<Record<string, number>>({});
   const [feedbackPreferences, setFeedbackPreferences] = useState<Record<string, FeedbackType>>({});
 
@@ -158,6 +159,7 @@ const Index = () => {
       
       {currentStage === "results" && (
         <ResultsOverview 
+          allStartups={allStartups}
           likedStartups={likedStartups}
           coinAllocations={coinAllocations}
           feedbackPreferences={feedbackPreferences}
