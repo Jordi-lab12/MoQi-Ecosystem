@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -187,8 +186,7 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
           onClose={() => setShowModal(false)}
           onLike={handleLike}
           onDislike={handleDislike}
-          feedbackPreference="all"
-          onFeedbackChange={() => {}}
+          showFeedbackSelector={false}
         />
       )}
     </div>

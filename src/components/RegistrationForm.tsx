@@ -4,23 +4,55 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, User, Heart, GraduationCap, Building2 } from "lucide-react";
 import { UserRole } from "./WelcomePage";
 
 interface RegistrationFormProps {
   userRole: UserRole;
-  onComplete: (userData: { name: string; age: string; study: string; role: UserRole }) => void;
+  onComplete: (userData: any) => void;
 }
 
 export const RegistrationForm = ({ userRole, onComplete }: RegistrationFormProps) => {
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [study, setStudy] = useState("");
+  
+  // Startup-specific fields
+  const [tagline, setTagline] = useState("");
+  const [description, setDescription] = useState("");
+  const [usp, setUsp] = useState("");
+  const [mission, setMission] = useState("");
+  const [vision, setVision] = useState("");
+  const [industry, setIndustry] = useState("");
+  const [founded, setFounded] = useState("");
+  const [employees, setEmployees] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim() && age.trim() && study.trim()) {
-      onComplete({ name: name.trim(), age: age.trim(), study: study.trim(), role: userRole });
+    
+    if (userRole === "startup") {
+      // Validate startup fields
+      if (name.trim() && tagline.trim() && description.trim() && usp.trim() && 
+          mission.trim() && vision.trim() && industry.trim() && founded.trim() && employees.trim()) {
+        onComplete({ 
+          name: name.trim(), 
+          tagline: tagline.trim(),
+          description: description.trim(),
+          usp: usp.trim(),
+          mission: mission.trim(),
+          vision: vision.trim(),
+          industry: industry.trim(),
+          founded: founded.trim(),
+          employees: employees.trim(),
+          role: userRole 
+        });
+      }
+    } else {
+      // Validate swiper/professor fields
+      if (name.trim() && age.trim() && study.trim()) {
+        onComplete({ name: name.trim(), age: age.trim(), study: study.trim(), role: userRole });
+      }
     }
   };
 
@@ -68,7 +100,7 @@ export const RegistrationForm = ({ userRole, onComplete }: RegistrationFormProps
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
-      <Card className="w-full max-w-md shadow-2xl">
+      <Card className="w-full max-w-2xl shadow-2xl">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Sparkles className="w-8 h-8 text-purple-500" />
@@ -80,48 +112,170 @@ export const RegistrationForm = ({ userRole, onComplete }: RegistrationFormProps
           <div className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-r ${getRoleColor()} flex items-center justify-center mb-4`}>
             <RoleIcon className="w-8 h-8 text-white" />
           </div>
-          <p className="text-gray-600">Tell us a bit about yourself</p>
+          <p className="text-gray-600">Tell us about {userRole === "startup" ? "your startup" : "yourself"}</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter your full name"
-                className="mt-1"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="age">Age</Label>
-              <Input
-                id="age"
-                type="number"
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                placeholder="Enter your age"
-                className="mt-1"
-                min="16"
-                max="100"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="study">{getStudyLabel()}</Label>
-              <Input
-                id="study"
-                type="text"
-                value={study}
-                onChange={(e) => setStudy(e.target.value)}
-                placeholder={getStudyPlaceholder()}
-                className="mt-1"
-                required
-              />
-            </div>
+            {userRole === "startup" ? (
+              <>
+                <div>
+                  <Label htmlFor="name">Startup Name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter your startup name"
+                    className="mt-1"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="tagline">Tagline</Label>
+                  <Input
+                    id="tagline"
+                    type="text"
+                    value={tagline}
+                    onChange={(e) => setTagline(e.target.value)}
+                    placeholder="e.g. AI-powered mental wellness"
+                    className="mt-1"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Brief description of what your startup does"
+                    className="mt-1"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="usp">Unique Selling Proposition</Label>
+                  <Textarea
+                    id="usp"
+                    value={usp}
+                    onChange={(e) => setUsp(e.target.value)}
+                    placeholder="What makes your startup unique?"
+                    className="mt-1"
+                    required
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="mission">Mission</Label>
+                    <Textarea
+                      id="mission"
+                      value={mission}
+                      onChange={(e) => setMission(e.target.value)}
+                      placeholder="Your startup's mission"
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="vision">Vision</Label>
+                    <Textarea
+                      id="vision"
+                      value={vision}
+                      onChange={(e) => setVision(e.target.value)}
+                      placeholder="Your startup's vision"
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="industry">Industry</Label>
+                  <Input
+                    id="industry"
+                    type="text"
+                    value={industry}
+                    onChange={(e) => setIndustry(e.target.value)}
+                    placeholder="e.g. FinTech, HealthTech, EdTech"
+                    className="mt-1"
+                    required
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="founded">Founded Year</Label>
+                    <Input
+                      id="founded"
+                      type="text"
+                      value={founded}
+                      onChange={(e) => setFounded(e.target.value)}
+                      placeholder="e.g. 2023"
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="employees">Team Size</Label>
+                    <Input
+                      id="employees"
+                      type="text"
+                      value={employees}
+                      onChange={(e) => setEmployees(e.target.value)}
+                      placeholder="e.g. 5-10, 15-25"
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter your full name"
+                    className="mt-1"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="age">Age</Label>
+                  <Input
+                    id="age"
+                    type="number"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    placeholder="Enter your age"
+                    className="mt-1"
+                    min="16"
+                    max="100"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="study">{getStudyLabel()}</Label>
+                  <Input
+                    id="study"
+                    type="text"
+                    value={study}
+                    onChange={(e) => setStudy(e.target.value)}
+                    placeholder={getStudyPlaceholder()}
+                    className="mt-1"
+                    required
+                  />
+                </div>
+              </>
+            )}
+            
             <Button 
               type="submit" 
               className={`w-full bg-gradient-to-r ${getRoleButtonColor()}`}
