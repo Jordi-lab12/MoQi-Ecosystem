@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Sparkles, Info, MessageCircle, Play, Star, TrendingUp, Users, ChevronDown, ChevronUp } from "lucide-react";
+import { MeetingCalendar } from "./MeetingCalendar";
 
 interface DashboardProps {
   onStartSwiping: () => void;
@@ -15,7 +15,7 @@ export const Dashboard = ({ onStartSwiping }: DashboardProps) => {
 
   const handleContact = () => {
     // For now, just show an alert - can be replaced with actual contact functionality
-    alert("Contact us at: hello@startupmixer.com");
+    alert("Contact us at: hello@moqi.com");
   };
 
   return (
@@ -43,6 +43,11 @@ export const Dashboard = ({ onStartSwiping }: DashboardProps) => {
             Start Swiping ✨
           </Button>
           <p className="text-gray-500 mt-6 text-lg">Discover and invest in promising startups</p>
+        </div>
+
+        {/* Meeting Calendar Button */}
+        <div className="text-center mb-8">
+          <MeetingCalendar />
         </div>
 
         {/* Collapsible How it works section */}
@@ -147,7 +152,7 @@ export const Dashboard = ({ onStartSwiping }: DashboardProps) => {
             className="px-4 py-2 border border-purple-200 hover:border-purple-300 hover:bg-purple-50 text-purple-700 hover:text-purple-800 rounded-lg transition-all duration-300 flex items-center gap-2 mx-auto text-sm"
           >
             <MessageCircle className="w-4 h-4" />
-            Contact Us
+            Contact MoQi
           </Button>
         </div>
       </div>
