@@ -1,15 +1,21 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Sparkles, Info, MessageCircle, Play, Star, TrendingUp, Users, ChevronDown, ChevronUp } from "lucide-react";
 import { MeetingCalendar } from "./MeetingCalendar";
+import { Portfolio } from "./Portfolio";
+import { Startup, FeedbackType } from "@/pages/Index";
 
 interface DashboardProps {
   onStartSwiping: () => void;
+  likedStartups: Startup[];
+  coinAllocations: Record<string, number>;
+  feedbackPreferences: Record<string, FeedbackType>;
 }
 
-export const Dashboard = ({ onStartSwiping }: DashboardProps) => {
+export const Dashboard = ({ onStartSwiping, likedStartups, coinAllocations, feedbackPreferences }: DashboardProps) => {
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   const [isWhyStartupMixerOpen, setIsWhyStartupMixerOpen] = useState(false);
 
@@ -34,7 +40,7 @@ export const Dashboard = ({ onStartSwiping }: DashboardProps) => {
         </div>
 
         {/* Main action button - central and biggest */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-12">
           <Button 
             onClick={onStartSwiping}
             className="px-16 py-8 text-3xl font-bold rounded-3xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-2xl hover:shadow-purple-500/25 transform hover:scale-110 transition-all duration-300 flex items-center gap-6 mx-auto"
@@ -45,9 +51,18 @@ export const Dashboard = ({ onStartSwiping }: DashboardProps) => {
           <p className="text-gray-500 mt-6 text-lg">Discover and invest in promising startups</p>
         </div>
 
-        {/* Meeting Calendar Button */}
-        <div className="text-center mb-8">
-          <MeetingCalendar />
+        {/* Large central buttons for My Meetings and My Portfolio */}
+        <div className="grid md:grid-cols-2 gap-6 mb-12">
+          <div className="text-center">
+            <MeetingCalendar />
+          </div>
+          <div className="text-center">
+            <Portfolio 
+              likedStartups={likedStartups}
+              coinAllocations={coinAllocations}
+              feedbackPreferences={feedbackPreferences}
+            />
+          </div>
         </div>
 
         {/* Collapsible How it works section */}
@@ -80,8 +95,8 @@ export const Dashboard = ({ onStartSwiping }: DashboardProps) => {
                       <span className="text-sm font-bold text-purple-600">2</span>
                     </div>
                     <div>
-                      <p className="font-semibold">Invest Coins</p>
-                      <p className="text-sm text-gray-600">Distribute 100 coins among your selected startups based on your interest</p>
+                      <p className="font-semibold">Invest MoQi-points</p>
+                      <p className="text-sm text-gray-600">Distribute 100 MoQi-points among your selected startups based on your interest</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">

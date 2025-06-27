@@ -4,6 +4,7 @@ import { CoinAllocation } from "@/components/CoinAllocation";
 import { ResultsOverview } from "@/components/ResultsOverview";
 import { LoginScreen } from "@/components/LoginScreen";
 import { Dashboard } from "@/components/Dashboard";
+import { RegistrationForm } from "@/components/RegistrationForm";
 
 export type Startup = {
   id: string;
@@ -96,12 +97,19 @@ const mockStartups: Startup[] = [
 ];
 
 const Index = () => {
+  const [isRegistered, setIsRegistered] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userData, setUserData] = useState<{ name: string; age: string; study: string } | null>(null);
   const [currentStage, setCurrentStage] = useState<"dashboard" | "swiping" | "allocation" | "results">("dashboard");
   const [likedStartups, setLikedStartups] = useState<Startup[]>([]);
   const [allStartups] = useState<Startup[]>(mockStartups);
   const [coinAllocations, setCoinAllocations] = useState<Record<string, number>>({});
   const [feedbackPreferences, setFeedbackPreferences] = useState<Record<string, FeedbackType>>({});
+
+  const handleRegistration = (data: { name: string; age: string; study: string }) => {
+    setUserData(data);
+    setIsRegistered(true);
+  };
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -135,6 +143,10 @@ const Index = () => {
     setFeedbackPreferences({});
   };
 
+  if (!isRegistered) {
+    return <RegistrationForm onComplete={handleRegistration} />;
+  }
+
   if (!isLoggedIn) {
     return <LoginScreen onLogin={handleLogin} />;
   }
@@ -142,7 +154,12 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
       {currentStage === "dashboard" && (
-        <Dashboard onStartSwiping={handleStartSwiping} />
+        <Dashboard 
+          onStartSwiping={handleStartSwiping}
+          likedStartups={likedStartups}
+          coinAllocations={coinAllocations}
+          feedbackPreferences={feedbackPreferences}
+        />
       )}
       
       {currentStage === "swiping" && (

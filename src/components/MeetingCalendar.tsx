@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -78,10 +77,9 @@ export const MeetingCalendar = () => {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button 
-          variant="outline"
-          className="px-6 py-3 border-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50 text-blue-700 hover:text-blue-800 font-semibold rounded-xl transition-all duration-300 flex items-center gap-3"
+          className="px-12 py-6 text-xl font-bold rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 shadow-xl hover:shadow-blue-500/25 transform hover:scale-105 transition-all duration-300 flex items-center gap-4 mx-auto"
         >
-          <CalendarIcon className="w-5 h-5" />
+          <CalendarIcon className="w-8 h-8" />
           My Meetings
         </Button>
       </DialogTrigger>
