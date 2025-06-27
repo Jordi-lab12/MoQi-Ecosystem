@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, X, Info, MessageSquare, Users, UserX, Sparkles, Zap, ChevronDown } from "lucide-react";
+import { Heart, X, Info, Sparkles, Zap } from "lucide-react";
 import { StartupModal } from "./StartupModal";
 import type { Startup, FeedbackType } from "@/pages/Index";
 
@@ -14,9 +14,7 @@ interface StartupSwiperProps {
 export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likedStartups, setLikedStartups] = useState<Startup[]>([]);
-  const [feedbackPreferences, setFeedbackPreferences] = useState<Record<string, FeedbackType>>({});
   const [showModal, setShowModal] = useState(false);
-  const [showFeedbackDropdown, setShowFeedbackDropdown] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'like' | 'dislike' | null>(null);
 
   const currentStartup = startups[currentIndex];
@@ -39,31 +37,19 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
   };
 
   const nextStartup = () => {
-    setShowFeedbackDropdown(false);
     if (currentIndex < startups.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      onComplete(likedStartups, feedbackPreferences);
+      // Initialize feedback preferences to 'all' for all startups
+      const initialFeedbackPreferences: Record<string, FeedbackType> = {};
+      startups.forEach((startup) => {
+        initialFeedbackPreferences[startup.id] = 'all';
+      });
+      onComplete(likedStartups, initialFeedbackPreferences);
     }
   };
 
-  const setFeedbackForStartup = (startupId: string, feedbackType: FeedbackType) => {
-    setFeedbackPreferences(prev => ({ ...prev, [startupId]: feedbackType }));
-    setShowFeedbackDropdown(false);
-  };
-
   const progress = ((currentIndex + 1) / startups.length) * 100;
-  const currentFeedback = feedbackPreferences[currentStartup?.id] || "no";
-
-  const feedbackOptions = [
-    { type: "no" as FeedbackType, icon: UserX, label: "No help", emoji: "🤐" },
-    { type: "group" as FeedbackType, icon: Users, label: "Group help", emoji: "👥" },
-    { type: "all" as FeedbackType, icon: MessageSquare, label: "Full help", emoji: "💬" }
-  ];
-
-  const getCurrentFeedbackOption = () => {
-    return feedbackOptions.find(option => option.type === currentFeedback) || feedbackOptions[0];
-  };
 
   if (!currentStartup) {
     return null;
@@ -161,47 +147,6 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
               </span>
             </div>
 
-            {/* Feedback selector - positioned at bottom with higher z-index */}
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-3 border border-purple-200 relative">
-              <div className="text-xs font-medium mb-2 text-purple-700 flex items-center gap-2">
-                <Sparkles className="w-3 h-3" />
-                Feedback preference
-              </div>
-              <div className="relative">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowFeedbackDropdown(!showFeedbackDropdown);
-                  }}
-                  className="w-full flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-purple-200 hover:border-purple-300 transition-colors text-sm"
-                >
-                  <div className="flex items-center gap-2">
-                    <span>{getCurrentFeedbackOption().emoji}</span>
-                    <span className="font-medium">{getCurrentFeedbackOption().label}</span>
-                  </div>
-                  <ChevronDown className={`w-4 h-4 transition-transform ${showFeedbackDropdown ? 'rotate-180' : ''}`} />
-                </button>
-                
-                {showFeedbackDropdown && (
-                  <div className="absolute bottom-full left-0 right-0 mb-1 bg-white rounded-lg shadow-2xl border border-purple-200 z-[9999] overflow-hidden">
-                    {feedbackOptions.map((option) => (
-                      <button
-                        key={option.type}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setFeedbackForStartup(currentStartup.id, option.type);
-                        }}
-                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-purple-50 transition-colors text-sm"
-                      >
-                        <span>{option.emoji}</span>
-                        <span className="font-medium">{option.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
             <div className="text-center mt-3">
               <div className="text-xs text-gray-500 flex items-center justify-center gap-1">
                 <Sparkles className="w-3 h-3" />
@@ -234,13 +179,6 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
             <Heart className="w-8 h-8 group-hover:scale-125 transition-transform" />
           </Button>
         </div>
-
-        {/* Bottom tip */}
-        <div className="text-center mt-6">
-          <p className="text-sm text-gray-400 flex items-center justify-center gap-1">
-            💡 Set your help preference before swiping!
-          </p>
-        </div>
       </div>
 
       {showModal && (
@@ -249,8 +187,8 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
           onClose={() => setShowModal(false)}
           onLike={handleLike}
           onDislike={handleDislike}
-          feedbackPreference={currentFeedback}
-          onFeedbackChange={(feedbackType) => setFeedbackForStartup(currentStartup.id, feedbackType)}
+          feedbackPreference="all"
+          onFeedbackChange={() => {}}
         />
       )}
     </div>

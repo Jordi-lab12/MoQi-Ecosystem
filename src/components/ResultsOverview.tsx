@@ -1,8 +1,10 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Coins, RefreshCw, Heart, Star, MessageSquare, Users, UserX, ThumbsDown } from "lucide-react";
+import { FeedbackSelector } from "./FeedbackSelector";
 import type { Startup, FeedbackType } from "@/pages/Index";
 
 interface ResultsOverviewProps {
@@ -20,12 +22,21 @@ export const ResultsOverview = ({
   feedbackPreferences, 
   onRestart 
 }: ResultsOverviewProps) => {
+  const [currentFeedbackPreferences, setCurrentFeedbackPreferences] = useState<Record<string, FeedbackType>>(feedbackPreferences);
+
+  const handleFeedbackChange = (startupId: string, feedbackType: FeedbackType) => {
+    setCurrentFeedbackPreferences(prev => ({
+      ...prev,
+      [startupId]: feedbackType
+    }));
+  };
+
   const getFeedbackLabel = (type: FeedbackType) => {
     switch (type) {
       case 'no': return 'No help';
       case 'group': return 'Group help';
       case 'all': return 'Full help';
-      default: return 'No help';
+      default: return 'Full help';
     }
   };
 
@@ -34,19 +45,20 @@ export const ResultsOverview = ({
       case 'no': return UserX;
       case 'group': return Users;
       case 'all': return MessageSquare;
-      default: return UserX;
+      default: return MessageSquare;
     }
   };
 
   const likedStartupIds = new Set(likedStartups.map(s => s.id));
   const dislikedStartups = allStartups.filter(s => !likedStartupIds.has(s.id));
   
+  // Sort liked startups by MoQi-points (highest to lowest)
   const sortedLikedStartups = likedStartups.sort((a, b) => 
     (coinAllocations[b.id] || 0) - (coinAllocations[a.id] || 0)
   );
 
   const startupsWithFeedback = allStartups.filter(s => {
-    const feedback = feedbackPreferences[s.id] || 'no';
+    const feedback = currentFeedbackPreferences[s.id] || 'all';
     return feedback !== 'no';
   }).length;
 
@@ -72,7 +84,7 @@ export const ResultsOverview = ({
               <CardContent className="p-2 text-center">
                 <Coins className="w-4 h-4 text-yellow-500 mx-auto mb-1" />
                 <div className="text-lg font-bold text-yellow-700">100</div>
-                <div className="text-xs text-yellow-600">Coins</div>
+                <div className="text-xs text-yellow-600">MoQi-points</div>
               </CardContent>
             </Card>
             
@@ -86,50 +98,60 @@ export const ResultsOverview = ({
           </div>
         </div>
 
-        {/* Liked startups with coins */}
+        {/* Liked startups with MoQi-points - ranked */}
         {likedStartups.length > 0 && (
-          <div className="space-y-2 mb-6">
-            <h2 className="text-lg font-semibold text-gray-700 mb-3">💰 Startups You Invested In</h2>
+          <div className="space-y-3 mb-6">
+            <h2 className="text-lg font-semibold text-gray-700 mb-3">💰 Your Startup Rankings</h2>
             {sortedLikedStartups.map((startup, index) => {
-              const coins = coinAllocations[startup.id] || 0;
-              const feedbackType = feedbackPreferences[startup.id] || 'no';
+              const points = coinAllocations[startup.id] || 0;
+              const feedbackType = currentFeedbackPreferences[startup.id] || 'all';
               const FeedbackIcon = getFeedbackIcon(feedbackType);
               
               return (
                 <Card key={startup.id} className="overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
-                  <CardContent className="p-3">
-                    <div className="flex items-center gap-3">
-                      {/* Logo and basic info */}
-                      <div className="text-2xl">{startup.logo}</div>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      {/* Ranking and logo */}
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                          {index + 1}
+                        </div>
+                        <div className="text-2xl">{startup.logo}</div>
+                      </div>
+                      
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="font-bold text-sm truncate">{startup.name}</h3>
-                          {index === 0 && coins > 0 && (
+                          {index === 0 && points > 0 && (
                             <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-1 py-0">
                               🏆
                             </Badge>
                           )}
                         </div>
-                        <p className="text-xs text-gray-600 line-clamp-1 mb-1">{startup.tagline}</p>
+                        <p className="text-xs text-gray-600 line-clamp-1 mb-2">{startup.tagline}</p>
                         
                         {/* Progress bar */}
-                        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden mb-2">
                           <div 
                             className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-500"
-                            style={{ width: `${coins}%` }}
+                            style={{ width: `${points}%` }}
+                          />
+                        </div>
+                        
+                        {/* Feedback selector */}
+                        <div className="relative z-10">
+                          <FeedbackSelector
+                            value={feedbackType}
+                            onChange={(value) => handleFeedbackChange(startup.id, value)}
                           />
                         </div>
                       </div>
                       
-                      {/* Coins and feedback */}
-                      <div className="text-right flex flex-col items-end gap-1">
+                      {/* Points */}
+                      <div className="text-right">
                         <div className="flex items-center gap-1">
-                          <Coins className="w-3 h-3 text-yellow-500" />
-                          <span className="font-bold text-purple-600 text-sm">{coins}</span>
-                        </div>
-                        <div className="flex items-center gap-1 bg-blue-50 px-1 py-0.5 rounded text-xs">
-                          <FeedbackIcon className="w-3 h-3 text-blue-600" />
-                          <span className="text-blue-700">{getFeedbackLabel(feedbackType)}</span>
+                          <Coins className="w-4 h-4 text-yellow-500" />
+                          <span className="font-bold text-purple-600 text-lg">{points}</span>
                         </div>
                       </div>
                     </div>
@@ -140,13 +162,12 @@ export const ResultsOverview = ({
           </div>
         )}
 
-        {/* Disliked startups */}
+        {/* Disliked startups with feedback options */}
         {dislikedStartups.length > 0 && (
           <div className="space-y-2 mb-6">
             <h2 className="text-lg font-semibold text-gray-700 mb-3">👎 Startups You Passed On</h2>
             {dislikedStartups.map((startup) => {
-              const feedbackType = feedbackPreferences[startup.id] || 'no';
-              const FeedbackIcon = getFeedbackIcon(feedbackType);
+              const feedbackType = currentFeedbackPreferences[startup.id] || 'all';
               
               return (
                 <Card key={startup.id} className="overflow-hidden shadow-sm bg-gray-50 border-gray-200">
@@ -158,13 +179,14 @@ export const ResultsOverview = ({
                           <h3 className="font-bold text-sm truncate text-gray-600">{startup.name}</h3>
                           <ThumbsDown className="w-3 h-3 text-gray-400" />
                         </div>
-                        <p className="text-xs text-gray-500 line-clamp-1">{startup.tagline}</p>
-                      </div>
-                      
-                      <div className="text-right">
-                        <div className="flex items-center gap-1 bg-gray-100 px-1 py-0.5 rounded text-xs">
-                          <FeedbackIcon className="w-3 h-3 text-gray-500" />
-                          <span className="text-gray-600">{getFeedbackLabel(feedbackType)}</span>
+                        <p className="text-xs text-gray-500 line-clamp-1 mb-2">{startup.tagline}</p>
+                        
+                        {/* Feedback selector */}
+                        <div className="relative z-10">
+                          <FeedbackSelector
+                            value={feedbackType}
+                            onChange={(value) => handleFeedbackChange(startup.id, value)}
+                          />
                         </div>
                       </div>
                     </div>

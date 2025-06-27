@@ -2,8 +2,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Coins, ArrowRight, Plus } from "lucide-react";
-import { FeedbackSelector } from "./FeedbackSelector";
+import { Coins, ArrowRight, Plus, Minus } from "lucide-react";
 import type { Startup, FeedbackType } from "@/pages/Index";
 
 interface CoinAllocationProps {
@@ -21,11 +20,9 @@ export const CoinAllocation = ({ startups, feedbackPreferences, onComplete }: Co
     return initialAllocations;
   });
 
-  const [currentFeedbackPreferences, setCurrentFeedbackPreferences] = useState<Record<string, FeedbackType>>(feedbackPreferences);
-
   const totalAllocated = Object.values(allocations).reduce((sum, val) => sum + val, 0);
 
-  const handleAddCoins = (startupId: string) => {
+  const handleAddPoints = (startupId: string) => {
     if (totalAllocated + 10 <= 100) {
       setAllocations(prev => ({
         ...prev,
@@ -34,15 +31,17 @@ export const CoinAllocation = ({ startups, feedbackPreferences, onComplete }: Co
     }
   };
 
-  const handleFeedbackChange = (startupId: string, feedbackType: FeedbackType) => {
-    setCurrentFeedbackPreferences(prev => ({
-      ...prev,
-      [startupId]: feedbackType
-    }));
+  const handleSubtractPoints = (startupId: string) => {
+    if (allocations[startupId] >= 10) {
+      setAllocations(prev => ({
+        ...prev,
+        [startupId]: prev[startupId] - 10
+      }));
+    }
   };
 
   const handleComplete = () => {
-    onComplete(allocations, currentFeedbackPreferences);
+    onComplete(allocations, feedbackPreferences);
   };
 
   return (
@@ -50,10 +49,10 @@ export const CoinAllocation = ({ startups, feedbackPreferences, onComplete }: Co
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
-            Distribute Your Coins 💰
+            Distribute Your MoQi-points 💰
           </h1>
           <p className="text-gray-600 mb-6">
-            Add 10 coins at a time to your selected startups based on your interest level
+            Add or remove 10 MoQi-points at a time to your selected startups based on your interest level
           </p>
           
           <Card className="bg-gradient-to-r from-yellow-100 to-orange-100 border-yellow-200 shadow-lg">
@@ -61,7 +60,7 @@ export const CoinAllocation = ({ startups, feedbackPreferences, onComplete }: Co
               <div className="flex items-center justify-center gap-3">
                 <Coins className="w-8 h-8 text-yellow-600" />
                 <span className="text-2xl font-bold text-yellow-700">{totalAllocated}/100</span>
-                <span className="text-yellow-600">coins allocated</span>
+                <span className="text-yellow-600">MoQi-points allocated</span>
               </div>
               <div className="w-full bg-yellow-200 rounded-full h-3 mt-3 overflow-hidden">
                 <div 
@@ -89,26 +88,27 @@ export const CoinAllocation = ({ startups, feedbackPreferences, onComplete }: Co
                       <Coins className="w-5 h-5 text-yellow-500" />
                       <span className="text-2xl font-bold text-purple-600">{allocations[startup.id]}</span>
                     </div>
-                    <Button
-                      onClick={() => handleAddCoins(startup.id)}
-                      disabled={totalAllocated >= 100}
-                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
-                    >
-                      <Plus className="w-4 h-4" />
-                      +10 coins
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={() => handleSubtractPoints(startup.id)}
+                        disabled={allocations[startup.id] === 0}
+                        className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-3 py-2 rounded-lg flex items-center gap-1 disabled:opacity-50"
+                      >
+                        <Minus className="w-4 h-4" />
+                        10
+                      </Button>
+                      <Button
+                        onClick={() => handleAddPoints(startup.id)}
+                        disabled={totalAllocated >= 100}
+                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-3 py-2 rounded-lg flex items-center gap-1 disabled:opacity-50"
+                      >
+                        <Plus className="w-4 h-4" />
+                        10
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardHeader>
-              
-              <CardContent className="pt-0">
-                <div className="relative z-10">
-                  <FeedbackSelector
-                    value={currentFeedbackPreferences[startup.id] || 'no'}
-                    onChange={(value) => handleFeedbackChange(startup.id, value)}
-                  />
-                </div>
-              </CardContent>
             </Card>
           ))}
         </div>
@@ -123,7 +123,7 @@ export const CoinAllocation = ({ startups, feedbackPreferences, onComplete }: Co
           </Button>
           {totalAllocated !== 100 && (
             <p className="text-red-500 mt-4">
-              Please allocate exactly 100 coins to continue ({100 - totalAllocated} coins remaining)
+              Please allocate exactly 100 MoQi-points to continue ({100 - totalAllocated} MoQi-points remaining)
             </p>
           )}
         </div>
