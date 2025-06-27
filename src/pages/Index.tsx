@@ -5,6 +5,7 @@ import { ResultsOverview } from "@/components/ResultsOverview";
 import { LoginScreen } from "@/components/LoginScreen";
 import { Dashboard } from "@/components/Dashboard";
 import { RegistrationForm } from "@/components/RegistrationForm";
+import { WelcomePage, UserRole } from "@/components/WelcomePage";
 
 export type Startup = {
   id: string;
@@ -97,16 +98,21 @@ const mockStartups: Startup[] = [
 ];
 
 const Index = () => {
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [isRegistered, setIsRegistered] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userData, setUserData] = useState<{ name: string; age: string; study: string } | null>(null);
+  const [userData, setUserData] = useState<{ name: string; age: string; study: string; role: UserRole } | null>(null);
   const [currentStage, setCurrentStage] = useState<"dashboard" | "swiping" | "allocation" | "results">("dashboard");
   const [likedStartups, setLikedStartups] = useState<Startup[]>([]);
   const [allStartups] = useState<Startup[]>(mockStartups);
   const [coinAllocations, setCoinAllocations] = useState<Record<string, number>>({});
   const [feedbackPreferences, setFeedbackPreferences] = useState<Record<string, FeedbackType>>({});
 
-  const handleRegistration = (data: { name: string; age: string; study: string }) => {
+  const handleRoleSelection = (role: UserRole) => {
+    setUserRole(role);
+  };
+
+  const handleRegistration = (data: { name: string; age: string; study: string; role: UserRole }) => {
     setUserData(data);
     setIsRegistered(true);
   };
@@ -143,8 +149,12 @@ const Index = () => {
     setFeedbackPreferences({});
   };
 
+  if (!userRole) {
+    return <WelcomePage onRoleSelected={handleRoleSelection} />;
+  }
+
   if (!isRegistered) {
-    return <RegistrationForm onComplete={handleRegistration} />;
+    return <RegistrationForm userRole={userRole} onComplete={handleRegistration} />;
   }
 
   if (!isLoggedIn) {
