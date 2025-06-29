@@ -4,11 +4,8 @@ import { CoinAllocation } from "@/components/CoinAllocation";
 import { ResultsOverview } from "@/components/ResultsOverview";
 import { LoginScreen } from "@/components/LoginScreen";
 import { Dashboard } from "@/components/Dashboard";
-import { StartupDashboard } from "@/components/StartupDashboard";
 import { RegistrationForm } from "@/components/RegistrationForm";
 import { WelcomePage, UserRole } from "@/components/WelcomePage";
-import { Button } from "@/components/ui/button";
-import { RotateCcw } from "lucide-react";
 
 export type Startup = {
   id: string;
@@ -100,35 +97,22 @@ const mockStartups: Startup[] = [
   }
 ];
 
-// Mock startup statistics data
-const mockStartupStats = {
-  name: "EcoFlow",
-  tagline: "Sustainable energy for everyone",
-  totalVotes: 127,
-  averagePoints: 73,
-  genderDistribution: { male: 45, female: 52, other: 3 },
-  ageDistribution: { "18-25": 35, "26-35": 40, "36-45": 20, "45+": 5 }
-};
-
 const Index = () => {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [isRegistered, setIsRegistered] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userData, setUserData] = useState<any>(null);
+  const [userData, setUserData] = useState<{ name: string; age: string; study: string; role: UserRole } | null>(null);
   const [currentStage, setCurrentStage] = useState<"dashboard" | "swiping" | "allocation" | "results">("dashboard");
   const [likedStartups, setLikedStartups] = useState<Startup[]>([]);
   const [allStartups] = useState<Startup[]>(mockStartups);
   const [coinAllocations, setCoinAllocations] = useState<Record<string, number>>({});
   const [feedbackPreferences, setFeedbackPreferences] = useState<Record<string, FeedbackType>>({});
-  
-  // Role switcher for testing
-  const [viewMode, setViewMode] = useState<"swiper" | "startup">("swiper");
 
   const handleRoleSelection = (role: UserRole) => {
     setUserRole(role);
   };
 
-  const handleRegistration = (data: any) => {
+  const handleRegistration = (data: { name: string; age: string; study: string; role: UserRole }) => {
     setUserData(data);
     setIsRegistered(true);
   };
@@ -165,10 +149,6 @@ const Index = () => {
     setFeedbackPreferences({});
   };
 
-  const toggleViewMode = () => {
-    setViewMode(viewMode === "swiper" ? "startup" : "swiper");
-  };
-
   if (!userRole) {
     return <WelcomePage onRoleSelected={handleRoleSelection} />;
   }
@@ -182,53 +162,36 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-[#D8CCEB]/20 to-[#60BEBB]/10">
-      {/* Role Switcher Button - Only for testing */}
-      <div className="fixed top-4 right-4 z-50">
-        <Button
-          onClick={toggleViewMode}
-          className="bg-[#1E1E1E] hover:bg-[#1E1E1E]/90 text-white flex items-center gap-2"
-        >
-          <RotateCcw className="w-4 h-4" />
-          Switch to {viewMode === "swiper" ? "Startup" : "Swiper"} View
-        </Button>
-      </div>
-
-      {viewMode === "startup" ? (
-        <StartupDashboard startupData={mockStartupStats} />
-      ) : (
-        <>
-          {currentStage === "dashboard" && (
-            <Dashboard 
-              onStartSwiping={handleStartSwiping}
-              likedStartups={likedStartups}
-              coinAllocations={coinAllocations}
-              feedbackPreferences={feedbackPreferences}
-            />
-          )}
-          
-          {currentStage === "swiping" && (
-            <StartupSwiper startups={mockStartups} onComplete={handleSwipeComplete} />
-          )}
-          
-          {currentStage === "allocation" && (
-            <CoinAllocation 
-              startups={likedStartups} 
-              feedbackPreferences={feedbackPreferences}
-              onComplete={handleAllocationComplete}
-            />
-          )}
-          
-          {currentStage === "results" && (
-            <ResultsOverview 
-              allStartups={allStartups}
-              likedStartups={likedStartups}
-              coinAllocations={coinAllocations}
-              feedbackPreferences={feedbackPreferences}
-              onRestart={handleRestart}
-            />
-          )}
-        </>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+      {currentStage === "dashboard" && (
+        <Dashboard 
+          onStartSwiping={handleStartSwiping}
+          likedStartups={likedStartups}
+          coinAllocations={coinAllocations}
+          feedbackPreferences={feedbackPreferences}
+        />
+      )}
+      
+      {currentStage === "swiping" && (
+        <StartupSwiper startups={mockStartups} onComplete={handleSwipeComplete} />
+      )}
+      
+      {currentStage === "allocation" && (
+        <CoinAllocation 
+          startups={likedStartups} 
+          feedbackPreferences={feedbackPreferences}
+          onComplete={handleAllocationComplete}
+        />
+      )}
+      
+      {currentStage === "results" && (
+        <ResultsOverview 
+          allStartups={allStartups}
+          likedStartups={likedStartups}
+          coinAllocations={coinAllocations}
+          feedbackPreferences={feedbackPreferences}
+          onRestart={handleRestart}
+        />
       )}
     </div>
   );

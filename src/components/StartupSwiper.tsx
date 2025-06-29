@@ -55,25 +55,25 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-white via-[#D8CCEB]/20 to-[#60BEBB]/10">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
       <div className="w-full max-w-lg mx-auto">
         {/* Progress bar with streak */}
         <div className="mb-6">
           <div className="flex justify-between items-center text-sm mb-3">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#60BEBB]" />
-              <span className="font-bold text-[#60BEBB] text-lg">
+              <Sparkles className="w-4 h-4 text-purple-500" />
+              <span className="font-bold text-purple-600 text-lg">
                 {currentIndex + 1}/{startups.length}
               </span>
             </div>
-            <div className="flex items-center gap-2 bg-gradient-to-r from-[#60BEBB] to-[#D8CCEB] text-white px-4 py-2 rounded-full text-sm font-bold">
+            <div className="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-4 py-2 rounded-full text-sm font-bold">
               <Zap className="w-4 h-4" />
               {likedStartups.length} in portfolio
             </div>
           </div>
-          <div className="w-full bg-[#1E1E1E]/10 rounded-full h-4 overflow-hidden shadow-inner">
+          <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
             <div 
-              className="bg-gradient-to-r from-[#60BEBB] to-[#D8CCEB] h-4 rounded-full transition-all duration-500 relative"
+              className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-600 h-4 rounded-full transition-all duration-500 relative"
               style={{ width: `${progress}%` }}
             >
               <div className="absolute inset-0 bg-white/30 animate-pulse rounded-full"></div>
@@ -83,11 +83,11 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
 
         {/* Startup card */}
         <Card 
-          className={`relative overflow-visible shadow-2xl transition-all duration-300 cursor-pointer group mb-6 bg-white border-[#60BEBB]/30 ${
+          className={`relative overflow-visible shadow-2xl transition-all duration-300 cursor-pointer group mb-6 ${
             swipeDirection === 'like' 
-              ? 'transform scale-105 rotate-6 border-4 border-[#60BEBB]' 
+              ? 'transform scale-105 rotate-6 border-4 border-green-400' 
               : swipeDirection === 'dislike'
-              ? 'transform scale-95 -rotate-6 border-4 border-[#1E1E1E]/30'
+              ? 'transform scale-95 -rotate-6 border-4 border-red-400'
               : 'hover:scale-[1.02] hover:shadow-3xl'
           }`}
           onClick={() => setShowModal(true)}
@@ -100,12 +100,12 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
                 swipeDirection ? 'blur-sm' : 'group-hover:scale-110'
               }`}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1E1E1E]/80 via-[#1E1E1E]/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
             
             {/* Swipe overlay */}
             {swipeDirection && (
               <div className={`absolute inset-0 flex items-center justify-center ${
-                swipeDirection === 'like' ? 'bg-[#60BEBB]/80' : 'bg-[#1E1E1E]/60'
+                swipeDirection === 'like' ? 'bg-green-500/80' : 'bg-red-500/80'
               }`}>
                 <div className="text-white text-6xl font-bold animate-bounce">
                   {swipeDirection === 'like' ? '💖' : '👋'}
@@ -118,7 +118,7 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
               <div className="bg-white/20 backdrop-blur-sm rounded-full p-2 text-white hover:bg-white/30 transition-colors">
                 <Info className="w-4 h-4" />
               </div>
-              <div className="bg-[#60BEBB]/80 backdrop-blur-sm rounded-full px-3 py-1 text-white text-sm font-bold">
+              <div className="bg-purple-500/80 backdrop-blur-sm rounded-full px-3 py-1 text-white text-sm font-bold">
                 {currentStartup.industry}
               </div>
             </div>
@@ -136,18 +136,18 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
           </div>
 
           <CardContent className="p-6">
-            <p className="text-[#1E1E1E]/80 mb-4 leading-relaxed text-lg">{currentStartup.description}</p>
+            <p className="text-gray-700 mb-4 leading-relaxed text-lg">{currentStartup.description}</p>
             <div className="flex gap-2 mb-4">
-              <span className="px-3 py-1 bg-[#60BEBB]/10 text-[#60BEBB] rounded-full text-sm font-medium border border-[#60BEBB]/20">
+              <span className="px-3 py-1 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 rounded-full text-sm font-medium">
                 Est. {currentStartup.founded}
               </span>
-              <span className="px-3 py-1 bg-[#D8CCEB]/10 text-[#D8CCEB] rounded-full text-sm font-medium border border-[#D8CCEB]/20">
+              <span className="px-3 py-1 bg-gradient-to-r from-green-100 to-green-200 text-green-800 rounded-full text-sm font-medium">
                 {currentStartup.employees} team
               </span>
             </div>
 
             <div className="text-center mt-3">
-              <div className="text-xs text-[#1E1E1E]/50 flex items-center justify-center gap-1">
+              <div className="text-xs text-gray-500 flex items-center justify-center gap-1">
                 <Sparkles className="w-3 h-3" />
                 Tap anywhere for full details
                 <Sparkles className="w-3 h-3" />
@@ -163,7 +163,7 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
               e.stopPropagation();
               handleDislike();
             }}
-            className="w-20 h-20 rounded-full bg-gradient-to-br from-[#1E1E1E]/70 to-[#1E1E1E] hover:from-[#1E1E1E]/80 hover:to-[#1E1E1E] text-white shadow-2xl hover:shadow-[#1E1E1E]/25 transition-all duration-200 hover:scale-110 group border-4 border-white"
+            className="w-20 h-20 rounded-full bg-gradient-to-br from-red-400 to-red-600 hover:from-red-500 hover:to-red-700 text-white shadow-2xl hover:shadow-red-500/25 transition-all duration-200 hover:scale-110 group border-4 border-white"
           >
             <X className="w-8 h-8 group-hover:rotate-12 transition-transform" />
           </Button>
@@ -173,7 +173,7 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
               e.stopPropagation();
               handleLike();
             }}
-            className="w-20 h-20 rounded-full bg-gradient-to-br from-[#60BEBB] to-[#D8CCEB] hover:from-[#60BEBB]/90 hover:to-[#D8CCEB]/90 text-white shadow-2xl hover:shadow-[#60BEBB]/25 transition-all duration-200 hover:scale-110 group border-4 border-white"
+            className="w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white shadow-2xl hover:shadow-green-500/25 transition-all duration-200 hover:scale-110 group border-4 border-white"
           >
             <Heart className="w-8 h-8 group-hover:scale-125 transition-transform" />
           </Button>
