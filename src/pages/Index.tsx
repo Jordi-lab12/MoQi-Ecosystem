@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { StartupSwiper } from "@/components/StartupSwiper";
 import { CoinAllocation } from "@/components/CoinAllocation";
@@ -6,6 +7,8 @@ import { LoginScreen } from "@/components/LoginScreen";
 import { Dashboard } from "@/components/Dashboard";
 import { RegistrationForm } from "@/components/RegistrationForm";
 import { WelcomePage, UserRole } from "@/components/WelcomePage";
+import { StartupDashboard } from "@/components/StartupDashboard";
+import { Button } from "@/components/ui/button";
 
 export type Startup = {
   id: string;
@@ -107,6 +110,10 @@ const Index = () => {
   const [allStartups] = useState<Startup[]>(mockStartups);
   const [coinAllocations, setCoinAllocations] = useState<Record<string, number>>({});
   const [feedbackPreferences, setFeedbackPreferences] = useState<Record<string, FeedbackType>>({});
+  
+  // Test mode for switching between views
+  const [testMode, setTestMode] = useState(false);
+  const [testRole, setTestRole] = useState<UserRole>("swiper");
 
   const handleRoleSelection = (role: UserRole) => {
     setUserRole(role);
@@ -149,6 +156,48 @@ const Index = () => {
     setFeedbackPreferences({});
   };
 
+  // Test mode toggle
+  if (testMode) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+        <div className="fixed top-4 right-4 z-50 flex gap-2">
+          <Button
+            onClick={() => setTestRole("swiper")}
+            variant={testRole === "swiper" ? "default" : "outline"}
+            className="bg-[#60BEBB] hover:bg-[#4a9a96] text-white"
+          >
+            Swiper View
+          </Button>
+          <Button
+            onClick={() => setTestRole("startup")}
+            variant={testRole === "startup" ? "default" : "outline"}
+            className="bg-[#D8CCEB] hover:bg-[#c5b8e0] text-[#1E1E1E]"
+          >
+            Startup View
+          </Button>
+          <Button
+            onClick={() => setTestMode(false)}
+            variant="outline"
+            className="border-gray-300"
+          >
+            Exit Test Mode
+          </Button>
+        </div>
+        
+        {testRole === "startup" ? (
+          <StartupDashboard />
+        ) : (
+          <Dashboard 
+            onStartSwiping={handleStartSwiping}
+            likedStartups={likedStartups}
+            coinAllocations={coinAllocations}
+            feedbackPreferences={feedbackPreferences}
+          />
+        )}
+      </div>
+    );
+  }
+
   if (!userRole) {
     return <WelcomePage onRoleSelected={handleRoleSelection} />;
   }
@@ -161,8 +210,40 @@ const Index = () => {
     return <LoginScreen onLogin={handleLogin} />;
   }
 
+  // Show startup dashboard for startup users
+  if (userRole === "startup") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+        {/* Test mode button - only visible for demo purposes */}
+        <div className="fixed top-4 right-4 z-50">
+          <Button
+            onClick={() => setTestMode(true)}
+            variant="outline"
+            size="sm"
+            className="border-gray-300 text-xs"
+          >
+            Test Mode
+          </Button>
+        </div>
+        <StartupDashboard />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+      {/* Test mode button - only visible for demo purposes */}
+      <div className="fixed top-4 right-4 z-50">
+        <Button
+          onClick={() => setTestMode(true)}
+          variant="outline"
+          size="sm"
+          className="border-gray-300 text-xs"
+        >
+          Test Mode
+        </Button>
+      </div>
+
       {currentStage === "dashboard" && (
         <Dashboard 
           onStartSwiping={handleStartSwiping}
