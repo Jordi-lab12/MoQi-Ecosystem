@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -61,7 +60,11 @@ const pointsData = [
   { range: "31-40", count: 2 },
 ];
 
-export const StartupDashboard = () => {
+interface StartupDashboardProps {
+  startupName?: string;
+}
+
+export const StartupDashboard = ({ startupName = "Your Startup" }: StartupDashboardProps) => {
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedVoters, setSelectedVoters] = useState<string[]>([]);
   const [feedbackType, setFeedbackType] = useState<string>("");
@@ -124,7 +127,7 @@ export const StartupDashboard = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Startup Dashboard</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">{startupName} Dashboard</h1>
           <p className="text-gray-600">Manage your startup's feedback and analytics</p>
         </div>
 

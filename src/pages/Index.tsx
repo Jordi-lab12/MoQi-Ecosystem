@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { StartupSwiper } from "@/components/StartupSwiper";
 import { CoinAllocation } from "@/components/CoinAllocation";
@@ -185,7 +184,7 @@ const Index = () => {
         </div>
         
         {testRole === "startup" ? (
-          <StartupDashboard />
+          <StartupDashboard startupName={userData?.name} />
         ) : (
           <Dashboard 
             onStartSwiping={handleStartSwiping}
@@ -225,7 +224,7 @@ const Index = () => {
             Test Mode
           </Button>
         </div>
-        <StartupDashboard />
+        <StartupDashboard startupName={userData?.name} />
       </div>
     );
   }
