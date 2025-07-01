@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { StartupSwiper } from "@/components/StartupSwiper";
 import { CoinAllocation } from "@/components/CoinAllocation";
@@ -40,6 +39,7 @@ const AppContent = () => {
     currentSwiperId,
     currentStartupId,
     startupProfiles,
+    swiperInteractions,
     logout
   } = useAppData();
 
@@ -56,6 +56,12 @@ const AppContent = () => {
   const isLoggedIn = currentSwiperId || currentStartupId;
   const currentUserRole = currentSwiperId ? "swiper" : currentStartupId ? "startup" : null;
 
+  // Debug logging
+  console.log("Current user role:", currentUserRole);
+  console.log("Current swiper ID:", currentSwiperId);
+  console.log("Current startup ID:", currentStartupId);
+  console.log("All swiper interactions:", swiperInteractions);
+
   const handleRoleSelection = (role: UserRole) => {
     setUserRole(role);
     setShowRegistrationScreen(true);
@@ -68,10 +74,13 @@ const AppContent = () => {
   };
 
   const handleRegistration = (data: any) => {
+    console.log("Registration data:", data);
     setUserData(data);
     
     if (data.role === "swiper") {
       const swiperId = `swiper_${Date.now()}`;
+      console.log("Creating swiper with ID:", swiperId);
+      
       addSwiperProfile({
         id: swiperId,
         name: data.name,
@@ -92,6 +101,7 @@ const AppContent = () => {
       setUserRole("swiper");
     } else if (data.role === "startup") {
       const startupId = `startup_${Date.now()}`;
+      console.log("Creating startup with ID:", startupId);
       const defaultImage = `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000000)}?w=400&h=300&fit=crop`;
       
       addStartupProfile({
@@ -150,6 +160,9 @@ const AppContent = () => {
   };
 
   const handleSwipeComplete = (liked: Startup[], preferences: Record<string, FeedbackType>) => {
+    console.log("Swipe complete - liked startups:", liked);
+    console.log("Feedback preferences:", preferences);
+    
     setLikedStartups(liked);
     setFeedbackPreferences(preferences);
     if (liked.length > 0) {
@@ -160,13 +173,18 @@ const AppContent = () => {
   };
 
   const handleAllocationComplete = (allocations: Record<string, number>, finalFeedbackPreferences: Record<string, FeedbackType>) => {
+    console.log("Allocation complete:", allocations);
+    console.log("Final feedback preferences:", finalFeedbackPreferences);
+    
     setCoinAllocations(allocations);
     setFeedbackPreferences(finalFeedbackPreferences);
     
     if (currentSwiperId && userData) {
+      console.log("Adding swiper interactions for swiper:", currentSwiperId);
       Object.entries(allocations).forEach(([startupId, coinAllocation]) => {
         const startup = likedStartups.find(s => s.id === startupId);
         if (startup) {
+          console.log("Adding interaction for startup:", startupId, "with allocation:", coinAllocation);
           addSwiperInteraction({
             swiperId: currentSwiperId,
             swiperName: userData.name,
@@ -192,6 +210,8 @@ const AppContent = () => {
   const availableStartups: Startup[] = startupProfiles.map(profile => ({
     ...profile
   }));
+
+  console.log("Available startups:", availableStartups);
 
   // Show login screen
   if (showLoginScreen) {

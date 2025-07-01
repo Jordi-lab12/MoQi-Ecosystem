@@ -24,6 +24,10 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
     swiperInteractions
   } = useAppData();
 
+  // Debug logging
+  console.log("StartupDashboard - Current startup ID:", currentStartupId);
+  console.log("StartupDashboard - All swiper interactions:", swiperInteractions);
+
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
   const [selectedSwiperId, setSelectedSwiperId] = useState("");
   const [feedbackMessage, setFeedbackMessage] = useState("");
@@ -32,6 +36,9 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
 
   const currentStartup = getCurrentStartupProfile();
   const startupInteractions = currentStartupId ? getSwiperInteractionsForStartup(currentStartupId) : [];
+  
+  console.log("StartupDashboard - Current startup profile:", currentStartup);
+  console.log("StartupDashboard - Startup interactions:", startupInteractions);
   
   // Get swipers who liked this startup and invested coins
   const swipersWhoLiked = startupInteractions.filter(interaction => 
@@ -43,6 +50,9 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
     interaction.startupId === currentStartupId && 
     (interaction.feedbackPreference === "group" || interaction.feedbackPreference === "all")
   );
+
+  console.log("StartupDashboard - Swipers who liked:", swipersWhoLiked);
+  console.log("StartupDashboard - Swipers open to feedback:", swipersOpenToFeedback);
 
   // Calculate total coins received
   const totalCoins = swipersWhoLiked.reduce((sum, interaction) => sum + interaction.coinAllocation, 0);
@@ -103,6 +113,14 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
               <p className="text-gray-600 text-lg">{currentStartup.tagline}</p>
             </div>
           </div>
+        </div>
+
+        {/* Debug Info */}
+        <div className="mb-8 p-4 bg-yellow-100 rounded-lg">
+          <h3 className="font-bold text-yellow-800 mb-2">Debug Info:</h3>
+          <p className="text-yellow-700">Total interactions: {startupInteractions.length}</p>
+          <p className="text-yellow-700">Swipers who liked: {swipersWhoLiked.length}</p>
+          <p className="text-yellow-700">Open to feedback: {swipersOpenToFeedback.length}</p>
         </div>
 
         {/* Analytics Overview */}

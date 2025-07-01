@@ -78,6 +78,7 @@ export const RegistrationForm = ({ userRole, onComplete, onBack }: RegistrationF
       case "swiper": return Heart;
       case "professor": return GraduationCap;
       case "startup": return Building2;
+      default: return User;
     }
   };
 
@@ -86,6 +87,7 @@ export const RegistrationForm = ({ userRole, onComplete, onBack }: RegistrationF
       case "swiper": return "from-pink-600 to-red-600";
       case "professor": return "from-blue-600 to-indigo-600";
       case "startup": return "from-green-600 to-emerald-600";
+      default: return "from-gray-600 to-gray-700";
     }
   };
 
@@ -94,6 +96,7 @@ export const RegistrationForm = ({ userRole, onComplete, onBack }: RegistrationF
       case "swiper": return "from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600";
       case "professor": return "from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600";
       case "startup": return "from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600";
+      default: return "from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700";
     }
   };
 
