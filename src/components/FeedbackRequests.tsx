@@ -1,9 +1,9 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, User, MessageCircle, CheckCircle, X } from "lucide-react";
+import { ArrowLeft, Calendar, MessageCircle, CheckCircle, XCircle, Clock, ExternalLink } from "lucide-react";
 import { useAppData } from "@/contexts/AppDataContext";
 
 interface FeedbackRequestsProps {
@@ -12,272 +12,136 @@ interface FeedbackRequestsProps {
 
 export const FeedbackRequests = ({ onBack }: FeedbackRequestsProps) => {
   const { 
-    currentSwiperId, 
     getFeedbackRequestsForSwiper, 
-    updateFeedbackRequest 
+    updateFeedbackRequest, 
+    currentSwiperId 
   } = useAppData();
 
-  const [requests, setRequests] = useState(() => {
-    if (currentSwiperId) {
-      return getFeedbackRequestsForSwiper(currentSwiperId);
-    }
-    // Mock data for demonstration
-    return [
-      {
-        id: '1',
-        startupId: '1',
-        swiperId: 'demo',
-        startupName: 'TechFlow AI',
-        feedbackType: 'Product Feedback',
-        scheduledDate: '2024-01-15',
-        scheduledTime: '14:30',
-        message: 'We would love to get your feedback on our new AI-powered workflow automation tool.',
-        status: 'pending' as const
-      },
-      {
-        id: '2',
-        startupId: '2',
-        swiperId: 'demo',
-        startupName: 'GreenEnergy Solutions',
-        feedbackType: 'Business Model Feedback',
-        scheduledDate: '2024-01-18',
-        scheduledTime: '10:00',
-        message: 'Looking for insights on our renewable energy marketplace business model.',
-        status: 'pending' as const
-      },
-      {
-        id: '3',
-        startupId: '3',
-        swiperId: 'demo',
-        startupName: 'HealthTech Innovations',
-        feedbackType: 'Market Research',
-        scheduledDate: '2024-01-12',
-        scheduledTime: '16:00',
-        status: 'accepted' as const,
-        teamsLink: 'https://teams.microsoft.com/l/meetup-join/19%3Ameeting_example'
-      }
-    ];
-  });
+  const requests = currentSwiperId ? getFeedbackRequestsForSwiper(currentSwiperId) : [];
 
-  const handleAccept = (requestId: string) => {
-    const teamsLink = `https://teams.microsoft.com/l/meetup-join/19%3Ameeting_${requestId}`;
-    
-    setRequests(prev => prev.map(req => 
-      req.id === requestId ? { ...req, status: 'accepted' as const, teamsLink } : req
-    ));
-    
-    if (currentSwiperId) {
-      updateFeedbackRequest(requestId, { 
-        status: 'accepted', 
-        teamsLink 
-      });
-    }
+  const handleAcceptRequest = (requestId: string) => {
+    const teamsLink = `https://teams.microsoft.com/l/meetup-join/meeting_${Math.random().toString(36).substr(2, 9)}`;
+    updateFeedbackRequest(requestId, { 
+      status: 'accepted',
+      teamsLink: teamsLink
+    });
   };
 
-  const handleDecline = (requestId: string) => {
-    setRequests(prev => prev.map(req => 
-      req.id === requestId ? { ...req, status: 'declined' as const } : req
-    ));
-    
-    if (currentSwiperId) {
-      updateFeedbackRequest(requestId, { status: 'declined' });
-    }
+  const handleDeclineRequest = (requestId: string) => {
+    updateFeedbackRequest(requestId, { status: 'declined' });
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
+      case 'pending':
+        return <Badge className="bg-yellow-100 text-yellow-800 border-0"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
       case 'accepted':
-        return 'bg-green-100 text-green-700 border-green-200';
+        return <Badge className="bg-green-100 text-green-800 border-0"><CheckCircle className="w-3 h-3 mr-1" />Accepted</Badge>;
       case 'declined':
-        return 'bg-red-100 text-red-700 border-red-200';
+        return <Badge className="bg-red-100 text-red-800 border-0"><XCircle className="w-3 h-3 mr-1" />Declined</Badge>;
       default:
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+        return null;
     }
   };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'accepted':
-        return <CheckCircle className="w-4 h-4" />;
-      case 'declined':
-        return <X className="w-4 h-4" />;
-      default:
-        return <Clock className="w-4 h-4" />;
-    }
-  };
-
-  const pendingRequests = requests.filter(req => req.status === 'pending');
-  const respondedRequests = requests.filter(req => req.status !== 'pending');
 
   return (
-    <div className="min-h-screen p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
+    <div className="min-h-screen p-6 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <Button
-            onClick={onBack}
-            variant="outline"
-            className="border-purple-200 hover:border-purple-300 hover:bg-purple-50 text-purple-700"
-          >
-            ← Back to Dashboard
+          <Button onClick={onBack} variant="outline" size="sm">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
           </Button>
           <div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
               Feedback Requests
             </h1>
-            <p className="text-gray-600 mt-1">
-              Review and respond to feedback requests from startups
-            </p>
+            <p className="text-gray-600">Manage your meeting requests from startups</p>
           </div>
         </div>
 
-        {/* Pending Requests */}
-        {pendingRequests.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-purple-600" />
-              Pending Requests ({pendingRequests.length})
-            </h2>
-            <div className="space-y-4">
-              {pendingRequests.map((request) => (
-                <Card key={request.id} className="bg-white/80 backdrop-blur-sm border-purple-200 hover:border-purple-300 transition-all duration-300">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-lg text-gray-800 flex items-center gap-2">
-                          <User className="w-5 h-5 text-purple-600" />
-                          {request.startupName}
-                        </CardTitle>
-                        <CardDescription className="mt-1">
-                          Requesting: {request.feedbackType}
-                        </CardDescription>
-                      </div>
-                      <Badge className={`${getStatusColor(request.status)} flex items-center gap-1`}>
-                        {getStatusIcon(request.status)}
-                        {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="space-y-3">
-                      {/* Scheduling Info */}
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          {new Date(request.scheduledDate).toLocaleDateString('en-US', { 
-                            weekday: 'long', 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
-                          })}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          {request.scheduledTime}
-                        </div>
-                      </div>
-
-                      {/* Message */}
-                      {request.message && (
-                        <div className="bg-gray-50 p-3 rounded-lg">
-                          <div className="flex items-start gap-2">
-                            <MessageCircle className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                            <p className="text-sm text-gray-700">{request.message}</p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Action Buttons */}
-                      <div className="flex gap-3 pt-2">
-                        <Button
-                          onClick={() => handleAccept(request.id)}
-                          className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
-                        >
-                          <CheckCircle className="w-4 h-4" />
-                          Accept
-                        </Button>
-                        <Button
-                          onClick={() => handleDecline(request.id)}
-                          variant="outline"
-                          className="border-red-200 hover:border-red-300 hover:bg-red-50 text-red-700 flex items-center gap-2"
-                        >
-                          <X className="w-4 h-4" />
-                          Decline
-                        </Button>
+        {requests.length > 0 ? (
+          <div className="space-y-6">
+            {requests.map((request) => (
+              <Card key={request.id} className="shadow-lg border-purple-200">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-xl text-purple-800">{request.startupName}</CardTitle>
+                      <div className="flex items-center gap-2 mt-2">
+                        {getStatusBadge(request.status)}
+                        <Badge variant="outline" className="text-xs">
+                          <Calendar className="w-3 h-3 mr-1" />
+                          {request.scheduledDate} at {request.scheduledTime}
+                        </Badge>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {request.message && (
+                    <div className="mb-4 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                      <p className="text-sm text-gray-700">
+                        <MessageCircle className="w-4 h-4 inline mr-2" />
+                        {request.message}
+                      </p>
+                    </div>
+                  )}
+
+                  {request.status === 'pending' && (
+                    <div className="flex gap-3">
+                      <Button
+                        onClick={() => handleAcceptRequest(request.id)}
+                        className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+                      >
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Accept Meeting
+                      </Button>
+                      <Button
+                        onClick={() => handleDeclineRequest(request.id)}
+                        variant="outline"
+                        className="border-red-300 text-red-600 hover:bg-red-50"
+                      >
+                        <XCircle className="w-4 h-4 mr-2" />
+                        Decline
+                      </Button>
+                    </div>
+                  )}
+
+                  {request.status === 'accepted' && request.teamsLink && (
+                    <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                      <p className="text-sm text-green-800 mb-3">
+                        ✅ Meeting accepted! Join the call at the scheduled time:
+                      </p>
+                      <Button
+                        onClick={() => window.open(request.teamsLink, '_blank')}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Join Teams Meeting
+                      </Button>
+                    </div>
+                  )}
+
+                  {request.status === 'declined' && (
+                    <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                      <p className="text-sm text-red-800">
+                        ❌ You declined this meeting request.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        )}
-
-        {/* Responded Requests */}
-        {respondedRequests.length > 0 && (
-          <div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <MessageCircle className="w-5 h-5 text-purple-600" />
-              Previous Responses ({respondedRequests.length})
-            </h2>
-            <div className="space-y-4">
-              {respondedRequests.map((request) => (
-                <Card key={request.id} className="bg-white/60 backdrop-blur-sm border-gray-200">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-base text-gray-700 flex items-center gap-2">
-                          <User className="w-4 h-4 text-gray-500" />
-                          {request.startupName}
-                        </CardTitle>
-                        <CardDescription className="text-sm">
-                          {request.feedbackType}
-                        </CardDescription>
-                      </div>
-                      <Badge className={`${getStatusColor(request.status)} flex items-center gap-1`}>
-                        {getStatusIcon(request.status)}
-                        {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="flex items-center gap-4 text-sm text-gray-500 mb-2">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {new Date(request.scheduledDate).toLocaleDateString()}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {request.scheduledTime}
-                      </div>
-                    </div>
-                    {request.teamsLink && request.status === 'accepted' && (
-                      <div className="mt-2">
-                        <Button
-                          onClick={() => window.open(request.teamsLink, '_blank')}
-                          variant="outline"
-                          size="sm"
-                          className="border-blue-200 hover:border-blue-300 hover:bg-blue-50 text-blue-700"
-                        >
-                          Join Teams Meeting
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {requests.length === 0 && (
-          <Card className="bg-white/60 backdrop-blur-sm border-purple-200 text-center py-12">
+        ) : (
+          <Card className="text-center py-12">
             <CardContent>
-              <MessageCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-600 mb-2">No Feedback Requests</h3>
+              <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">No Feedback Requests</h3>
               <p className="text-gray-500">
-                You haven't received any feedback requests yet. Keep swiping to discover more startups!
+                When startups want to connect with you for feedback, their requests will appear here.
               </p>
             </CardContent>
           </Card>

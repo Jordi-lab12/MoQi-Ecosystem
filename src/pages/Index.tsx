@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { StartupSwiper } from "@/components/StartupSwiper";
 import { CoinAllocation } from "@/components/CoinAllocation";
@@ -10,7 +9,7 @@ import { WelcomePage, UserRole } from "@/components/WelcomePage";
 import { StartupDashboard } from "@/components/StartupDashboard";
 import { Button } from "@/components/ui/button";
 import { AppDataProvider, useAppData } from "@/contexts/AppDataContext";
-import { LogOut } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 
 export type Startup = {
   id: string;
@@ -33,6 +32,7 @@ const AppContent = () => {
   const { 
     addSwiperProfile, 
     addStartupProfile,
+    addUserCredentials,
     setCurrentSwiper, 
     setCurrentStartup, 
     addSwiperInteraction,
@@ -50,6 +50,7 @@ const AppContent = () => {
   const [likedStartups, setLikedStartups] = useState<Startup[]>([]);
   const [coinAllocations, setCoinAllocations] = useState<Record<string, number>>({});
   const [feedbackPreferences, setFeedbackPreferences] = useState<Record<string, FeedbackType>>({});
+  const [showLoginScreen, setShowLoginScreen] = useState(false);
   
   // Test mode for switching between views
   const [testMode, setTestMode] = useState(false);
@@ -69,8 +70,18 @@ const AppContent = () => {
         name: data.name,
         age: data.age,
         study: data.study,
-        gender: "Male" // Default for now, could be added to registration
+        gender: "Male", // Default for now, could be added to registration
+        username: data.username
       });
+      
+      // Add credentials
+      addUserCredentials({
+        username: data.username,
+        password: data.password,
+        role: "swiper",
+        profileId: swiperId
+      });
+      
       setCurrentSwiper(swiperId);
     } else if (data.role === "startup") {
       const startupId = `startup_${Date.now()}`;
@@ -89,17 +100,29 @@ const AppContent = () => {
         founded: data.founded,
         employees: data.employees,
         logo: "🚀", // Default logo
-        image: defaultImage
+        image: defaultImage,
+        username: data.username
       });
+      
+      // Add credentials
+      addUserCredentials({
+        username: data.username,
+        password: data.password,
+        role: "startup",
+        profileId: startupId
+      });
+      
       setCurrentStartup(startupId);
     }
     
     setIsRegistered(true);
   };
 
-  const handleLogin = () => {
+  const handleLogin = (role: 'swiper' | 'startup') => {
     setIsLoggedIn(true);
+    setUserRole(role);
     setCurrentStage("dashboard");
+    setShowLoginScreen(false);
   };
 
   const handleLogout = () => {
@@ -113,6 +136,14 @@ const AppContent = () => {
     setCoinAllocations({});
     setFeedbackPreferences({});
     setTestMode(false);
+    setShowLoginScreen(false);
+  };
+
+  const handleShowLogin = () => {
+    setShowLoginScreen(true);
+    setUserRole(null);
+    setIsRegistered(false);
+    setIsLoggedIn(false);
   };
 
   const handleStartSwiping = () => {
@@ -164,6 +195,11 @@ const AppContent = () => {
   const availableStartups: Startup[] = startupProfiles.map(profile => ({
     ...profile
   }));
+
+  // Show login screen if requested
+  if (showLoginScreen) {
+    return <LoginScreen onLogin={handleLogin} />;
+  }
 
   // Test mode toggle
   if (testMode) {
@@ -223,8 +259,17 @@ const AppContent = () => {
   if (userRole === "startup") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-        {/* Logout and Test mode buttons */}
+        {/* Logout, Login and Test mode buttons */}
         <div className="fixed top-4 right-4 z-50 flex gap-2">
+          <Button
+            onClick={handleShowLogin}
+            variant="outline"
+            size="sm"
+            className="border-blue-300 text-blue-600 hover:bg-blue-50"
+          >
+            <User className="w-4 h-4 mr-1" />
+            Login
+          </Button>
           <Button
             onClick={handleLogout}
             variant="outline"
@@ -250,8 +295,17 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
-      {/* Logout and Test mode buttons */}
+      {/* Logout, Login and Test mode buttons */}
       <div className="fixed top-4 right-4 z-50 flex gap-2">
+        <Button
+          onClick={handleShowLogin}
+          variant="outline"
+          size="sm"
+          className="border-blue-300 text-blue-600 hover:bg-blue-50"
+        >
+          <User className="w-4 h-4 mr-1" />
+          Login
+        </Button>
         <Button
           onClick={handleLogout}
           variant="outline"

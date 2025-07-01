@@ -14,6 +14,8 @@ interface RegistrationFormProps {
 }
 
 export const RegistrationForm = ({ userRole, onComplete }: RegistrationFormProps) => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [study, setStudy] = useState("");
@@ -31,11 +33,18 @@ export const RegistrationForm = ({ userRole, onComplete }: RegistrationFormProps
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!username.trim() || !password.trim()) {
+      alert("Username and password are required");
+      return;
+    }
+    
     if (userRole === "startup") {
       // Validate startup fields
       if (name.trim() && tagline.trim() && description.trim() && usp.trim() && 
           mission.trim() && vision.trim() && industry.trim() && founded.trim() && employees.trim()) {
         onComplete({ 
+          username: username.trim(),
+          password: password.trim(),
           name: name.trim(), 
           tagline: tagline.trim(),
           description: description.trim(),
@@ -49,9 +58,16 @@ export const RegistrationForm = ({ userRole, onComplete }: RegistrationFormProps
         });
       }
     } else {
-      // Validate swiper/professor fields
+      // Validate swiper fields (both swiper and professor use same form now)
       if (name.trim() && age.trim() && study.trim()) {
-        onComplete({ name: name.trim(), age: age.trim(), study: study.trim(), role: userRole });
+        onComplete({ 
+          username: username.trim(),
+          password: password.trim(),
+          name: name.trim(), 
+          age: age.trim(), 
+          study: study.trim(), 
+          role: "swiper" // Both professor and swiper are treated as swipers
+        });
       }
     }
   };
@@ -112,10 +128,38 @@ export const RegistrationForm = ({ userRole, onComplete }: RegistrationFormProps
           <div className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-r ${getRoleColor()} flex items-center justify-center mb-4`}>
             <RoleIcon className="w-8 h-8 text-white" />
           </div>
-          <p className="text-gray-600">Tell us about {userRole === "startup" ? "your startup" : "yourself"}</p>
+          <p className="text-gray-600">Create your account</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Username and Password fields for all users */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Choose a username"
+                  className="mt-1"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Choose a password"
+                  className="mt-1"
+                  required
+                />
+              </div>
+            </div>
+
             {userRole === "startup" ? (
               <>
                 <div>
@@ -281,7 +325,7 @@ export const RegistrationForm = ({ userRole, onComplete }: RegistrationFormProps
               className={`w-full bg-gradient-to-r ${getRoleButtonColor()}`}
             >
               <User className="w-4 h-4 mr-2" />
-              Continue
+              Create Account
             </Button>
           </form>
         </CardContent>

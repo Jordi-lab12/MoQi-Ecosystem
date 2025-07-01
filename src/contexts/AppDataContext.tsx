@@ -2,12 +2,20 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { FeedbackType } from '@/pages/Index';
 
+export interface UserCredentials {
+  username: string;
+  password: string;
+  role: 'swiper' | 'startup';
+  profileId: string;
+}
+
 export interface SwiperProfile {
   id: string;
   name: string;
   age: string;
   study: string;
   gender: string;
+  username: string;
 }
 
 export interface StartupProfile {
@@ -23,6 +31,7 @@ export interface StartupProfile {
   employees: string;
   logo: string;
   image: string;
+  username: string;
 }
 
 export interface FeedbackRequest {
@@ -53,11 +62,14 @@ interface AppDataContextType {
   startupProfiles: StartupProfile[];
   feedbackRequests: FeedbackRequest[];
   swiperInteractions: SwiperStartupInteraction[];
+  userCredentials: UserCredentials[];
   currentSwiperId: string | null;
   currentStartupId: string | null;
   
   addSwiperProfile: (profile: SwiperProfile) => void;
   addStartupProfile: (profile: StartupProfile) => void;
+  addUserCredentials: (credentials: UserCredentials) => void;
+  authenticateUser: (username: string, password: string) => { success: boolean; user?: UserCredentials };
   setCurrentSwiper: (id: string) => void;
   setCurrentStartup: (id: string) => void;
   addSwiperInteraction: (interaction: SwiperStartupInteraction) => void;
@@ -86,6 +98,7 @@ export const AppDataProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [startupProfiles, setStartupProfiles] = useState<StartupProfile[]>([]);
   const [feedbackRequests, setFeedbackRequests] = useState<FeedbackRequest[]>([]);
   const [swiperInteractions, setSwiperInteractions] = useState<SwiperStartupInteraction[]>([]);
+  const [userCredentials, setUserCredentials] = useState<UserCredentials[]>([]);
   const [currentSwiperId, setCurrentSwiperId] = useState<string | null>(null);
   const [currentStartupId, setCurrentStartupId] = useState<string | null>(null);
 
@@ -95,6 +108,29 @@ export const AppDataProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const addStartupProfile = (profile: StartupProfile) => {
     setStartupProfiles(prev => [...prev, profile]);
+  };
+
+  const addUserCredentials = (credentials: UserCredentials) => {
+    setUserCredentials(prev => [...prev, credentials]);
+  };
+
+  const authenticateUser = (username: string, password: string) => {
+    const user = userCredentials.find(cred => 
+      cred.username === username && cred.password === password
+    );
+    
+    if (user) {
+      if (user.role === 'swiper') {
+        setCurrentSwiperId(user.profileId);
+        setCurrentStartupId(null);
+      } else {
+        setCurrentStartupId(user.profileId);
+        setCurrentSwiperId(null);
+      }
+      return { success: true, user };
+    }
+    
+    return { success: false };
   };
 
   const setCurrentSwiper = (id: string) => {
@@ -166,10 +202,13 @@ export const AppDataProvider: React.FC<{ children: ReactNode }> = ({ children })
       startupProfiles,
       feedbackRequests,
       swiperInteractions,
+      userCredentials,
       currentSwiperId,
       currentStartupId,
       addSwiperProfile,
       addStartupProfile,
+      addUserCredentials,
+      authenticateUser,
       setCurrentSwiper,
       setCurrentStartup,
       addSwiperInteraction,

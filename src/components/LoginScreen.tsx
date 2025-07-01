@@ -5,20 +5,31 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sparkles, LogIn } from "lucide-react";
+import { useAppData } from "@/contexts/AppDataContext";
 
 interface LoginScreenProps {
-  onLogin: () => void;
+  onLogin: (role: 'swiper' | 'startup') => void;
 }
 
 export const LoginScreen = ({ onLogin }: LoginScreenProps) => {
+  const { authenticateUser } = useAppData();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Accept any username/password for now
+    setError("");
+    
     if (username.trim() && password.trim()) {
-      onLogin();
+      const result = authenticateUser(username.trim(), password.trim());
+      if (result.success && result.user) {
+        onLogin(result.user.role);
+      } else {
+        setError("Invalid username or password");
+      }
+    } else {
+      setError("Please enter both username and password");
     }
   };
 
@@ -29,7 +40,7 @@ export const LoginScreen = ({ onLogin }: LoginScreenProps) => {
           <div className="flex items-center justify-center gap-2 mb-4">
             <Sparkles className="w-8 h-8 text-purple-500" />
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              StartupMixer
+              MoQi
             </CardTitle>
             <Sparkles className="w-8 h-8 text-pink-500" />
           </div>
@@ -37,6 +48,11 @@ export const LoginScreen = ({ onLogin }: LoginScreenProps) => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
+            {error && (
+              <div className="p-3 bg-red-100 border border-red-300 rounded-md text-red-700 text-sm">
+                {error}
+              </div>
+            )}
             <div>
               <Label htmlFor="username">Username</Label>
               <Input
