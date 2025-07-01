@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,26 +32,20 @@ import {
   Filter
 } from "lucide-react";
 import { format } from "date-fns";
-
-// Mock data for the startup
-const mockVoterData = [
-  { id: "1", name: "Emma Johnson", age: 22, gender: "Female", study: "Computer Science", moqiPoints: 25 },
-  { id: "2", name: "Lucas Chen", age: 24, gender: "Male", study: "Business Administration", moqiPoints: 30 },
-  { id: "3", name: "Sophie Mueller", age: 21, gender: "Female", study: "Design", moqiPoints: 15 },
-  { id: "4", name: "Alex Thompson", age: 23, gender: "Male", study: "Engineering", moqiPoints: 40 },
-  { id: "5", name: "Maria Rodriguez", age: 25, gender: "Female", study: "Marketing", moqiPoints: 35 },
-  { id: "6", name: "David Kim", age: 22, gender: "Male", study: "Data Science", moqiPoints: 28 },
-  { id: "7", name: "Sarah Wilson", age: 26, gender: "Female", study: "Psychology", moqiPoints: 32 },
-  { id: "8", name: "Michael Brown", age: 23, gender: "Male", study: "Economics", moqiPoints: 18 },
-  { id: "9", name: "Lisa Garcia", age: 24, gender: "Female", study: "Communications", moqiPoints: 27 },
-  { id: "10", name: "James Lee", age: 25, gender: "Male", study: "Finance", moqiPoints: 33 },
-];
+import { useAppData } from "@/contexts/AppDataContext";
 
 interface StartupDashboardProps {
   startupName?: string;
 }
 
 export const StartupDashboard = ({ startupName = "Your Startup" }: StartupDashboardProps) => {
+  const { 
+    currentStartupId, 
+    getSwiperInteractionsForStartup, 
+    swiperProfiles,
+    createFeedbackRequest 
+  } = useAppData();
+
   const [currentView, setCurrentView] = useState<"main" | "analytics" | "feedback-select" | "feedback-type" | "feedback-schedule">("main");
   const [selectedVoters, setSelectedVoters] = useState<string[]>([]);
   const [feedbackType, setFeedbackType] = useState<string>("");
@@ -66,7 +59,37 @@ export const StartupDashboard = ({ startupName = "Your Startup" }: StartupDashbo
   const [studyFilter, setStudyFilter] = useState("all");
   const [pointsFilter, setPointsFilter] = useState("all");
 
-  const filteredVoters = mockVoterData.filter(voter => {
+  // Get real voter data
+  const getVoterData = () => {
+    if (!currentStartupId) {
+      // Mock data for demonstration
+      return [
+        { id: "1", name: "Emma Johnson", age: 22, gender: "Female", study: "Computer Science", moqiPoints: 25 },
+        { id: "2", name: "Lucas Chen", age: 24, gender: "Male", study: "Business Administration", moqiPoints: 30 },
+        { id: "3", name: "Sophie Mueller", age: 21, gender: "Female", study: "Design", moqiPoints: 15 },
+        { id: "4", name: "Alex Thompson", age: 23, gender: "Male", study: "Engineering", moqiPoints: 40 },
+        { id: "5", name: "Maria Rodriguez", age: 25, gender: "Female", study: "Marketing", moqiPoints: 35 },
+      ];
+    }
+
+    const interactions = getSwiperInteractionsForStartup(currentStartupId);
+    return interactions.map(interaction => {
+      const profile = swiperProfiles.find(p => p.id === interaction.swiperId);
+      return {
+        id: interaction.swiperId,
+        name: profile?.name || "Unknown",
+        age: parseInt(profile?.age || "0"),
+        gender: profile?.gender || "Unknown",
+        study: profile?.study || "Unknown",
+        moqiPoints: interaction.coinAllocation,
+        feedbackPreference: interaction.feedbackPreference
+      };
+    }).filter(voter => voter.moqiPoints > 0 || voter.feedbackPreference !== "no");
+  };
+
+  const voterData = getVoterData();
+
+  const filteredVoters = voterData.filter(voter => {
     const ageMatch = ageFilter === "all" || 
       (ageFilter === "21-22" && voter.age >= 21 && voter.age <= 22) ||
       (ageFilter === "23-24" && voter.age >= 23 && voter.age <= 24) ||
@@ -82,7 +105,8 @@ export const StartupDashboard = ({ startupName = "Your Startup" }: StartupDashbo
     return ageMatch && genderMatch && studyMatch && pointsMatch;
   });
 
-  const averagePoints = filteredVoters.reduce((sum, voter) => sum + voter.moqiPoints, 0) / filteredVoters.length;
+  const averagePoints = filteredVoters.length > 0 ? 
+    filteredVoters.reduce((sum, voter) => sum + voter.moqiPoints, 0) / filteredVoters.length : 0;
 
   const genderData = [
     { name: "Female", value: filteredVoters.filter(v => v.gender === "Female").length, color: "#60BEBB" },
@@ -124,11 +148,31 @@ export const StartupDashboard = ({ startupName = "Your Startup" }: StartupDashbo
     setPointsFilter("all");
   };
 
+  const timeSlots = [
+    "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
+    "12:00", "12:30", "13:00", "13:30", "14:00", "14:30",
+    "15:00", "15:30", "16:00", "16:30", "17:00", "17:30",
+    "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"
+  ];
+
   const handleSendFeedbackRequest = () => {
-    if (selectedVoters.length === 0 || !feedbackType || !feedbackDate || !feedbackTime) {
+    if (selectedVoters.length === 0 || !feedbackType || !feedbackDate || !feedbackTime || !currentStartupId) {
       alert("Please fill in all required fields and select at least one voter.");
       return;
     }
+    
+    selectedVoters.forEach(voterId => {
+      createFeedbackRequest({
+        startupId: currentStartupId,
+        startupName: startupName,
+        swiperId: voterId,
+        feedbackType: feedbackType,
+        scheduledDate: format(feedbackDate, "yyyy-MM-dd"),
+        scheduledTime: feedbackTime,
+        message: feedbackDescription,
+        status: 'pending'
+      });
+    });
     
     alert(`Feedback request sent to ${selectedVoters.length} voters for ${feedbackType} on ${format(feedbackDate, "PPP")} at ${feedbackTime}`);
     
@@ -140,13 +184,6 @@ export const StartupDashboard = ({ startupName = "Your Startup" }: StartupDashbo
     setFeedbackDescription("");
     setCurrentView("main");
   };
-
-  const timeSlots = [
-    "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-    "12:00", "12:30", "13:00", "13:30", "14:00", "14:30",
-    "15:00", "15:30", "16:00", "16:30", "17:00", "17:30",
-    "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"
-  ];
 
   if (currentView === "main") {
     return (
@@ -166,7 +203,7 @@ export const StartupDashboard = ({ startupName = "Your Startup" }: StartupDashbo
                 <Users className="h-4 w-4 text-[#60BEBB]" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-[#1E1E1E]">{mockVoterData.length}</div>
+                <div className="text-3xl font-bold text-[#1E1E1E]">{voterData.length}</div>
                 <p className="text-xs text-gray-500">People who swiped right</p>
               </CardContent>
             </Card>
@@ -177,7 +214,7 @@ export const StartupDashboard = ({ startupName = "Your Startup" }: StartupDashbo
                 <TrendingUp className="h-4 w-4 text-[#60BEBB]" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-[#1E1E1E]">{(mockVoterData.reduce((sum, voter) => sum + voter.moqiPoints, 0) / mockVoterData.length).toFixed(1)}</div>
+                <div className="text-3xl font-bold text-[#1E1E1E]">{averagePoints.toFixed(1)}</div>
                 <p className="text-xs text-gray-500">Points per voter</p>
               </CardContent>
             </Card>
@@ -469,7 +506,7 @@ export const StartupDashboard = ({ startupName = "Your Startup" }: StartupDashbo
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">
-                  Showing {filteredVoters.length} of {mockVoterData.length} voters
+                  Showing {filteredVoters.length} of {voterData.length} voters
                 </span>
                 <Button variant="outline" onClick={clearFilters} size="sm">
                   Clear Filters

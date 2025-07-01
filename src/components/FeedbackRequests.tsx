@@ -4,61 +4,84 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, User, MessageCircle, CheckCircle, X } from "lucide-react";
-
-interface FeedbackRequest {
-  id: string;
-  startupName: string;
-  feedbackType: string;
-  scheduledDate: string;
-  scheduledTime: string;
-  message?: string;
-  status: 'pending' | 'accepted' | 'declined';
-}
+import { useAppData } from "@/contexts/AppDataContext";
 
 interface FeedbackRequestsProps {
   onBack: () => void;
 }
 
 export const FeedbackRequests = ({ onBack }: FeedbackRequestsProps) => {
-  const [requests, setRequests] = useState<FeedbackRequest[]>([
-    {
-      id: '1',
-      startupName: 'TechFlow AI',
-      feedbackType: 'Product Feedback',
-      scheduledDate: '2024-01-15',
-      scheduledTime: '14:30',
-      message: 'We would love to get your feedback on our new AI-powered workflow automation tool.',
-      status: 'pending'
-    },
-    {
-      id: '2',
-      startupName: 'GreenEnergy Solutions',
-      feedbackType: 'Business Model Feedback',
-      scheduledDate: '2024-01-18',
-      scheduledTime: '10:00',
-      message: 'Looking for insights on our renewable energy marketplace business model.',
-      status: 'pending'
-    },
-    {
-      id: '3',
-      startupName: 'HealthTech Innovations',
-      feedbackType: 'Market Research',
-      scheduledDate: '2024-01-12',
-      scheduledTime: '16:00',
-      status: 'accepted'
+  const { 
+    currentSwiperId, 
+    getFeedbackRequestsForSwiper, 
+    updateFeedbackRequest 
+  } = useAppData();
+
+  const [requests, setRequests] = useState(() => {
+    if (currentSwiperId) {
+      return getFeedbackRequestsForSwiper(currentSwiperId);
     }
-  ]);
+    // Mock data for demonstration
+    return [
+      {
+        id: '1',
+        startupId: '1',
+        swiperId: 'demo',
+        startupName: 'TechFlow AI',
+        feedbackType: 'Product Feedback',
+        scheduledDate: '2024-01-15',
+        scheduledTime: '14:30',
+        message: 'We would love to get your feedback on our new AI-powered workflow automation tool.',
+        status: 'pending' as const
+      },
+      {
+        id: '2',
+        startupId: '2',
+        swiperId: 'demo',
+        startupName: 'GreenEnergy Solutions',
+        feedbackType: 'Business Model Feedback',
+        scheduledDate: '2024-01-18',
+        scheduledTime: '10:00',
+        message: 'Looking for insights on our renewable energy marketplace business model.',
+        status: 'pending' as const
+      },
+      {
+        id: '3',
+        startupId: '3',
+        swiperId: 'demo',
+        startupName: 'HealthTech Innovations',
+        feedbackType: 'Market Research',
+        scheduledDate: '2024-01-12',
+        scheduledTime: '16:00',
+        status: 'accepted' as const,
+        teamsLink: 'https://teams.microsoft.com/l/meetup-join/19%3Ameeting_example'
+      }
+    ];
+  });
 
   const handleAccept = (requestId: string) => {
+    const teamsLink = `https://teams.microsoft.com/l/meetup-join/19%3Ameeting_${requestId}`;
+    
     setRequests(prev => prev.map(req => 
-      req.id === requestId ? { ...req, status: 'accepted' as const } : req
+      req.id === requestId ? { ...req, status: 'accepted' as const, teamsLink } : req
     ));
+    
+    if (currentSwiperId) {
+      updateFeedbackRequest(requestId, { 
+        status: 'accepted', 
+        teamsLink 
+      });
+    }
   };
 
   const handleDecline = (requestId: string) => {
     setRequests(prev => prev.map(req => 
       req.id === requestId ? { ...req, status: 'declined' as const } : req
     ));
+    
+    if (currentSwiperId) {
+      updateFeedbackRequest(requestId, { status: 'declined' });
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -218,7 +241,7 @@ export const FeedbackRequests = ({ onBack }: FeedbackRequestsProps) => {
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 text-sm text-gray-500 mb-2">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
                         {new Date(request.scheduledDate).toLocaleDateString()}
@@ -228,6 +251,18 @@ export const FeedbackRequests = ({ onBack }: FeedbackRequestsProps) => {
                         {request.scheduledTime}
                       </div>
                     </div>
+                    {request.teamsLink && request.status === 'accepted' && (
+                      <div className="mt-2">
+                        <Button
+                          onClick={() => window.open(request.teamsLink, '_blank')}
+                          variant="outline"
+                          size="sm"
+                          className="border-blue-200 hover:border-blue-300 hover:bg-blue-50 text-blue-700"
+                        >
+                          Join Teams Meeting
+                        </Button>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}

@@ -1,11 +1,13 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon, Clock, MapPin, X } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, MapPin, X, ExternalLink } from "lucide-react";
 import { format, isSameDay } from "date-fns";
+import { useAppData } from "@/contexts/AppDataContext";
 
 interface Meeting {
   id: string;
@@ -16,43 +18,66 @@ interface Meeting {
   duration: string;
   type: "Video Call" | "In Person" | "Phone Call";
   location?: string;
+  teamsLink?: string;
 }
 
-// Mock meetings data
-const mockMeetings: Meeting[] = [
-  {
-    id: "1",
-    startupName: "EcoFlow",
-    startupLogo: "🌱",
-    date: new Date(2025, 5, 30), // June 30, 2025
-    time: "14:00",
-    duration: "30 min",
-    type: "Video Call",
-  },
-  {
-    id: "2",
-    startupName: "HealthMind",
-    startupLogo: "🧠",
-    date: new Date(2025, 6, 2), // July 2, 2025
-    time: "10:30",
-    duration: "45 min",
-    type: "In Person",
-    location: "Startup Hub, Berlin",
-  },
-  {
-    id: "3",
-    startupName: "FoodieBot",
-    startupLogo: "🤖",
-    date: new Date(2025, 6, 5), // July 5, 2025
-    time: "16:00",
-    duration: "30 min",
-    type: "Video Call",
-  },
-];
-
 export const MeetingCalendar = () => {
+  const { currentSwiperId, getFeedbackRequestsForSwiper } = useAppData();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isOpen, setIsOpen] = useState(false);
+
+  // Get meetings from accepted feedback requests
+  const getMeetingsFromRequests = (): Meeting[] => {
+    if (!currentSwiperId) {
+      // Mock meetings for demonstration
+      return [
+        {
+          id: "1",
+          startupName: "EcoFlow",
+          startupLogo: "🌱",
+          date: new Date(2025, 5, 30), // June 30, 2025
+          time: "14:00",
+          duration: "30 min",
+          type: "Video Call",
+        },
+        {
+          id: "2",
+          startupName: "HealthMind",
+          startupLogo: "🧠",
+          date: new Date(2025, 6, 2), // July 2, 2025
+          time: "10:30",
+          duration: "45 min",
+          type: "In Person",
+          location: "Startup Hub, Berlin",
+        },
+        {
+          id: "3",
+          startupName: "FoodieBot",
+          startupLogo: "🤖",
+          date: new Date(2025, 6, 5), // July 5, 2025
+          time: "16:00",
+          duration: "30 min",
+          type: "Video Call",
+        },
+      ];
+    }
+
+    const acceptedRequests = getFeedbackRequestsForSwiper(currentSwiperId)
+      .filter(req => req.status === 'accepted' && req.teamsLink);
+
+    return acceptedRequests.map(req => ({
+      id: req.id,
+      startupName: req.startupName,
+      startupLogo: "🚀", // Default startup logo
+      date: new Date(req.scheduledDate),
+      time: req.scheduledTime,
+      duration: "30 min", // Default duration
+      type: "Video Call" as const,
+      teamsLink: req.teamsLink
+    }));
+  };
+
+  const mockMeetings = getMeetingsFromRequests();
 
   const getMeetingsForDate = (date: Date) => {
     return mockMeetings.filter(meeting => isSameDay(meeting.date, date));
@@ -150,9 +175,22 @@ export const MeetingCalendar = () => {
                                   {meeting.location}
                                 </div>
                               )}
-                              <Badge className={`${getTypeColor(meeting.type)} border-0 text-xs`}>
-                                {meeting.type}
-                              </Badge>
+                              <div className="flex items-center justify-between">
+                                <Badge className={`${getTypeColor(meeting.type)} border-0 text-xs`}>
+                                  {meeting.type}
+                                </Badge>
+                                {meeting.teamsLink && (
+                                  <Button
+                                    onClick={() => window.open(meeting.teamsLink, '_blank')}
+                                    variant="outline"
+                                    size="sm"
+                                    className="border-blue-200 hover:border-blue-300 hover:bg-blue-50 text-blue-700 text-xs"
+                                  >
+                                    <ExternalLink className="w-3 h-3 mr-1" />
+                                    Join
+                                  </Button>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>

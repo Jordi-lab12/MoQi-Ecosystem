@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,13 +6,16 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Sparkles, Info, MessageCircle, Play, Star, TrendingUp, Users, ChevronDown, ChevronUp } from "lucide-react";
 import { MeetingCalendar } from "./MeetingCalendar";
 import { Portfolio } from "./Portfolio";
+import { FeedbackRequests } from "./FeedbackRequests";
 import { Startup, FeedbackType } from "@/pages/Index";
+
 interface DashboardProps {
   onStartSwiping: () => void;
   likedStartups: Startup[];
   coinAllocations: Record<string, number>;
   feedbackPreferences: Record<string, FeedbackType>;
 }
+
 export const Dashboard = ({
   onStartSwiping,
   likedStartups,
@@ -19,12 +23,20 @@ export const Dashboard = ({
   feedbackPreferences
 }: DashboardProps) => {
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
-  const [isWhyStartupMixerOpen, setIsWhyStartupMixerOpen] = useState(false);
+  const [isWhyMoQiOpen, setIsWhyMoQiOpen] = useState(false);
+  const [showFeedbackRequests, setShowFeedbackRequests] = useState(false);
+
   const handleContact = () => {
     // For now, just show an alert - can be replaced with actual contact functionality
     alert("Contact us at: hello@moqi.com");
   };
-  return <div className="min-h-screen p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
+
+  if (showFeedbackRequests) {
+    return <FeedbackRequests onBack={() => setShowFeedbackRequests(false)} />;
+  }
+
+  return (
+    <div className="min-h-screen p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
@@ -45,13 +57,22 @@ export const Dashboard = ({
           <p className="text-gray-500 mt-6 text-lg">Discover and invest in promising startups</p>
         </div>
 
-        {/* Large central buttons for My Meetings and My Portfolio */}
-        <div className="grid md:grid-cols-2 gap-6 mb-12">
+        {/* Large central buttons for My Meetings, My Portfolio, and Feedback Requests */}
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
           <div className="text-center">
             <MeetingCalendar />
           </div>
           <div className="text-center">
             <Portfolio likedStartups={likedStartups} coinAllocations={coinAllocations} feedbackPreferences={feedbackPreferences} />
+          </div>
+          <div className="text-center">
+            <Button 
+              onClick={() => setShowFeedbackRequests(true)}
+              className="px-12 py-6 text-xl font-bold rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-xl hover:shadow-green-500/25 transform hover:scale-105 transition-all duration-300 flex items-center gap-4 mx-auto"
+            >
+              <MessageCircle className="w-8 h-8" />
+              Feedback Requests
+            </Button>
           </div>
         </div>
 
@@ -101,14 +122,14 @@ export const Dashboard = ({
           </Collapsible>
         </div>
 
-        {/* Collapsible Why StartupMixer section */}
+        {/* Collapsible Why MoQi section */}
         <div className="mb-8">
-          <Collapsible open={isWhyStartupMixerOpen} onOpenChange={setIsWhyStartupMixerOpen}>
+          <Collapsible open={isWhyMoQiOpen} onOpenChange={setIsWhyMoQiOpen}>
             <CollapsibleTrigger asChild>
               <Button variant="outline" className="w-full p-4 border-2 border-pink-200 hover:border-pink-300 hover:bg-pink-50 text-pink-700 hover:text-pink-800 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3">
                 <TrendingUp className="w-4 h-4" />
-                Why StartupMixer?
-                {isWhyStartupMixerOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                Why MoQi?
+                {isWhyMoQiOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent>
@@ -151,5 +172,6 @@ export const Dashboard = ({
           </Button>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };

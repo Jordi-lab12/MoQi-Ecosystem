@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { StartupSwiper } from "@/components/StartupSwiper";
 import { CoinAllocation } from "@/components/CoinAllocation";
@@ -8,6 +9,7 @@ import { RegistrationForm } from "@/components/RegistrationForm";
 import { WelcomePage, UserRole } from "@/components/WelcomePage";
 import { StartupDashboard } from "@/components/StartupDashboard";
 import { Button } from "@/components/ui/button";
+import { AppDataProvider, useAppData } from "@/contexts/AppDataContext";
 
 export type Startup = {
   id: string;
@@ -99,7 +101,16 @@ const mockStartups: Startup[] = [
   }
 ];
 
-const Index = () => {
+const AppContent = () => {
+  const { 
+    addSwiperProfile, 
+    setCurrentSwiper, 
+    setCurrentStartup, 
+    addSwiperInteraction,
+    currentSwiperId,
+    currentStartupId 
+  } = useAppData();
+
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [isRegistered, setIsRegistered] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -120,6 +131,22 @@ const Index = () => {
 
   const handleRegistration = (data: { name: string; age: string; study: string; role: UserRole }) => {
     setUserData(data);
+    
+    if (data.role === "swiper") {
+      const swiperId = `swiper_${Date.now()}`;
+      addSwiperProfile({
+        id: swiperId,
+        name: data.name,
+        age: data.age,
+        study: data.study,
+        gender: "Male" // Default for now, could be added to registration
+      });
+      setCurrentSwiper(swiperId);
+    } else if (data.role === "startup") {
+      const startupId = `startup_${Date.now()}`;
+      setCurrentStartup(startupId);
+    }
+    
     setIsRegistered(true);
   };
 
@@ -145,6 +172,23 @@ const Index = () => {
   const handleAllocationComplete = (allocations: Record<string, number>, finalFeedbackPreferences: Record<string, FeedbackType>) => {
     setCoinAllocations(allocations);
     setFeedbackPreferences(finalFeedbackPreferences);
+    
+    // Save interactions to shared data context
+    if (currentSwiperId) {
+      Object.entries(allocations).forEach(([startupId, coinAllocation]) => {
+        const startup = likedStartups.find(s => s.id === startupId);
+        if (startup) {
+          addSwiperInteraction({
+            swiperId: currentSwiperId,
+            startupId: startupId,
+            coinAllocation: coinAllocation,
+            feedbackPreference: finalFeedbackPreferences[startupId] || "no",
+            hasLiked: true
+          });
+        }
+      });
+    }
+    
     setCurrentStage("results");
   };
 
@@ -274,6 +318,66 @@ const Index = () => {
         />
       )}
     </div>
+  );
+};
+
+const Index = () => {
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userData, setUserData] = useState<{ name: string; age: string; study: string; role: UserRole } | null>(null);
+
+  const handleRoleSelection = (role: UserRole) => {
+    setUserRole(role);
+  };
+
+  const handleRegistration = (data: { name: string; age: string; study: string; role: UserRole }) => {
+    setUserData(data);
+    setIsRegistered(true);
+  };
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+  };
+
+  if (!userRole) {
+    return <WelcomePage onRoleSelected={handleRoleSelection} />;
+  }
+
+  if (!isRegistered) {
+    return <RegistrationForm userRole={userRole} onComplete={handleRegistration} />;
+  }
+
+  if (!isLoggedIn) {
+    return <LoginScreen onLogin={handleLogin} />;
+  }
+
+  // Show startup dashboard for startup users
+  if (userRole === "startup") {
+    return (
+      <AppDataProvider>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+          {/* Test mode button - only visible for demo purposes */}
+          <div className="fixed top-4 right-4 z-50">
+            <Button
+              onClick={() => {}}
+              variant="outline"
+              size="sm"
+              className="border-gray-300 text-xs"
+            >
+              Test Mode
+            </Button>
+          </div>
+          <StartupDashboard startupName={userData?.name} />
+        </div>
+      </AppDataProvider>
+    );
+  }
+
+  return (
+    <AppDataProvider>
+      <AppContent />
+    </AppDataProvider>
   );
 };
 
