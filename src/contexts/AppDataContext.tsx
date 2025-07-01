@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Startup, FeedbackType } from '@/pages/Index';
+import { FeedbackType } from '@/pages/Index';
 
 export interface SwiperProfile {
   id: string;
@@ -10,11 +10,27 @@ export interface SwiperProfile {
   gender: string;
 }
 
+export interface StartupProfile {
+  id: string;
+  name: string;
+  tagline: string;
+  description: string;
+  usp: string;
+  mission: string;
+  vision: string;
+  industry: string;
+  founded: string;
+  employees: string;
+  logo: string;
+  image: string;
+}
+
 export interface FeedbackRequest {
   id: string;
   startupId: string;
   startupName: string;
   swiperId: string;
+  swiperName: string;
   feedbackType: string;
   scheduledDate: string;
   scheduledTime: string;
@@ -25,6 +41,7 @@ export interface FeedbackRequest {
 
 export interface SwiperStartupInteraction {
   swiperId: string;
+  swiperName: string;
   startupId: string;
   coinAllocation: number;
   feedbackPreference: FeedbackType;
@@ -33,12 +50,14 @@ export interface SwiperStartupInteraction {
 
 interface AppDataContextType {
   swiperProfiles: SwiperProfile[];
+  startupProfiles: StartupProfile[];
   feedbackRequests: FeedbackRequest[];
   swiperInteractions: SwiperStartupInteraction[];
   currentSwiperId: string | null;
   currentStartupId: string | null;
   
   addSwiperProfile: (profile: SwiperProfile) => void;
+  addStartupProfile: (profile: StartupProfile) => void;
   setCurrentSwiper: (id: string) => void;
   setCurrentStartup: (id: string) => void;
   addSwiperInteraction: (interaction: SwiperStartupInteraction) => void;
@@ -47,6 +66,9 @@ interface AppDataContextType {
   getSwiperInteractionsForStartup: (startupId: string) => SwiperStartupInteraction[];
   getFeedbackRequestsForSwiper: (swiperId: string) => FeedbackRequest[];
   getFeedbackRequestsForStartup: (startupId: string) => FeedbackRequest[];
+  getCurrentSwiperProfile: () => SwiperProfile | null;
+  getCurrentStartupProfile: () => StartupProfile | null;
+  logout: () => void;
 }
 
 const AppDataContext = createContext<AppDataContextType | undefined>(undefined);
@@ -61,6 +83,7 @@ export const useAppData = () => {
 
 export const AppDataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [swiperProfiles, setSwiperProfiles] = useState<SwiperProfile[]>([]);
+  const [startupProfiles, setStartupProfiles] = useState<StartupProfile[]>([]);
   const [feedbackRequests, setFeedbackRequests] = useState<FeedbackRequest[]>([]);
   const [swiperInteractions, setSwiperInteractions] = useState<SwiperStartupInteraction[]>([]);
   const [currentSwiperId, setCurrentSwiperId] = useState<string | null>(null);
@@ -68,6 +91,10 @@ export const AppDataProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const addSwiperProfile = (profile: SwiperProfile) => {
     setSwiperProfiles(prev => [...prev, profile]);
+  };
+
+  const addStartupProfile = (profile: StartupProfile) => {
+    setStartupProfiles(prev => [...prev, profile]);
   };
 
   const setCurrentSwiper = (id: string) => {
@@ -118,14 +145,31 @@ export const AppDataProvider: React.FC<{ children: ReactNode }> = ({ children })
     return feedbackRequests.filter(req => req.startupId === startupId);
   };
 
+  const getCurrentSwiperProfile = () => {
+    if (!currentSwiperId) return null;
+    return swiperProfiles.find(profile => profile.id === currentSwiperId) || null;
+  };
+
+  const getCurrentStartupProfile = () => {
+    if (!currentStartupId) return null;
+    return startupProfiles.find(profile => profile.id === currentStartupId) || null;
+  };
+
+  const logout = () => {
+    setCurrentSwiperId(null);
+    setCurrentStartupId(null);
+  };
+
   return (
     <AppDataContext.Provider value={{
       swiperProfiles,
+      startupProfiles,
       feedbackRequests,
       swiperInteractions,
       currentSwiperId,
       currentStartupId,
       addSwiperProfile,
+      addStartupProfile,
       setCurrentSwiper,
       setCurrentStartup,
       addSwiperInteraction,
@@ -134,6 +178,9 @@ export const AppDataProvider: React.FC<{ children: ReactNode }> = ({ children })
       getSwiperInteractionsForStartup,
       getFeedbackRequestsForSwiper,
       getFeedbackRequestsForStartup,
+      getCurrentSwiperProfile,
+      getCurrentStartupProfile,
+      logout,
     }}>
       {children}
     </AppDataContext.Provider>

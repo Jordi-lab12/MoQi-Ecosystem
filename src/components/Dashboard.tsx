@@ -8,6 +8,7 @@ import { MeetingCalendar } from "./MeetingCalendar";
 import { Portfolio } from "./Portfolio";
 import { FeedbackRequests } from "./FeedbackRequests";
 import { Startup, FeedbackType } from "@/pages/Index";
+import { useAppData } from "@/contexts/AppDataContext";
 
 interface DashboardProps {
   onStartSwiping: () => void;
@@ -22,6 +23,7 @@ export const Dashboard = ({
   coinAllocations,
   feedbackPreferences
 }: DashboardProps) => {
+  const { startupProfiles } = useAppData();
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   const [isWhyMoQiOpen, setIsWhyMoQiOpen] = useState(false);
   const [showFeedbackRequests, setShowFeedbackRequests] = useState(false);
@@ -46,15 +48,31 @@ export const Dashboard = ({
             <Sparkles className="w-10 h-10 text-pink-500" />
           </div>
           <p className="text-gray-600 text-xl">Welcome back! Ready to discover amazing startups?</p>
+          {startupProfiles.length === 0 && (
+            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-yellow-800 text-sm">
+                ℹ️ No startups are currently registered. You'll need some startups to swipe on first!
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Main action button - central and biggest */}
         <div className="text-center mb-12">
-          <Button onClick={onStartSwiping} className="px-16 py-8 text-3xl font-bold rounded-3xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-2xl hover:shadow-purple-500/25 transform hover:scale-110 transition-all duration-300 flex items-center gap-6 mx-auto">
+          <Button 
+            onClick={onStartSwiping} 
+            disabled={startupProfiles.length === 0}
+            className="px-16 py-8 text-3xl font-bold rounded-3xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-2xl hover:shadow-purple-500/25 transform hover:scale-110 transition-all duration-300 flex items-center gap-6 mx-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          >
             <Play className="w-10 h-10" />
             Start Swiping ✨
           </Button>
-          <p className="text-gray-500 mt-6 text-lg">Discover and invest in promising startups</p>
+          <p className="text-gray-500 mt-6 text-lg">
+            {startupProfiles.length > 0 
+              ? `Discover and invest in ${startupProfiles.length} promising startups` 
+              : "No startups available to swipe on yet"
+            }
+          </p>
         </div>
 
         {/* Large central buttons for My Meetings, My Portfolio, and Feedback Requests */}
@@ -122,7 +140,6 @@ export const Dashboard = ({
           </Collapsible>
         </div>
 
-        {/* Collapsible Why MoQi section */}
         <div className="mb-8">
           <Collapsible open={isWhyMoQiOpen} onOpenChange={setIsWhyMoQiOpen}>
             <CollapsibleTrigger asChild>
@@ -164,7 +181,6 @@ export const Dashboard = ({
           </Collapsible>
         </div>
 
-        {/* Contact button - smaller */}
         <div className="text-center">
           <Button onClick={handleContact} variant="outline" className="px-4 py-2 border border-purple-200 hover:border-purple-300 hover:bg-purple-50 text-purple-700 hover:text-purple-800 rounded-lg transition-all duration-300 flex items-center gap-2 mx-auto text-sm">
             <MessageCircle className="w-4 h-4" />

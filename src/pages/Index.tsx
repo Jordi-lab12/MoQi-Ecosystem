@@ -10,6 +10,7 @@ import { WelcomePage, UserRole } from "@/components/WelcomePage";
 import { StartupDashboard } from "@/components/StartupDashboard";
 import { Button } from "@/components/ui/button";
 import { AppDataProvider, useAppData } from "@/contexts/AppDataContext";
+import { LogOut } from "lucide-react";
 
 export type Startup = {
   id: string;
@@ -28,96 +29,25 @@ export type Startup = {
 
 export type FeedbackType = "no" | "group" | "all";
 
-const mockStartups: Startup[] = [
-  {
-    id: "1",
-    name: "EcoFlow",
-    tagline: "Sustainable energy for everyone",
-    description: "Revolutionary solar panel technology that's 40% more efficient",
-    usp: "Patent-pending nano-coating technology that maximizes energy absorption",
-    mission: "To make clean energy accessible and affordable for every household",
-    vision: "A world powered entirely by renewable energy by 2030",
-    industry: "Clean Energy",
-    founded: "2023",
-    employees: "15-25",
-    logo: "🌱",
-    image: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=400&h=300&fit=crop"
-  },
-  {
-    id: "2",
-    name: "HealthMind",
-    tagline: "AI-powered mental wellness",
-    description: "Personalized therapy recommendations using advanced AI algorithms",
-    usp: "First platform to combine CBT, mindfulness, and AI for personalized mental health",
-    mission: "To democratize access to quality mental health support worldwide",
-    vision: "A society where mental wellness is prioritized and accessible to all",
-    industry: "HealthTech",
-    founded: "2022",
-    employees: "8-15",
-    logo: "🧠",
-    image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop"
-  },
-  {
-    id: "3",
-    name: "FoodieBot",
-    tagline: "Smart cooking assistant",
-    description: "AI chef that creates recipes based on your ingredients and preferences",
-    usp: "Advanced taste profile learning that adapts to your unique preferences",
-    mission: "To eliminate food waste and make cooking enjoyable for everyone",
-    vision: "Every kitchen equipped with intelligent cooking assistance",
-    industry: "FoodTech",
-    founded: "2023",
-    employees: "5-10",
-    logo: "🤖",
-    image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop"
-  },
-  {
-    id: "4",
-    name: "LearnLive",
-    tagline: "Interactive education platform",
-    description: "Virtual reality classrooms that make learning immersive and engaging",
-    usp: "First VR platform designed specifically for collaborative learning experiences",
-    mission: "To transform education through immersive, interactive learning",
-    vision: "A world where quality education is engaging and accessible globally",
-    industry: "EdTech",
-    founded: "2023",
-    employees: "20-30",
-    logo: "🎓",
-    image: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=300&fit=crop"
-  },
-  {
-    id: "5",
-    name: "CityFlow",
-    tagline: "Smart urban mobility",
-    description: "AI-optimized traffic management system for smarter cities",
-    usp: "Real-time traffic optimization that reduces commute times by up to 30%",
-    mission: "To create more efficient and sustainable urban transportation",
-    vision: "Cities with zero traffic congestion and minimal environmental impact",
-    industry: "Smart Cities",
-    founded: "2022",
-    employees: "25-40",
-    logo: "🚦",
-    image: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&h=300&fit=crop"
-  }
-];
-
 const AppContent = () => {
   const { 
     addSwiperProfile, 
+    addStartupProfile,
     setCurrentSwiper, 
     setCurrentStartup, 
     addSwiperInteraction,
     currentSwiperId,
-    currentStartupId 
+    currentStartupId,
+    startupProfiles,
+    logout
   } = useAppData();
 
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [isRegistered, setIsRegistered] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userData, setUserData] = useState<{ name: string; age: string; study: string; role: UserRole } | null>(null);
+  const [userData, setUserData] = useState<any>(null);
   const [currentStage, setCurrentStage] = useState<"dashboard" | "swiping" | "allocation" | "results">("dashboard");
   const [likedStartups, setLikedStartups] = useState<Startup[]>([]);
-  const [allStartups] = useState<Startup[]>(mockStartups);
   const [coinAllocations, setCoinAllocations] = useState<Record<string, number>>({});
   const [feedbackPreferences, setFeedbackPreferences] = useState<Record<string, FeedbackType>>({});
   
@@ -129,7 +59,7 @@ const AppContent = () => {
     setUserRole(role);
   };
 
-  const handleRegistration = (data: { name: string; age: string; study: string; role: UserRole }) => {
+  const handleRegistration = (data: any) => {
     setUserData(data);
     
     if (data.role === "swiper") {
@@ -144,6 +74,23 @@ const AppContent = () => {
       setCurrentSwiper(swiperId);
     } else if (data.role === "startup") {
       const startupId = `startup_${Date.now()}`;
+      // Generate a default image URL
+      const defaultImage = `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000000)}?w=400&h=300&fit=crop`;
+      
+      addStartupProfile({
+        id: startupId,
+        name: data.name,
+        tagline: data.tagline,
+        description: data.description,
+        usp: data.usp,
+        mission: data.mission,
+        vision: data.vision,
+        industry: data.industry,
+        founded: data.founded,
+        employees: data.employees,
+        logo: "🚀", // Default logo
+        image: defaultImage
+      });
       setCurrentStartup(startupId);
     }
     
@@ -153,6 +100,19 @@ const AppContent = () => {
   const handleLogin = () => {
     setIsLoggedIn(true);
     setCurrentStage("dashboard");
+  };
+
+  const handleLogout = () => {
+    logout();
+    setUserRole(null);
+    setIsRegistered(false);
+    setIsLoggedIn(false);
+    setUserData(null);
+    setCurrentStage("dashboard");
+    setLikedStartups([]);
+    setCoinAllocations({});
+    setFeedbackPreferences({});
+    setTestMode(false);
   };
 
   const handleStartSwiping = () => {
@@ -174,12 +134,13 @@ const AppContent = () => {
     setFeedbackPreferences(finalFeedbackPreferences);
     
     // Save interactions to shared data context
-    if (currentSwiperId) {
+    if (currentSwiperId && userData) {
       Object.entries(allocations).forEach(([startupId, coinAllocation]) => {
         const startup = likedStartups.find(s => s.id === startupId);
         if (startup) {
           addSwiperInteraction({
             swiperId: currentSwiperId,
+            swiperName: userData.name,
             startupId: startupId,
             coinAllocation: coinAllocation,
             feedbackPreference: finalFeedbackPreferences[startupId] || "no",
@@ -198,6 +159,11 @@ const AppContent = () => {
     setCoinAllocations({});
     setFeedbackPreferences({});
   };
+
+  // Convert startup profiles to the format expected by StartupSwiper
+  const availableStartups: Startup[] = startupProfiles.map(profile => ({
+    ...profile
+  }));
 
   // Test mode toggle
   if (testMode) {
@@ -257,8 +223,17 @@ const AppContent = () => {
   if (userRole === "startup") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-        {/* Test mode button - only visible for demo purposes */}
-        <div className="fixed top-4 right-4 z-50">
+        {/* Logout and Test mode buttons */}
+        <div className="fixed top-4 right-4 z-50 flex gap-2">
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            size="sm"
+            className="border-red-300 text-red-600 hover:bg-red-50"
+          >
+            <LogOut className="w-4 h-4 mr-1" />
+            Logout
+          </Button>
           <Button
             onClick={() => setTestMode(true)}
             variant="outline"
@@ -275,8 +250,17 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
-      {/* Test mode button - only visible for demo purposes */}
-      <div className="fixed top-4 right-4 z-50">
+      {/* Logout and Test mode buttons */}
+      <div className="fixed top-4 right-4 z-50 flex gap-2">
+        <Button
+          onClick={handleLogout}
+          variant="outline"
+          size="sm"
+          className="border-red-300 text-red-600 hover:bg-red-50"
+        >
+          <LogOut className="w-4 h-4 mr-1" />
+          Logout
+        </Button>
         <Button
           onClick={() => setTestMode(true)}
           variant="outline"
@@ -296,8 +280,20 @@ const AppContent = () => {
         />
       )}
       
-      {currentStage === "swiping" && (
-        <StartupSwiper startups={mockStartups} onComplete={handleSwipeComplete} />
+      {currentStage === "swiping" && availableStartups.length > 0 && (
+        <StartupSwiper startups={availableStartups} onComplete={handleSwipeComplete} />
+      )}
+
+      {currentStage === "swiping" && availableStartups.length === 0 && (
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">No Startups Available</h2>
+            <p className="text-gray-600 mb-6">There are no registered startups to swipe on yet. Please check back later or create a startup account.</p>
+            <Button onClick={() => setCurrentStage("dashboard")} className="bg-purple-500 hover:bg-purple-600">
+              Back to Dashboard
+            </Button>
+          </div>
+        </div>
       )}
       
       {currentStage === "allocation" && (
@@ -310,7 +306,7 @@ const AppContent = () => {
       
       {currentStage === "results" && (
         <ResultsOverview 
-          allStartups={allStartups}
+          allStartups={availableStartups}
           likedStartups={likedStartups}
           coinAllocations={coinAllocations}
           feedbackPreferences={feedbackPreferences}
@@ -322,58 +318,6 @@ const AppContent = () => {
 };
 
 const Index = () => {
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
-  const [isRegistered, setIsRegistered] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userData, setUserData] = useState<{ name: string; age: string; study: string; role: UserRole } | null>(null);
-
-  const handleRoleSelection = (role: UserRole) => {
-    setUserRole(role);
-  };
-
-  const handleRegistration = (data: { name: string; age: string; study: string; role: UserRole }) => {
-    setUserData(data);
-    setIsRegistered(true);
-  };
-
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-  };
-
-  if (!userRole) {
-    return <WelcomePage onRoleSelected={handleRoleSelection} />;
-  }
-
-  if (!isRegistered) {
-    return <RegistrationForm userRole={userRole} onComplete={handleRegistration} />;
-  }
-
-  if (!isLoggedIn) {
-    return <LoginScreen onLogin={handleLogin} />;
-  }
-
-  // Show startup dashboard for startup users
-  if (userRole === "startup") {
-    return (
-      <AppDataProvider>
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-          {/* Test mode button - only visible for demo purposes */}
-          <div className="fixed top-4 right-4 z-50">
-            <Button
-              onClick={() => {}}
-              variant="outline"
-              size="sm"
-              className="border-gray-300 text-xs"
-            >
-              Test Mode
-            </Button>
-          </div>
-          <StartupDashboard startupName={userData?.name} />
-        </div>
-      </AppDataProvider>
-    );
-  }
-
   return (
     <AppDataProvider>
       <AppContent />
