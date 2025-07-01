@@ -1,24 +1,26 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, User, Heart, GraduationCap, Building2 } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Sparkles, User, Heart, GraduationCap, Building2, ArrowLeft } from "lucide-react";
 import { UserRole } from "./WelcomePage";
 
 interface RegistrationFormProps {
   userRole: UserRole;
   onComplete: (userData: any) => void;
+  onBack: () => void;
 }
 
-export const RegistrationForm = ({ userRole, onComplete }: RegistrationFormProps) => {
+export const RegistrationForm = ({ userRole, onComplete, onBack }: RegistrationFormProps) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [study, setStudy] = useState("");
+  const [swiperType, setSwiperType] = useState<"student" | "professor">("student");
   
   // Startup-specific fields
   const [tagline, setTagline] = useState("");
@@ -39,7 +41,6 @@ export const RegistrationForm = ({ userRole, onComplete }: RegistrationFormProps
     }
     
     if (userRole === "startup") {
-      // Validate startup fields
       if (name.trim() && tagline.trim() && description.trim() && usp.trim() && 
           mission.trim() && vision.trim() && industry.trim() && founded.trim() && employees.trim()) {
         onComplete({ 
@@ -58,7 +59,6 @@ export const RegistrationForm = ({ userRole, onComplete }: RegistrationFormProps
         });
       }
     } else {
-      // Validate swiper fields (both swiper and professor use same form now)
       if (name.trim() && age.trim() && study.trim()) {
         onComplete({ 
           username: username.trim(),
@@ -66,7 +66,8 @@ export const RegistrationForm = ({ userRole, onComplete }: RegistrationFormProps
           name: name.trim(), 
           age: age.trim(), 
           study: study.trim(), 
-          role: "swiper" // Both professor and swiper are treated as swipers
+          swiperType: swiperType,
+          role: "swiper"
         });
       }
     }
@@ -97,19 +98,13 @@ export const RegistrationForm = ({ userRole, onComplete }: RegistrationFormProps
   };
 
   const getStudyLabel = () => {
-    switch (userRole) {
-      case "swiper": return "What are you studying?";
-      case "professor": return "What department do you teach in?";
-      case "startup": return "What industry is your startup in?";
-    }
+    if (userRole === "startup") return "What industry is your startup in?";
+    return swiperType === "professor" ? "What department do you teach in?" : "What are you studying?";
   };
 
   const getStudyPlaceholder = () => {
-    switch (userRole) {
-      case "swiper": return "e.g. Computer Science, Business, etc.";
-      case "professor": return "e.g. Computer Science, Business Administration, etc.";
-      case "startup": return "e.g. FinTech, HealthTech, EdTech, etc.";
-    }
+    if (userRole === "startup") return "e.g. FinTech, HealthTech, EdTech, etc.";
+    return swiperType === "professor" ? "e.g. Computer Science, Business Administration, etc." : "e.g. Computer Science, Business, etc.";
   };
 
   const RoleIcon = getRoleIcon();
@@ -118,12 +113,18 @@ export const RegistrationForm = ({ userRole, onComplete }: RegistrationFormProps
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
       <Card className="w-full max-w-2xl shadow-2xl">
         <CardHeader className="text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Sparkles className="w-8 h-8 text-purple-500" />
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              MoQi
-            </CardTitle>
-            <Sparkles className="w-8 h-8 text-pink-500" />
+          <div className="flex items-center justify-between mb-4">
+            <Button onClick={onBack} variant="ghost" size="sm">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-8 h-8 text-purple-500" />
+              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                MoQi
+              </CardTitle>
+              <Sparkles className="w-8 h-8 text-pink-500" />
+            </div>
+            <div className="w-8" />
           </div>
           <div className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-r ${getRoleColor()} flex items-center justify-center mb-4`}>
             <RoleIcon className="w-8 h-8 text-white" />
@@ -132,7 +133,6 @@ export const RegistrationForm = ({ userRole, onComplete }: RegistrationFormProps
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Username and Password fields for all users */}
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="username">Username</Label>
@@ -279,6 +279,20 @@ export const RegistrationForm = ({ userRole, onComplete }: RegistrationFormProps
               </>
             ) : (
               <>
+                <div>
+                  <Label>I am a:</Label>
+                  <RadioGroup value={swiperType} onValueChange={(value: "student" | "professor") => setSwiperType(value)} className="mt-2">
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="student" id="student" />
+                      <Label htmlFor="student">Student</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="professor" id="professor" />
+                      <Label htmlFor="professor">Professor</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
                 <div>
                   <Label htmlFor="name">Full Name</Label>
                   <Input

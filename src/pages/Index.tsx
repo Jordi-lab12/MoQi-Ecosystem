@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { StartupSwiper } from "@/components/StartupSwiper";
 import { CoinAllocation } from "@/components/CoinAllocation";
@@ -9,7 +10,7 @@ import { WelcomePage, UserRole } from "@/components/WelcomePage";
 import { StartupDashboard } from "@/components/StartupDashboard";
 import { Button } from "@/components/ui/button";
 import { AppDataProvider, useAppData } from "@/contexts/AppDataContext";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, UserPlus } from "lucide-react";
 
 export type Startup = {
   id: string;
@@ -43,21 +44,27 @@ const AppContent = () => {
   } = useAppData();
 
   const [userRole, setUserRole] = useState<UserRole | null>(null);
-  const [isRegistered, setIsRegistered] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLoginScreen, setShowLoginScreen] = useState(false);
+  const [showRegistrationScreen, setShowRegistrationScreen] = useState(false);
   const [userData, setUserData] = useState<any>(null);
   const [currentStage, setCurrentStage] = useState<"dashboard" | "swiping" | "allocation" | "results">("dashboard");
   const [likedStartups, setLikedStartups] = useState<Startup[]>([]);
   const [coinAllocations, setCoinAllocations] = useState<Record<string, number>>({});
   const [feedbackPreferences, setFeedbackPreferences] = useState<Record<string, FeedbackType>>({});
-  const [showLoginScreen, setShowLoginScreen] = useState(false);
-  
-  // Test mode for switching between views
-  const [testMode, setTestMode] = useState(false);
-  const [testRole, setTestRole] = useState<UserRole>("swiper");
+
+  // Check if user is logged in
+  const isLoggedIn = currentSwiperId || currentStartupId;
+  const currentUserRole = currentSwiperId ? "swiper" : currentStartupId ? "startup" : null;
 
   const handleRoleSelection = (role: UserRole) => {
     setUserRole(role);
+    setShowRegistrationScreen(true);
+  };
+
+  const handleLogin = (role: 'swiper' | 'startup') => {
+    setUserRole(role);
+    setCurrentStage("dashboard");
+    setShowLoginScreen(false);
   };
 
   const handleRegistration = (data: any) => {
@@ -70,11 +77,10 @@ const AppContent = () => {
         name: data.name,
         age: data.age,
         study: data.study,
-        gender: "Male", // Default for now, could be added to registration
+        gender: "Male", // Default for now
         username: data.username
       });
       
-      // Add credentials
       addUserCredentials({
         username: data.username,
         password: data.password,
@@ -83,9 +89,9 @@ const AppContent = () => {
       });
       
       setCurrentSwiper(swiperId);
+      setUserRole("swiper");
     } else if (data.role === "startup") {
       const startupId = `startup_${Date.now()}`;
-      // Generate a default image URL
       const defaultImage = `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000000)}?w=400&h=300&fit=crop`;
       
       addStartupProfile({
@@ -99,12 +105,11 @@ const AppContent = () => {
         industry: data.industry,
         founded: data.founded,
         employees: data.employees,
-        logo: "🚀", // Default logo
+        logo: "🚀", 
         image: defaultImage,
         username: data.username
       });
       
-      // Add credentials
       addUserCredentials({
         username: data.username,
         password: data.password,
@@ -113,37 +118,31 @@ const AppContent = () => {
       });
       
       setCurrentStartup(startupId);
+      setUserRole("startup");
     }
     
-    setIsRegistered(true);
-  };
-
-  const handleLogin = (role: 'swiper' | 'startup') => {
-    setIsLoggedIn(true);
-    setUserRole(role);
+    setShowRegistrationScreen(false);
     setCurrentStage("dashboard");
-    setShowLoginScreen(false);
   };
 
   const handleLogout = () => {
     logout();
     setUserRole(null);
-    setIsRegistered(false);
-    setIsLoggedIn(false);
     setUserData(null);
     setCurrentStage("dashboard");
     setLikedStartups([]);
     setCoinAllocations({});
     setFeedbackPreferences({});
-    setTestMode(false);
     setShowLoginScreen(false);
+    setShowRegistrationScreen(false);
   };
 
   const handleShowLogin = () => {
     setShowLoginScreen(true);
-    setUserRole(null);
-    setIsRegistered(false);
-    setIsLoggedIn(false);
+  };
+
+  const handleShowRegistration = () => {
+    setShowRegistrationScreen(true);
   };
 
   const handleStartSwiping = () => {
@@ -164,7 +163,6 @@ const AppContent = () => {
     setCoinAllocations(allocations);
     setFeedbackPreferences(finalFeedbackPreferences);
     
-    // Save interactions to shared data context
     if (currentSwiperId && userData) {
       Object.entries(allocations).forEach(([startupId, coinAllocation]) => {
         const startup = likedStartups.find(s => s.id === startupId);
@@ -191,75 +189,25 @@ const AppContent = () => {
     setFeedbackPreferences({});
   };
 
-  // Convert startup profiles to the format expected by StartupSwiper
   const availableStartups: Startup[] = startupProfiles.map(profile => ({
     ...profile
   }));
 
-  // Show login screen if requested
+  // Show login screen
   if (showLoginScreen) {
-    return <LoginScreen onLogin={handleLogin} />;
+    return <LoginScreen onLogin={handleLogin} onBack={() => setShowLoginScreen(false)} />;
   }
 
-  // Test mode toggle
-  if (testMode) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-        <div className="fixed top-4 right-4 z-50 flex gap-2">
-          <Button
-            onClick={() => setTestRole("swiper")}
-            variant={testRole === "swiper" ? "default" : "outline"}
-            className="bg-[#60BEBB] hover:bg-[#4a9a96] text-white"
-          >
-            Swiper View
-          </Button>
-          <Button
-            onClick={() => setTestRole("startup")}
-            variant={testRole === "startup" ? "default" : "outline"}
-            className="bg-[#D8CCEB] hover:bg-[#c5b8e0] text-[#1E1E1E]"
-          >
-            Startup View
-          </Button>
-          <Button
-            onClick={() => setTestMode(false)}
-            variant="outline"
-            className="border-gray-300"
-          >
-            Exit Test Mode
-          </Button>
-        </div>
-        
-        {testRole === "startup" ? (
-          <StartupDashboard startupName={userData?.name} />
-        ) : (
-          <Dashboard 
-            onStartSwiping={handleStartSwiping}
-            likedStartups={likedStartups}
-            coinAllocations={coinAllocations}
-            feedbackPreferences={feedbackPreferences}
-          />
-        )}
-      </div>
-    );
+  // Show registration screen
+  if (showRegistrationScreen) {
+    return <RegistrationForm userRole={userRole!} onComplete={handleRegistration} onBack={() => setShowRegistrationScreen(false)} />;
   }
 
-  if (!userRole) {
-    return <WelcomePage onRoleSelected={handleRoleSelection} />;
-  }
-
-  if (!isRegistered) {
-    return <RegistrationForm userRole={userRole} onComplete={handleRegistration} />;
-  }
-
+  // Show welcome page if not logged in
   if (!isLoggedIn) {
-    return <LoginScreen onLogin={handleLogin} />;
-  }
-
-  // Show startup dashboard for startup users
-  if (userRole === "startup") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-        {/* Logout, Login and Test mode buttons */}
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
+        {/* Top right buttons */}
         <div className="fixed top-4 right-4 z-50 flex gap-2">
           <Button
             onClick={handleShowLogin}
@@ -271,41 +219,24 @@ const AppContent = () => {
             Login
           </Button>
           <Button
-            onClick={handleLogout}
+            onClick={handleShowRegistration}
             variant="outline"
             size="sm"
-            className="border-red-300 text-red-600 hover:bg-red-50"
+            className="border-green-300 text-green-600 hover:bg-green-50"
           >
-            <LogOut className="w-4 h-4 mr-1" />
-            Logout
-          </Button>
-          <Button
-            onClick={() => setTestMode(true)}
-            variant="outline"
-            size="sm"
-            className="border-gray-300 text-xs"
-          >
-            Test Mode
+            <UserPlus className="w-4 h-4 mr-1" />
+            Register
           </Button>
         </div>
-        <StartupDashboard startupName={userData?.name} />
+        <WelcomePage onRoleSelected={handleRoleSelection} />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
-      {/* Logout, Login and Test mode buttons */}
-      <div className="fixed top-4 right-4 z-50 flex gap-2">
-        <Button
-          onClick={handleShowLogin}
-          variant="outline"
-          size="sm"
-          className="border-blue-300 text-blue-600 hover:bg-blue-50"
-        >
-          <User className="w-4 h-4 mr-1" />
-          Login
-        </Button>
+      {/* Top right logout button */}
+      <div className="fixed top-4 right-4 z-50">
         <Button
           onClick={handleLogout}
           variant="outline"
@@ -315,57 +246,59 @@ const AppContent = () => {
           <LogOut className="w-4 h-4 mr-1" />
           Logout
         </Button>
-        <Button
-          onClick={() => setTestMode(true)}
-          variant="outline"
-          size="sm"
-          className="border-gray-300 text-xs"
-        >
-          Test Mode
-        </Button>
       </div>
 
-      {currentStage === "dashboard" && (
-        <Dashboard 
-          onStartSwiping={handleStartSwiping}
-          likedStartups={likedStartups}
-          coinAllocations={coinAllocations}
-          feedbackPreferences={feedbackPreferences}
-        />
-      )}
-      
-      {currentStage === "swiping" && availableStartups.length > 0 && (
-        <StartupSwiper startups={availableStartups} onComplete={handleSwipeComplete} />
+      {/* Show startup dashboard for startup users */}
+      {currentUserRole === "startup" && (
+        <StartupDashboard startupName={userData?.name} />
       )}
 
-      {currentStage === "swiping" && availableStartups.length === 0 && (
-        <div className="min-h-screen flex items-center justify-center p-4">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">No Startups Available</h2>
-            <p className="text-gray-600 mb-6">There are no registered startups to swipe on yet. Please check back later or create a startup account.</p>
-            <Button onClick={() => setCurrentStage("dashboard")} className="bg-purple-500 hover:bg-purple-600">
-              Back to Dashboard
-            </Button>
-          </div>
-        </div>
-      )}
-      
-      {currentStage === "allocation" && (
-        <CoinAllocation 
-          startups={likedStartups} 
-          feedbackPreferences={feedbackPreferences}
-          onComplete={handleAllocationComplete}
-        />
-      )}
-      
-      {currentStage === "results" && (
-        <ResultsOverview 
-          allStartups={availableStartups}
-          likedStartups={likedStartups}
-          coinAllocations={coinAllocations}
-          feedbackPreferences={feedbackPreferences}
-          onRestart={handleRestart}
-        />
+      {/* Show swiper interface */}
+      {currentUserRole === "swiper" && (
+        <>
+          {currentStage === "dashboard" && (
+            <Dashboard 
+              onStartSwiping={handleStartSwiping}
+              likedStartups={likedStartups}
+              coinAllocations={coinAllocations}
+              feedbackPreferences={feedbackPreferences}
+            />
+          )}
+          
+          {currentStage === "swiping" && availableStartups.length > 0 && (
+            <StartupSwiper startups={availableStartups} onComplete={handleSwipeComplete} />
+          )}
+
+          {currentStage === "swiping" && availableStartups.length === 0 && (
+            <div className="min-h-screen flex items-center justify-center p-4">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">No Startups Available</h2>
+                <p className="text-gray-600 mb-6">There are no registered startups to swipe on yet.</p>
+                <Button onClick={() => setCurrentStage("dashboard")} className="bg-purple-500 hover:bg-purple-600">
+                  Back to Dashboard
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {currentStage === "allocation" && (
+            <CoinAllocation 
+              startups={likedStartups} 
+              feedbackPreferences={feedbackPreferences}
+              onComplete={handleAllocationComplete}
+            />
+          )}
+          
+          {currentStage === "results" && (
+            <ResultsOverview 
+              allStartups={availableStartups}
+              likedStartups={likedStartups}
+              coinAllocations={coinAllocations}
+              feedbackPreferences={feedbackPreferences}
+              onRestart={handleRestart}
+            />
+          )}
+        </>
       )}
     </div>
   );

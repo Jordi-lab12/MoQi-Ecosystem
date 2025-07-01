@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Users, TrendingUp, MessageCircle, Calendar, Eye, Heart, Coins, Send, Clock } from "lucide-react";
+import { Users, TrendingUp, MessageCircle, Calendar, Eye, Heart, Coins, Send, Clock, User } from "lucide-react";
 import { useAppData } from "@/contexts/AppDataContext";
 
 interface StartupDashboardProps {
@@ -33,10 +33,12 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
   const currentStartup = getCurrentStartupProfile();
   const startupInteractions = currentStartupId ? getSwiperInteractionsForStartup(currentStartupId) : [];
   
-  // Get swipers who liked this startup
-  const swipersWhoLiked = startupInteractions.filter(interaction => interaction.hasLiked && interaction.coinAllocation > 0);
+  // Get swipers who liked this startup and invested coins
+  const swipersWhoLiked = startupInteractions.filter(interaction => 
+    interaction.hasLiked && interaction.coinAllocation > 0
+  );
   
-  // Get swipers who are open to feedback but didn't necessarily invest coins
+  // Get swipers who are open to feedback (group or all) but may not have invested
   const swipersOpenToFeedback = swiperInteractions.filter(interaction => 
     interaction.startupId === currentStartupId && 
     (interaction.feedbackPreference === "group" || interaction.feedbackPreference === "all")
@@ -109,7 +111,7 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
                 <Eye className="w-4 h-4" />
-                Total Swipers
+                Total Investors
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -140,7 +142,7 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-purple-600">{averageCoins}</div>
-              <p className="text-xs text-gray-500">Coins per swiper</p>
+              <p className="text-xs text-gray-500">Coins per investor</p>
             </CardContent>
           </Card>
 
@@ -158,13 +160,13 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
           </Card>
         </div>
 
-        {/* Swipers Who Invested */}
+        {/* Detailed Swiper Data */}
         <div className="grid md:grid-cols-2 gap-8">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Heart className="w-5 h-5 text-red-500" />
-                Swipers Who Invested
+                Investors & Their Votes
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -175,31 +177,41 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
                     if (!swiper) return null;
                     
                     return (
-                      <div key={interaction.swiperId} className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
-                        <div>
-                          <h4 className="font-semibold text-purple-800">{swiper.name}</h4>
-                          <p className="text-sm text-gray-600">{swiper.study} • Age {swiper.age}</p>
-                          <div className="flex items-center gap-4 mt-2">
-                            <Badge className="bg-green-100 text-green-800 border-0">
-                              {interaction.coinAllocation} coins
-                            </Badge>
-                            <Badge className="bg-blue-100 text-blue-800 border-0">
-                              {interaction.feedbackPreference} feedback
-                            </Badge>
+                      <div key={interaction.swiperId} className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <User className="w-4 h-4 text-purple-600" />
+                              <h4 className="font-semibold text-purple-800">{swiper.name}</h4>
+                            </div>
+                            <p className="text-sm text-gray-600 mb-3">{swiper.study} • Age {swiper.age}</p>
+                            <div className="flex items-center gap-2 mb-3">
+                              <Badge className="bg-green-100 text-green-800 border-0">
+                                <Coins className="w-3 h-3 mr-1" />
+                                {interaction.coinAllocation} coins invested
+                              </Badge>
+                              <Badge className="bg-blue-100 text-blue-800 border-0">
+                                <MessageCircle className="w-3 h-3 mr-1" />
+                                {interaction.feedbackPreference} feedback
+                              </Badge>
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Investment shows their confidence in your startup
+                            </div>
                           </div>
+                          <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>
+                            <DialogTrigger asChild>
+                              <Button
+                                onClick={() => setSelectedSwiperId(interaction.swiperId)}
+                                size="sm"
+                                className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
+                              >
+                                <Send className="w-4 h-4 mr-1" />
+                                Request Meeting
+                              </Button>
+                            </DialogTrigger>
+                          </Dialog>
                         </div>
-                        <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>
-                          <DialogTrigger asChild>
-                            <Button
-                              onClick={() => setSelectedSwiperId(interaction.swiperId)}
-                              size="sm"
-                              className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
-                            >
-                              <Send className="w-4 h-4 mr-1" />
-                              Request Feedback
-                            </Button>
-                          </DialogTrigger>
-                        </Dialog>
                       </div>
                     );
                   })}
@@ -207,7 +219,8 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <Heart className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>No swipers have invested in your startup yet</p>
+                  <p>No investors yet</p>
+                  <p className="text-sm">Swipers who invest coins in your startup will appear here</p>
                 </div>
               )}
             </CardContent>
@@ -229,34 +242,44 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
                     if (!swiper) return null;
                     
                     return (
-                      <div key={interaction.swiperId} className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                        <div>
-                          <h4 className="font-semibold text-blue-800">{swiper.name}</h4>
-                          <p className="text-sm text-gray-600">{swiper.study} • Age {swiper.age}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge className="bg-blue-100 text-blue-800 border-0">
-                              {interaction.feedbackPreference} feedback
-                            </Badge>
-                            {interaction.coinAllocation > 0 && (
-                              <Badge className="bg-green-100 text-green-800 border-0">
-                                {interaction.coinAllocation} coins
+                      <div key={interaction.swiperId} className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <User className="w-4 h-4 text-blue-600" />
+                              <h4 className="font-semibold text-blue-800">{swiper.name}</h4>
+                            </div>
+                            <p className="text-sm text-gray-600 mb-3">{swiper.study} • Age {swiper.age}</p>
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge className="bg-blue-100 text-blue-800 border-0">
+                                <MessageCircle className="w-3 h-3 mr-1" />
+                                {interaction.feedbackPreference} feedback
                               </Badge>
-                            )}
+                              {interaction.coinAllocation > 0 && (
+                                <Badge className="bg-green-100 text-green-800 border-0">
+                                  <Coins className="w-3 h-3 mr-1" />
+                                  {interaction.coinAllocation} coins
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Open to providing feedback and insights
+                            </div>
                           </div>
+                          <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>
+                            <DialogTrigger asChild>
+                              <Button
+                                onClick={() => setSelectedSwiperId(interaction.swiperId)}
+                                size="sm"
+                                variant="outline"
+                                className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                              >
+                                <Send className="w-4 h-4 mr-1" />
+                                Request Meeting
+                              </Button>
+                            </DialogTrigger>
+                          </Dialog>
                         </div>
-                        <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>
-                          <DialogTrigger asChild>
-                            <Button
-                              onClick={() => setSelectedSwiperId(interaction.swiperId)}
-                              size="sm"
-                              variant="outline"
-                              className="border-blue-300 text-blue-600 hover:bg-blue-50"
-                            >
-                              <Send className="w-4 h-4 mr-1" />
-                              Request Meeting
-                            </Button>
-                          </DialogTrigger>
-                        </Dialog>
                       </div>
                     );
                   })}
@@ -264,7 +287,8 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>No swipers are currently available for feedback</p>
+                  <p>No one available for feedback yet</p>
+                  <p className="text-sm">Swipers who opt for feedback will appear here</p>
                 </div>
               )}
             </CardContent>
