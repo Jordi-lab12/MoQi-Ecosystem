@@ -23,7 +23,16 @@ export const Dashboard = ({
   coinAllocations,
   feedbackPreferences
 }: DashboardProps) => {
-  const { startupProfiles } = useAppData();
+  const { startupProfiles, currentSwiperId, swiperInteractions } = useAppData();
+  
+  // Get startups that this swiper hasn't swiped yet
+  const availableStartupsCount = currentSwiperId 
+    ? startupProfiles.filter(startup => 
+        !swiperInteractions.some(interaction => 
+          interaction.swiperId === currentSwiperId && interaction.startupId === startup.id
+        )
+      ).length
+    : startupProfiles.length;
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   const [isWhyMoQiOpen, setIsWhyMoQiOpen] = useState(false);
   const [showFeedbackRequests, setShowFeedbackRequests] = useState(false);
@@ -48,6 +57,13 @@ export const Dashboard = ({
             <Sparkles className="w-10 h-10 text-pink-500" />
           </div>
           <p className="text-gray-600 text-xl">Welcome back! Ready to discover amazing startups?</p>
+          {availableStartupsCount === 0 && startupProfiles.length > 0 && (
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-blue-800 text-sm">
+                🎉 You've swiped on all available startups! New startups will appear here when they register.
+              </p>
+            </div>
+          )}
           {startupProfiles.length === 0 && (
             <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
               <p className="text-yellow-800 text-sm">
@@ -61,15 +77,17 @@ export const Dashboard = ({
         <div className="text-center mb-12">
           <Button 
             onClick={onStartSwiping} 
-            disabled={startupProfiles.length === 0}
+            disabled={availableStartupsCount === 0}
             className="px-16 py-8 text-3xl font-bold rounded-3xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-2xl hover:shadow-purple-500/25 transform hover:scale-110 transition-all duration-300 flex items-center gap-6 mx-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
             <Play className="w-10 h-10" />
             Start Swiping ✨
           </Button>
           <p className="text-gray-500 mt-6 text-lg">
-            {startupProfiles.length > 0 
-              ? `Discover and invest in ${startupProfiles.length} promising startups` 
+            {availableStartupsCount > 0 
+              ? `Discover and invest in ${availableStartupsCount} new startups` 
+              : startupProfiles.length > 0
+              ? "You've seen all startups - check back for new ones!"
               : "No startups available to swipe on yet"
             }
           </p>

@@ -17,22 +17,12 @@ export const WelcomePage = ({ onRoleSelected }: WelcomePageProps) => {
     {
       id: "swiper" as UserRole,
       title: "Swiper",
-      subtitle: "Student Explorer",
+      subtitle: "Student & Professor Hub",
       description: "Discover amazing startups and find your perfect match for internships or jobs",
       icon: Heart,
       color: "from-pink-500 to-red-500",
       hoverColor: "hover:from-pink-600 hover:to-red-600",
       bgColor: "bg-gradient-to-br from-pink-50 to-red-50",
-    },
-    {
-      id: "professor" as UserRole,
-      title: "Professor",
-      subtitle: "Academic Mentor",
-      description: "Connect students with innovative startups and guide their career journey",
-      icon: GraduationCap,
-      color: "from-blue-500 to-indigo-500",
-      hoverColor: "hover:from-blue-600 hover:to-indigo-600",
-      bgColor: "bg-gradient-to-br from-blue-50 to-indigo-50",
     },
     {
       id: "startup" as UserRole,
@@ -63,7 +53,7 @@ export const WelcomePage = ({ onRoleSelected }: WelcomePageProps) => {
         </div>
 
         {/* Role Selection */}
-        <div className="grid md:grid-cols-3 gap-8 mb-8">
+        <div className="grid md:grid-cols-2 gap-8 mb-8 max-w-4xl mx-auto">
           {roles.map((role) => {
             const Icon = role.icon;
             const isSelected = selectedRole === role.id;

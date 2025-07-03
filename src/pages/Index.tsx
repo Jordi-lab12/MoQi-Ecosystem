@@ -181,20 +181,28 @@ const AppContent = () => {
     
     if (currentSwiperId && userData) {
       console.log("Adding swiper interactions for swiper:", currentSwiperId);
+      console.log("Current user data:", userData);
       Object.entries(allocations).forEach(([startupId, coinAllocation]) => {
         const startup = likedStartups.find(s => s.id === startupId);
         if (startup) {
           console.log("Adding interaction for startup:", startupId, "with allocation:", coinAllocation);
-          addSwiperInteraction({
+          const interaction = {
             swiperId: currentSwiperId,
             swiperName: userData.name,
             startupId: startupId,
             coinAllocation: coinAllocation,
             feedbackPreference: finalFeedbackPreferences[startupId] || "no",
             hasLiked: true
-          });
+          };
+          console.log("Created interaction object:", interaction);
+          addSwiperInteraction(interaction);
         }
       });
+      
+      // Log all interactions after adding
+      setTimeout(() => {
+        console.log("All swiper interactions after adding:", swiperInteractions);
+      }, 100);
     }
     
     setCurrentStage("results");
@@ -207,9 +215,20 @@ const AppContent = () => {
     setFeedbackPreferences({});
   };
 
-  const availableStartups: Startup[] = startupProfiles.map(profile => ({
-    ...profile
-  }));
+  // Get startups that this swiper hasn't swiped yet
+  const getAvailableStartups = (): Startup[] => {
+    if (!currentSwiperId) return [];
+    
+    const swipedStartupIds = swiperInteractions
+      .filter(interaction => interaction.swiperId === currentSwiperId)
+      .map(interaction => interaction.startupId);
+    
+    return startupProfiles
+      .filter(profile => !swipedStartupIds.includes(profile.id))
+      .map(profile => ({ ...profile }));
+  };
+
+  const availableStartups = getAvailableStartups();
 
   console.log("Available startups:", availableStartups);
 
