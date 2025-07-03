@@ -172,12 +172,10 @@ const AppContent = () => {
     }
   };
 
-  const handleAllocationComplete = (allocations: Record<string, number>, finalFeedbackPreferences: Record<string, FeedbackType>) => {
+  const handleAllocationComplete = (allocations: Record<string, number>) => {
     console.log("Allocation complete:", allocations);
-    console.log("Final feedback preferences:", finalFeedbackPreferences);
     
     setCoinAllocations(allocations);
-    setFeedbackPreferences(finalFeedbackPreferences);
     
     if (currentSwiperId && userData) {
       console.log("Updating swiper interactions for swiper:", currentSwiperId);
@@ -186,16 +184,19 @@ const AppContent = () => {
         const startup = likedStartups.find(s => s.id === startupId);
         if (startup) {
           console.log("Updating interaction for startup:", startupId, "with allocation:", coinAllocation);
-          const interaction = {
-            swiperId: currentSwiperId,
-            swiperName: userData.name,
-            startupId: startupId,
-            coinAllocation: coinAllocation,
-            feedbackPreference: finalFeedbackPreferences[startupId] || "no",
-            hasLiked: true
-          };
-          console.log("Updated interaction object:", interaction);
-          addSwiperInteraction(interaction);
+          // Find existing interaction and update it with coin allocation
+          const existingInteractionIndex = swiperInteractions.findIndex(
+            interaction => interaction.swiperId === currentSwiperId && interaction.startupId === startupId
+          );
+          
+          if (existingInteractionIndex !== -1) {
+            const updatedInteraction = {
+              ...swiperInteractions[existingInteractionIndex],
+              coinAllocation: coinAllocation
+            };
+            console.log("Updated interaction object:", updatedInteraction);
+            addSwiperInteraction(updatedInteraction);
+          }
         }
       });
       
@@ -323,7 +324,6 @@ const AppContent = () => {
           {currentStage === "allocation" && (
             <CoinAllocation 
               startups={likedStartups} 
-              feedbackPreferences={feedbackPreferences}
               onComplete={handleAllocationComplete}
             />
           )}

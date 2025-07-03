@@ -7,11 +7,10 @@ import type { Startup, FeedbackType } from "@/pages/Index";
 
 interface CoinAllocationProps {
   startups: Startup[];
-  feedbackPreferences: Record<string, FeedbackType>;
-  onComplete: (allocations: Record<string, number>, feedbackPreferences: Record<string, FeedbackType>) => void;
+  onComplete: (allocations: Record<string, number>) => void;
 }
 
-export const CoinAllocation = ({ startups, feedbackPreferences, onComplete }: CoinAllocationProps) => {
+export const CoinAllocation = ({ startups, onComplete }: CoinAllocationProps) => {
   const [allocations, setAllocations] = useState<Record<string, number>>(() => {
     const initialAllocations: Record<string, number> = {};
     startups.forEach((startup) => {
@@ -41,7 +40,7 @@ export const CoinAllocation = ({ startups, feedbackPreferences, onComplete }: Co
   };
 
   const handleComplete = () => {
-    onComplete(allocations, feedbackPreferences);
+    onComplete(allocations);
   };
 
   return (
