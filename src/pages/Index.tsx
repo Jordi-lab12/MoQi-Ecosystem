@@ -180,12 +180,12 @@ const AppContent = () => {
     setFeedbackPreferences(finalFeedbackPreferences);
     
     if (currentSwiperId && userData) {
-      console.log("Adding swiper interactions for swiper:", currentSwiperId);
+      console.log("Updating swiper interactions for swiper:", currentSwiperId);
       console.log("Current user data:", userData);
       Object.entries(allocations).forEach(([startupId, coinAllocation]) => {
         const startup = likedStartups.find(s => s.id === startupId);
         if (startup) {
-          console.log("Adding interaction for startup:", startupId, "with allocation:", coinAllocation);
+          console.log("Updating interaction for startup:", startupId, "with allocation:", coinAllocation);
           const interaction = {
             swiperId: currentSwiperId,
             swiperName: userData.name,
@@ -194,14 +194,14 @@ const AppContent = () => {
             feedbackPreference: finalFeedbackPreferences[startupId] || "no",
             hasLiked: true
           };
-          console.log("Created interaction object:", interaction);
+          console.log("Updated interaction object:", interaction);
           addSwiperInteraction(interaction);
         }
       });
       
-      // Log all interactions after adding
+      // Log all interactions after updating
       setTimeout(() => {
-        console.log("All swiper interactions after adding:", swiperInteractions);
+        console.log("All swiper interactions after updating:", swiperInteractions);
       }, 100);
     }
     

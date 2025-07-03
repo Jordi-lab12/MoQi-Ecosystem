@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, X, Info, Sparkles, Zap } from "lucide-react";
 import { StartupModal } from "./StartupModal";
+import { useAppData } from "@/contexts/AppDataContext";
 import type { Startup, FeedbackType } from "@/pages/Index";
 
 interface StartupSwiperProps {
@@ -11,16 +12,32 @@ interface StartupSwiperProps {
 }
 
 export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
+  const { addSwiperInteraction, currentSwiperId, getCurrentSwiperProfile } = useAppData();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likedStartups, setLikedStartups] = useState<Startup[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'like' | 'dislike' | null>(null);
 
   const currentStartup = startups[currentIndex];
+  const currentSwiperProfile = getCurrentSwiperProfile();
 
   const handleLike = () => {
     setSwipeDirection('like');
-    setLikedStartups([...likedStartups, currentStartup]);
+    const updatedLikedStartups = [...likedStartups, currentStartup];
+    setLikedStartups(updatedLikedStartups);
+    
+    // Record the interaction immediately
+    if (currentSwiperId && currentSwiperProfile) {
+      addSwiperInteraction({
+        swiperId: currentSwiperId,
+        swiperName: currentSwiperProfile.name,
+        startupId: currentStartup.id,
+        coinAllocation: 0, // Will be set later in allocation phase
+        feedbackPreference: 'all', // Default preference
+        hasLiked: true
+      });
+    }
+    
     setTimeout(() => {
       nextStartup();
       setSwipeDirection(null);
@@ -29,6 +46,19 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
 
   const handleDislike = () => {
     setSwipeDirection('dislike');
+    
+    // Record the dislike interaction immediately
+    if (currentSwiperId && currentSwiperProfile) {
+      addSwiperInteraction({
+        swiperId: currentSwiperId,
+        swiperName: currentSwiperProfile.name,
+        startupId: currentStartup.id,
+        coinAllocation: 0,
+        feedbackPreference: 'no',
+        hasLiked: false
+      });
+    }
+    
     setTimeout(() => {
       nextStartup();
       setSwipeDirection(null);
