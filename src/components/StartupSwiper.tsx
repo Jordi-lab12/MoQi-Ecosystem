@@ -20,7 +20,7 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
 
   const currentStartup = startups[currentIndex];
 
-  const handleLike = () => {
+  const handleLike = async () => {
     setSwipeDirection('like');
     const updatedLikedStartups = [...likedStartups, currentStartup];
     setLikedStartups(updatedLikedStartups);
@@ -46,7 +46,7 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
     }, 300);
   };
 
-  const handleDislike = () => {
+  const handleDislike = async () => {
     setSwipeDirection('dislike');
     
     // Record the dislike interaction immediately
