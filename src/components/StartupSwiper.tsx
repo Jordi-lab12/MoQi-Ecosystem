@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, X, Info, Sparkles, Zap } from "lucide-react";
 import { StartupModal } from "./StartupModal";
-import { useAppData } from "@/contexts/AppDataContext";
+import { useSupabaseData } from "@/contexts/SupabaseDataContext";
 import type { Startup, FeedbackType } from "@/pages/Index";
 
 interface StartupSwiperProps {
@@ -12,14 +12,13 @@ interface StartupSwiperProps {
 }
 
 export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
-  const { addSwiperInteraction, currentSwiperId, getCurrentSwiperProfile } = useAppData();
+  const { createSwiperInteraction, profile } = useSupabaseData();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likedStartups, setLikedStartups] = useState<Startup[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'like' | 'dislike' | null>(null);
 
   const currentStartup = startups[currentIndex];
-  const currentSwiperProfile = getCurrentSwiperProfile();
 
   const handleLike = () => {
     setSwipeDirection('like');
@@ -27,15 +26,18 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
     setLikedStartups(updatedLikedStartups);
     
     // Record the interaction immediately
-    if (currentSwiperId && currentSwiperProfile) {
-      addSwiperInteraction({
-        swiperId: currentSwiperId,
-        swiperName: currentSwiperProfile.name,
-        startupId: currentStartup.id,
-        coinAllocation: 0, // Will be set later in allocation phase
-        feedbackPreference: 'all', // Default preference
-        hasLiked: true
-      });
+    if (profile) {
+      try {
+        await createSwiperInteraction({
+          swiper_id: profile.id,
+          startup_id: currentStartup.id,
+          coin_allocation: 0, // Will be set later in allocation phase
+          feedback_preference: 'all', // Default preference
+          has_liked: true
+        });
+      } catch (error) {
+        console.error('Error creating swiper interaction:', error);
+      }
     }
     
     setTimeout(() => {
@@ -48,15 +50,18 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
     setSwipeDirection('dislike');
     
     // Record the dislike interaction immediately
-    if (currentSwiperId && currentSwiperProfile) {
-      addSwiperInteraction({
-        swiperId: currentSwiperId,
-        swiperName: currentSwiperProfile.name,
-        startupId: currentStartup.id,
-        coinAllocation: 0,
-        feedbackPreference: 'no',
-        hasLiked: false
-      });
+    if (profile) {
+      try {
+        await createSwiperInteraction({
+          swiper_id: profile.id,
+          startup_id: currentStartup.id,
+          coin_allocation: 0,
+          feedback_preference: 'no',
+          has_liked: false
+        });
+      } catch (error) {
+        console.error('Error creating swiper interaction:', error);
+      }
     }
     
     setTimeout(() => {

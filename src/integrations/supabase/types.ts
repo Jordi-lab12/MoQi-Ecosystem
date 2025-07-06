@@ -9,7 +9,177 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      feedback_requests: {
+        Row: {
+          created_at: string
+          feedback_type: string
+          id: string
+          message: string | null
+          scheduled_date: string
+          scheduled_time: string
+          startup_id: string
+          status: string
+          swiper_id: string
+          teams_link: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          feedback_type?: string
+          id?: string
+          message?: string | null
+          scheduled_date: string
+          scheduled_time: string
+          startup_id: string
+          status?: string
+          swiper_id: string
+          teams_link?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          feedback_type?: string
+          id?: string
+          message?: string | null
+          scheduled_date?: string
+          scheduled_time?: string
+          startup_id?: string
+          status?: string
+          swiper_id?: string
+          teams_link?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_requests_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_requests_swiper_id_fkey"
+            columns: ["swiper_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          age: string | null
+          created_at: string
+          description: string | null
+          employees: string | null
+          founded: string | null
+          gender: string | null
+          id: string
+          image: string | null
+          industry: string | null
+          logo: string | null
+          mission: string | null
+          name: string
+          role: string
+          study: string | null
+          tagline: string | null
+          updated_at: string
+          user_id: string
+          username: string
+          usp: string | null
+          vision: string | null
+        }
+        Insert: {
+          age?: string | null
+          created_at?: string
+          description?: string | null
+          employees?: string | null
+          founded?: string | null
+          gender?: string | null
+          id?: string
+          image?: string | null
+          industry?: string | null
+          logo?: string | null
+          mission?: string | null
+          name: string
+          role: string
+          study?: string | null
+          tagline?: string | null
+          updated_at?: string
+          user_id: string
+          username: string
+          usp?: string | null
+          vision?: string | null
+        }
+        Update: {
+          age?: string | null
+          created_at?: string
+          description?: string | null
+          employees?: string | null
+          founded?: string | null
+          gender?: string | null
+          id?: string
+          image?: string | null
+          industry?: string | null
+          logo?: string | null
+          mission?: string | null
+          name?: string
+          role?: string
+          study?: string | null
+          tagline?: string | null
+          updated_at?: string
+          user_id?: string
+          username?: string
+          usp?: string | null
+          vision?: string | null
+        }
+        Relationships: []
+      }
+      swiper_interactions: {
+        Row: {
+          coin_allocation: number
+          created_at: string
+          feedback_preference: string
+          has_liked: boolean
+          id: string
+          startup_id: string
+          swiper_id: string
+        }
+        Insert: {
+          coin_allocation?: number
+          created_at?: string
+          feedback_preference: string
+          has_liked: boolean
+          id?: string
+          startup_id: string
+          swiper_id: string
+        }
+        Update: {
+          coin_allocation?: number
+          created_at?: string
+          feedback_preference?: string
+          has_liked?: boolean
+          id?: string
+          startup_id?: string
+          swiper_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "swiper_interactions_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "swiper_interactions_swiper_id_fkey"
+            columns: ["swiper_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
