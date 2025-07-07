@@ -1,34 +1,28 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, MessageCircle, CheckCircle, XCircle, Clock, ExternalLink } from "lucide-react";
-import { useAppData } from "@/contexts/AppDataContext";
+import { useSupabaseData } from "@/contexts/SupabaseDataContext";
 
 interface FeedbackRequestsProps {
   onBack: () => void;
 }
 
 export const FeedbackRequests = ({ onBack }: FeedbackRequestsProps) => {
-  const { 
-    getFeedbackRequestsForSwiper, 
-    updateFeedbackRequest, 
-    currentSwiperId 
-  } = useAppData();
-
-  const requests = currentSwiperId ? getFeedbackRequestsForSwiper(currentSwiperId) : [];
+  const [requests, setRequests] = useState<any[]>([]);
+  
+  // Note: This component needs to be updated with proper Supabase data fetching
+  // For now, showing empty state
 
   const handleAcceptRequest = (requestId: string) => {
-    const teamsLink = `https://teams.microsoft.com/l/meetup-join/meeting_${Math.random().toString(36).substr(2, 9)}`;
-    updateFeedbackRequest(requestId, { 
-      status: 'accepted',
-      teamsLink: teamsLink
-    });
+    // Note: Update with Supabase implementation
+    console.log('Accept request:', requestId);
   };
 
   const handleDeclineRequest = (requestId: string) => {
-    updateFeedbackRequest(requestId, { status: 'declined' });
+    // Note: Update with Supabase implementation
+    console.log('Decline request:', requestId);
   };
 
   const getStatusBadge = (status: string) => {
