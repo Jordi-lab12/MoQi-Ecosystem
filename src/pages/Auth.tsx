@@ -84,27 +84,16 @@ export const Auth = () => {
         if (error) throw error;
       } else {
         // Sign up
+        // Sign up with metadata for the trigger
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`
-          }
-        });
-        
-        if (error) throw error;
-        
-        if (data.user) {
-          // Create profile
-          const defaultImage = `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000000)}?w=400&h=300&fit=crop`;
-          
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
-              user_id: data.user.id,
-              role,
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
               name,
               username,
+              role,
               ...(role === 'swiper' ? {
                 age,
                 study,
@@ -119,11 +108,44 @@ export const Auth = () => {
                 founded,
                 employees,
                 logo: '🚀',
-                image: defaultImage
+                image: `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000000)}?w=400&h=300&fit=crop`
               })
-            });
-            
-          if (profileError) throw profileError;
+            }
+          }
+        });
+        
+        if (error) throw error;
+        
+        if (data.user) {
+          // Profile will be created automatically by trigger
+          // Now update it with the additional fields
+          const updateData: any = { role, name, username };
+          
+          if (role === 'swiper') {
+            updateData.age = age;
+            updateData.study = study;
+            updateData.gender = 'Male';
+          } else {
+            updateData.tagline = tagline;
+            updateData.description = description;
+            updateData.usp = usp;
+            updateData.mission = mission;
+            updateData.vision = vision;
+            updateData.industry = industry;
+            updateData.founded = founded;
+            updateData.employees = employees;
+            updateData.logo = '🚀';
+            updateData.image = `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000000)}?w=400&h=300&fit=crop`;
+          }
+          
+          // Wait a moment for the trigger to complete, then update
+          setTimeout(async () => {
+            await supabase
+              .from('profiles')
+              .update(updateData)
+              .eq('user_id', data.user!.id);
+          }, 1000);
+          
           navigate('/');
         }
       }
