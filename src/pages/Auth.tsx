@@ -138,8 +138,13 @@ export const Auth = () => {
             updateData.image = `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000000)}?w=400&h=300&fit=crop`;
           }
           
-          // Profile will be created automatically by trigger with the metadata
-          console.log('Profile created via trigger with user data');
+          // Wait a moment for the trigger to complete, then update
+          setTimeout(async () => {
+            await supabase
+              .from('profiles')
+              .update(updateData)
+              .eq('user_id', data.user!.id);
+          }, 1000);
           
           navigate('/');
         }
