@@ -4,31 +4,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, MessageCircle, CheckCircle, XCircle, Clock, ExternalLink } from "lucide-react";
-import { useAppData } from "@/contexts/AppDataContext";
+import { useSupabaseData } from "@/contexts/SupabaseDataContext";
 
 interface FeedbackRequestsProps {
   onBack: () => void;
 }
 
 export const FeedbackRequests = ({ onBack }: FeedbackRequestsProps) => {
-  const { 
-    getFeedbackRequestsForSwiper, 
-    updateFeedbackRequest, 
-    currentSwiperId 
-  } = useAppData();
-
-  const requests = currentSwiperId ? getFeedbackRequestsForSwiper(currentSwiperId) : [];
+  const { profile } = useSupabaseData();
+  
+  // For now, show empty state since we need to implement feedback requests
+  const requests: any[] = [];
 
   const handleAcceptRequest = (requestId: string) => {
-    const teamsLink = `https://teams.microsoft.com/l/meetup-join/meeting_${Math.random().toString(36).substr(2, 9)}`;
-    updateFeedbackRequest(requestId, { 
-      status: 'accepted',
-      teamsLink: teamsLink
-    });
+    // Simplified - just log for now
+    console.log('Accept request:', requestId);
   };
 
   const handleDeclineRequest = (requestId: string) => {
-    updateFeedbackRequest(requestId, { status: 'declined' });
+    // Simplified - just log for now  
+    console.log('Decline request:', requestId);
   };
 
   const getStatusBadge = (status: string) => {

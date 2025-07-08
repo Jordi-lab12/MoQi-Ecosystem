@@ -8,92 +8,39 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Users, TrendingUp, MessageCircle, Calendar, Eye, Heart, Coins, Send, Clock, User } from "lucide-react";
-import { useAppData } from "@/contexts/AppDataContext";
+import { useSupabaseData } from "@/contexts/SupabaseDataContext";
 
 interface StartupDashboardProps {
   startupName?: string;
 }
 
 export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
-  const { 
-    getSwiperInteractionsForStartup, 
-    createFeedbackRequest, 
-    currentStartupId,
-    getCurrentStartupProfile,
-    swiperProfiles,
-    swiperInteractions
-  } = useAppData();
-
-  // Debug logging
-  console.log("StartupDashboard - Current startup ID:", currentStartupId);
-  console.log("StartupDashboard - All swiper interactions:", swiperInteractions);
-
+  const { profile } = useSupabaseData();
+  
+  // Simplified for display purposes
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
   const [selectedSwiperId, setSelectedSwiperId] = useState("");
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [scheduledDate, setScheduledDate] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
 
-  const currentStartup = getCurrentStartupProfile();
-  const startupInteractions = currentStartupId ? getSwiperInteractionsForStartup(currentStartupId) : [];
-  
-  console.log("StartupDashboard - Current startup profile:", currentStartup);
-  console.log("StartupDashboard - Startup interactions:", startupInteractions);
-  
-  // Get swipers who liked this startup and invested coins
-  const swipersWhoLiked = startupInteractions.filter(interaction => 
-    interaction.hasLiked && interaction.coinAllocation > 0
-  );
-  
-  // Get swipers who are open to feedback (group or all) but may not have invested
-  const swipersOpenToFeedback = swiperInteractions.filter(interaction => 
-    interaction.startupId === currentStartupId && 
-    (interaction.feedbackPreference === "group" || interaction.feedbackPreference === "all")
-  );
-
-  console.log("StartupDashboard - Swipers who liked:", swipersWhoLiked);
-  console.log("StartupDashboard - Swipers open to feedback:", swipersOpenToFeedback);
-
-  // Calculate total coins received
-  const totalCoins = swipersWhoLiked.reduce((sum, interaction) => sum + interaction.coinAllocation, 0);
-  
-  // Calculate average coins per swiper
-  const averageCoins = swipersWhoLiked.length > 0 ? Math.round(totalCoins / swipersWhoLiked.length) : 0;
+  // Mock data for demonstration
+  const swipersWhoLiked: any[] = [];
+  const swipersOpenToFeedback: any[] = [];
+  const totalCoins = 0;
+  const averageCoins = 0;
 
   const handleSendFeedbackRequest = () => {
-    if (!selectedSwiperId || !scheduledDate || !scheduledTime || !currentStartupId || !currentStartup) {
-      return;
-    }
-
-    const selectedSwiper = swiperProfiles.find(s => s.id === selectedSwiperId);
-    if (!selectedSwiper) return;
-
-    createFeedbackRequest({
-      startupId: currentStartupId,
-      startupName: currentStartup.name,
-      swiperId: selectedSwiperId,
-      swiperName: selectedSwiper.name,
-      feedbackType: "meeting",
-      scheduledDate,
-      scheduledTime,
-      message: feedbackMessage,
-      status: "pending"
-    });
-
-    // Reset form
-    setSelectedSwiperId("");
-    setFeedbackMessage("");
-    setScheduledDate("");
-    setScheduledTime("");
+    console.log('Sending feedback request...');
     setFeedbackDialogOpen(false);
   };
 
-  if (!currentStartup) {
+  if (!profile || profile.role !== 'startup') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Startup Profile Not Found</h2>
-          <p className="text-gray-600">Please make sure you're logged in as a startup.</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Startup Dashboard</h2>
+          <p className="text-gray-600">Please log in as a startup to access this dashboard.</p>
         </div>
       </div>
     );
@@ -102,25 +49,23 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
   return (
     <div className="min-h-screen p-6 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
-            <div className="text-4xl">{currentStartup.logo}</div>
+            <div className="text-4xl">{profile.logo || '🚀'}</div>
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                {currentStartup.name}
+                {profile.name}
               </h1>
-              <p className="text-gray-600 text-lg">{currentStartup.tagline}</p>
+              <p className="text-gray-600 text-lg">{profile.tagline || 'Your startup tagline'}</p>
             </div>
           </div>
         </div>
 
         {/* Debug Info */}
         <div className="mb-8 p-4 bg-yellow-100 rounded-lg">
-          <h3 className="font-bold text-yellow-800 mb-2">Debug Info:</h3>
-          <p className="text-yellow-700">Total interactions: {startupInteractions.length}</p>
-          <p className="text-yellow-700">Swipers who liked: {swipersWhoLiked.length}</p>
-          <p className="text-yellow-700">Open to feedback: {swipersOpenToFeedback.length}</p>
+          <h3 className="font-bold text-yellow-800 mb-2">Startup Dashboard:</h3>
+          <p className="text-yellow-700">Profile loaded successfully!</p>
+          <p className="text-yellow-700">Role: {profile.role}</p>
         </div>
 
         {/* Analytics Overview */}
@@ -190,49 +135,7 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
             <CardContent>
               {swipersWhoLiked.length > 0 ? (
                 <div className="space-y-4">
-                  {swipersWhoLiked.map((interaction) => {
-                    const swiper = swiperProfiles.find(s => s.id === interaction.swiperId);
-                    if (!swiper) return null;
-                    
-                    return (
-                      <div key={interaction.swiperId} className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <User className="w-4 h-4 text-purple-600" />
-                              <h4 className="font-semibold text-purple-800">{swiper.name}</h4>
-                            </div>
-                            <p className="text-sm text-gray-600 mb-3">{swiper.study} • Age {swiper.age}</p>
-                            <div className="flex items-center gap-2 mb-3">
-                              <Badge className="bg-green-100 text-green-800 border-0">
-                                <Coins className="w-3 h-3 mr-1" />
-                                {interaction.coinAllocation} coins invested
-                              </Badge>
-                              <Badge className="bg-blue-100 text-blue-800 border-0">
-                                <MessageCircle className="w-3 h-3 mr-1" />
-                                {interaction.feedbackPreference} feedback
-                              </Badge>
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              Investment shows their confidence in your startup
-                            </div>
-                          </div>
-                          <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>
-                            <DialogTrigger asChild>
-                              <Button
-                                onClick={() => setSelectedSwiperId(interaction.swiperId)}
-                                size="sm"
-                                className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
-                              >
-                                <Send className="w-4 h-4 mr-1" />
-                                Request Meeting
-                              </Button>
-                            </DialogTrigger>
-                          </Dialog>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  <p className="text-gray-500">No real data yet - this will show swipers who invested in your startup</p>
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">
@@ -255,52 +158,7 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
             <CardContent>
               {swipersOpenToFeedback.length > 0 ? (
                 <div className="space-y-4">
-                  {swipersOpenToFeedback.map((interaction) => {
-                    const swiper = swiperProfiles.find(s => s.id === interaction.swiperId);
-                    if (!swiper) return null;
-                    
-                    return (
-                      <div key={interaction.swiperId} className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <User className="w-4 h-4 text-blue-600" />
-                              <h4 className="font-semibold text-blue-800">{swiper.name}</h4>
-                            </div>
-                            <p className="text-sm text-gray-600 mb-3">{swiper.study} • Age {swiper.age}</p>
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge className="bg-blue-100 text-blue-800 border-0">
-                                <MessageCircle className="w-3 h-3 mr-1" />
-                                {interaction.feedbackPreference} feedback
-                              </Badge>
-                              {interaction.coinAllocation > 0 && (
-                                <Badge className="bg-green-100 text-green-800 border-0">
-                                  <Coins className="w-3 h-3 mr-1" />
-                                  {interaction.coinAllocation} coins
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              Open to providing feedback and insights
-                            </div>
-                          </div>
-                          <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>
-                            <DialogTrigger asChild>
-                              <Button
-                                onClick={() => setSelectedSwiperId(interaction.swiperId)}
-                                size="sm"
-                                variant="outline"
-                                className="border-blue-300 text-blue-600 hover:bg-blue-50"
-                              >
-                                <Send className="w-4 h-4 mr-1" />
-                                Request Meeting
-                              </Button>
-                            </DialogTrigger>
-                          </Dialog>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  <p className="text-gray-500">No real data yet - this will show swipers open to feedback</p>
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">
