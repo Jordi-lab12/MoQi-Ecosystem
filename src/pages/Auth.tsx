@@ -91,11 +91,24 @@ export const Auth = () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        console.log('Attempting login...');
+        
+        // Add timeout protection
+        const loginPromise = supabase.auth.signInWithPassword({
           email,
           password
         });
+        
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Login timeout - please try again')), 10000)
+        );
+        
+        const { error } = await Promise.race([loginPromise, timeoutPromise]) as any;
+        console.log('Login result:', error ? 'Error' : 'Success');
         if (error) throw error;
+        
+        // Don't redirect here - let the auth state change handle it
+        console.log('Login successful, waiting for redirect...');
       } else {
         // Sign up
         // Generate a unique username by adding timestamp if needed
@@ -161,8 +174,10 @@ export const Auth = () => {
         }
       }
     } catch (error: any) {
+      console.error('Auth error:', error);
       setError(error.message);
     } finally {
+      console.log('Setting loading to false');
       setIsLoading(false);
     }
   };
