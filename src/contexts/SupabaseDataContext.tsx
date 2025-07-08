@@ -88,6 +88,9 @@ export const SupabaseDataProvider: React.FC<{ children: ReactNode }> = ({ childr
   useEffect(() => {
     console.log('SupabaseDataContext: Setting up auth listener');
     
+    // Set loading to false immediately to unblock the UI
+    setLoading(false);
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state change:', event, !!session?.user);
@@ -96,26 +99,29 @@ export const SupabaseDataProvider: React.FC<{ children: ReactNode }> = ({ childr
         
         if (session?.user) {
           console.log('Fetching profile for user:', session.user.id);
-          // Fetch user profile
-          const { data: profileData, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
-          
-          if (error) {
-            console.error('Error fetching profile:', error);
-          }
-          
-          console.log('Profile data:', profileData);
-          setProfile(profileData as Profile);
+          // Fetch user profile in background
+          setTimeout(async () => {
+            try {
+              const { data: profileData, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('user_id', session.user.id)
+                .maybeSingle();
+              
+              if (error) {
+                console.error('Error fetching profile:', error);
+              } else {
+                console.log('Profile data:', profileData);
+                setProfile(profileData as Profile);
+              }
+            } catch (err) {
+              console.error('Profile fetch error:', err);
+            }
+          }, 0);
         } else {
           console.log('No user session, clearing profile');
           setProfile(null);
         }
-        
-        console.log('Setting loading to false');
-        setLoading(false);
       }
     );
 
@@ -126,30 +132,31 @@ export const SupabaseDataProvider: React.FC<{ children: ReactNode }> = ({ childr
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        console.log('Fetching initial profile for user:', session.user.id);
-        // Fetch user profile
-        const { data: profileData, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
-        
-        if (error) {
-          console.error('Error fetching initial profile:', error);
-        }
-        
-        console.log('Initial profile data:', profileData);
-        setProfile(profileData as Profile);
+        // Fetch profile in background without blocking
+        setTimeout(async () => {
+          try {
+            const { data: profileData, error } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('user_id', session.user.id)
+              .maybeSingle();
+            
+            if (error) {
+              console.error('Error fetching initial profile:', error);
+            } else {
+              console.log('Initial profile data:', profileData);
+              setProfile(profileData as Profile);
+            }
+          } catch (err) {
+            console.error('Initial profile fetch error:', err);
+          }
+        }, 0);
       } else {
         console.log('No initial session, clearing profile');
         setProfile(null);
       }
-      
-      console.log('Setting initial loading to false');
-      setLoading(false);
     }).catch(error => {
       console.error('Error getting session:', error);
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
