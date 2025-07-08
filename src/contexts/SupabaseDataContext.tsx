@@ -108,9 +108,24 @@ export const SupabaseDataProvider: React.FC<{ children: ReactNode }> = ({ childr
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        // Fetch user profile
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        setProfile(profileData as Profile);
+      } else {
+        setProfile(null);
+      }
+      
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
