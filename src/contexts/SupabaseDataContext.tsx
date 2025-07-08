@@ -86,12 +86,16 @@ export const SupabaseDataProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('SupabaseDataContext: Setting up auth listener');
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, !!session?.user);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          console.log('Fetching profile for user:', session.user.id);
           // Fetch user profile
           const { data: profileData, error } = await supabase
             .from('profiles')
@@ -103,20 +107,26 @@ export const SupabaseDataProvider: React.FC<{ children: ReactNode }> = ({ childr
             console.error('Error fetching profile:', error);
           }
           
+          console.log('Profile data:', profileData);
           setProfile(profileData as Profile);
         } else {
+          console.log('No user session, clearing profile');
           setProfile(null);
         }
         
+        console.log('Setting loading to false');
         setLoading(false);
       }
     );
 
+    console.log('Getting initial session');
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log('Initial session:', !!session?.user);
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
+        console.log('Fetching initial profile for user:', session.user.id);
         // Fetch user profile
         const { data: profileData, error } = await supabase
           .from('profiles')
@@ -125,14 +135,20 @@ export const SupabaseDataProvider: React.FC<{ children: ReactNode }> = ({ childr
           .maybeSingle();
         
         if (error) {
-          console.error('Error fetching profile:', error);
+          console.error('Error fetching initial profile:', error);
         }
         
+        console.log('Initial profile data:', profileData);
         setProfile(profileData as Profile);
       } else {
+        console.log('No initial session, clearing profile');
         setProfile(null);
       }
       
+      console.log('Setting initial loading to false');
+      setLoading(false);
+    }).catch(error => {
+      console.error('Error getting session:', error);
       setLoading(false);
     });
 
