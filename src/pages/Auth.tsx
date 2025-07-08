@@ -84,7 +84,9 @@ export const Auth = () => {
         if (error) throw error;
       } else {
         // Sign up
-        // Sign up with metadata for the trigger
+        // Generate a unique username by adding timestamp if needed
+        const uniqueUsername = username + '_' + Date.now().toString().slice(-4);
+        
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -92,7 +94,7 @@ export const Auth = () => {
             emailRedirectTo: `${window.location.origin}/`,
             data: {
               name,
-              username,
+              username: uniqueUsername,
               role,
               ...(role === 'swiper' ? {
                 age,
