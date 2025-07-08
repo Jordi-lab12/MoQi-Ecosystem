@@ -8,31 +8,26 @@ import { MeetingCalendar } from "./MeetingCalendar";
 import { Portfolio } from "./Portfolio";
 import { FeedbackRequests } from "./FeedbackRequests";
 import { Startup, FeedbackType } from "@/pages/Index";
-import { useAppData } from "@/contexts/AppDataContext";
+import { useSupabaseData } from "@/contexts/SupabaseDataContext";
 
 interface DashboardProps {
   onStartSwiping: () => void;
   likedStartups: Startup[];
   coinAllocations: Record<string, number>;
   feedbackPreferences: Record<string, FeedbackType>;
+  availableStartupsCount: number;
+  totalStartupsCount: number;
 }
 
 export const Dashboard = ({
   onStartSwiping,
   likedStartups,
   coinAllocations,
-  feedbackPreferences
+  feedbackPreferences,
+  availableStartupsCount,
+  totalStartupsCount
 }: DashboardProps) => {
-  const { startupProfiles, currentSwiperId, swiperInteractions } = useAppData();
-  
-  // Get startups that this swiper hasn't swiped yet
-  const availableStartupsCount = currentSwiperId 
-    ? startupProfiles.filter(startup => 
-        !swiperInteractions.some(interaction => 
-          interaction.swiperId === currentSwiperId && interaction.startupId === startup.id
-        )
-      ).length
-    : startupProfiles.length;
+  const { getAllStartups, getSwipedStartupIds } = useSupabaseData();
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   const [isWhyMoQiOpen, setIsWhyMoQiOpen] = useState(false);
   const [showFeedbackRequests, setShowFeedbackRequests] = useState(false);
@@ -57,14 +52,14 @@ export const Dashboard = ({
             <Sparkles className="w-10 h-10 text-pink-500" />
           </div>
           <p className="text-gray-600 text-xl">Welcome back! Ready to discover amazing startups?</p>
-          {availableStartupsCount === 0 && startupProfiles.length > 0 && (
+          {availableStartupsCount === 0 && totalStartupsCount > 0 && (
             <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-blue-800 text-sm">
                 🎉 You've swiped on all available startups! New startups will appear here when they register.
               </p>
             </div>
           )}
-          {startupProfiles.length === 0 && (
+          {totalStartupsCount === 0 && (
             <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
               <p className="text-yellow-800 text-sm">
                 ℹ️ No startups are currently registered. You'll need some startups to swipe on first!
@@ -86,7 +81,7 @@ export const Dashboard = ({
           <p className="text-gray-500 mt-6 text-lg">
             {availableStartupsCount > 0 
               ? `Discover and invest in ${availableStartupsCount} new startups` 
-              : startupProfiles.length > 0
+              : totalStartupsCount > 0
               ? "You've seen all startups - check back for new ones!"
               : "No startups available to swipe on yet"
             }

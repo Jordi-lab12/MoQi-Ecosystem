@@ -28,6 +28,7 @@ const Index = () => {
 
   const [currentStage, setCurrentStage] = useState<"dashboard" | "swiping" | "allocation" | "results">("dashboard");
   const [availableStartups, setAvailableStartups] = useState<Startup[]>([]);
+  const [allStartups, setAllStartups] = useState<Startup[]>([]);
   const [likedStartups, setLikedStartups] = useState<Startup[]>([]);
   const [coinAllocations, setCoinAllocations] = useState<Record<string, number>>({});
   const [feedbackPreferences, setFeedbackPreferences] = useState<Record<string, FeedbackType>>({});
@@ -41,12 +42,13 @@ const Index = () => {
 
   const loadAvailableStartups = async () => {
     try {
-      const [allStartups, swipedIds] = await Promise.all([
+      const [allStartupsData, swipedIds] = await Promise.all([
         getAllStartups(),
         getSwipedStartupIds()
       ]);
       
-      const available = allStartups.filter(startup => !swipedIds.includes(startup.id));
+      setAllStartups(allStartupsData);
+      const available = allStartupsData.filter(startup => !swipedIds.includes(startup.id));
       setAvailableStartups(available);
     } catch (error) {
       console.error('Error loading startups:', error);
@@ -179,6 +181,8 @@ const Index = () => {
               likedStartups={likedStartups}
               coinAllocations={coinAllocations}
               feedbackPreferences={feedbackPreferences}
+              availableStartupsCount={availableStartups.length}
+              totalStartupsCount={allStartups.length}
             />
           )}
           
