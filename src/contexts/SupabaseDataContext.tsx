@@ -93,11 +93,15 @@ export const SupabaseDataProvider: React.FC<{ children: ReactNode }> = ({ childr
         
         if (session?.user) {
           // Fetch user profile
-          const { data: profileData } = await supabase
+          const { data: profileData, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('user_id', session.user.id)
-            .single();
+            .maybeSingle();
+          
+          if (error) {
+            console.error('Error fetching profile:', error);
+          }
           
           setProfile(profileData as Profile);
         } else {
@@ -114,11 +118,15 @@ export const SupabaseDataProvider: React.FC<{ children: ReactNode }> = ({ childr
       
       if (session?.user) {
         // Fetch user profile
-        const { data: profileData } = await supabase
+        const { data: profileData, error } = await supabase
           .from('profiles')
           .select('*')
           .eq('user_id', session.user.id)
-          .single();
+          .maybeSingle();
+        
+        if (error) {
+          console.error('Error fetching profile:', error);
+        }
         
         setProfile(profileData as Profile);
       } else {
