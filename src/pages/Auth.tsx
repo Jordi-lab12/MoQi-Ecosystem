@@ -46,11 +46,15 @@ export const Auth = () => {
         if (session?.user) {
           setUser(session.user);
           // Check if user has a profile, if so redirect to main app
-          const { data: profile } = await supabase
+          const { data: profile, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('user_id', session.user.id)
-            .single();
+            .maybeSingle();
+          
+          if (error) {
+            console.error('Error fetching profile in Auth:', error);
+          }
           
           if (profile) {
             navigate('/');
@@ -61,9 +65,19 @@ export const Auth = () => {
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
+        // Also check profile on initial load
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+        
+        if (profile && !error) {
+          navigate('/');
+        }
       }
     });
 
