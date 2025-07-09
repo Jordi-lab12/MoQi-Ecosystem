@@ -6,9 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Users, TrendingUp, MessageCircle, Calendar, Eye, Heart, Coins, Send, Clock, User } from "lucide-react";
 import { useSupabaseData } from "@/contexts/SupabaseDataContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface StartupDashboardProps {
   startupName?: string;
@@ -30,6 +32,7 @@ interface SwiperInteractionWithProfile {
 
 export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
   const { profile } = useSupabaseData();
+  const { toast } = useToast();
   const [swipersWhoLiked, setSwipersWhoLiked] = useState<SwiperInteractionWithProfile[]>([]);
   const [swipersOpenToFeedback, setSwipersOpenToFeedback] = useState<SwiperInteractionWithProfile[]>([]);
   const [totalCoins, setTotalCoins] = useState(0);
@@ -41,6 +44,8 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [scheduledDate, setScheduledDate] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
+  const [feedbackSessionType, setFeedbackSessionType] = useState<'individual' | 'group'>('individual');
+  const [teamsLink, setTeamsLink] = useState("");
 
   useEffect(() => {
     const loadSwiperData = async () => {
@@ -101,9 +106,54 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
     loadSwiperData();
   }, [profile]);
 
-  const handleSendFeedbackRequest = () => {
-    console.log('Sending feedback request...');
-    setFeedbackDialogOpen(false);
+  const handleSendFeedbackRequest = async () => {
+    if (!profile || !selectedSwiperId || !scheduledDate || !scheduledTime) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('feedback_requests')
+        .insert({
+          startup_id: profile.id,
+          swiper_id: selectedSwiperId,
+          scheduled_date: scheduledDate,
+          scheduled_time: scheduledTime,
+          message: feedbackMessage,
+          teams_link: teamsLink,
+          feedback_session_type: feedbackSessionType,
+          status: 'pending'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Feedback request sent successfully!",
+        variant: "default"
+      });
+
+      // Reset form
+      setSelectedSwiperId("");
+      setFeedbackMessage("");
+      setScheduledDate("");
+      setScheduledTime("");
+      setTeamsLink("");
+      setFeedbackSessionType('individual');
+      setFeedbackDialogOpen(false);
+    } catch (error) {
+      console.error('Error sending feedback request:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send feedback request",
+        variant: "destructive"
+      });
+    }
   };
 
   if (!profile || profile.role !== 'startup') {
@@ -269,6 +319,13 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
                             {interaction.swiper_age && <span>Age: {interaction.swiper_age}</span>}
                             {interaction.swiper_study && <span>• {interaction.swiper_study}</span>}
                           </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline" className="text-xs">
+                              {interaction.feedback_preference === 'all' ? 'All Feedback' : 
+                               interaction.feedback_preference === 'individual' ? '1-on-1 Only' : 
+                               interaction.feedback_preference === 'group' ? 'Group Only' : 'No Preference'}
+                            </Badge>
+                          </div>
                         </div>
                       </div>
                       <Button
@@ -307,6 +364,32 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
             </DialogHeader>
             <div className="space-y-4 mt-4">
               <div>
+                <Label>Feedback Session Type</Label>
+                <RadioGroup 
+                  value={feedbackSessionType} 
+                  onValueChange={(value) => setFeedbackSessionType(value as 'individual' | 'group')}
+                  className="mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="individual" id="individual" />
+                    <Label htmlFor="individual" className="text-sm">
+                      1-on-1 Session (Individual feedback)
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="group" id="group" />
+                    <Label htmlFor="group" className="text-sm">
+                      Group Session (Multiple swipers)
+                    </Label>
+                  </div>
+                </RadioGroup>
+                {feedbackSessionType === 'group' && (
+                  <p className="text-xs text-orange-600 mt-1">
+                    Note: Only swipers who accept "all" feedback types can join group sessions
+                  </p>
+                )}
+              </div>
+              <div>
                 <Label htmlFor="date">Date</Label>
                 <Input
                   id="date"
@@ -326,6 +409,17 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
                   onChange={(e) => setScheduledTime(e.target.value)}
                   className="mt-1"
                   required
+                />
+              </div>
+              <div>
+                <Label htmlFor="teamsLink">Teams Meeting Link (Optional)</Label>
+                <Input
+                  id="teamsLink"
+                  type="url"
+                  value={teamsLink}
+                  onChange={(e) => setTeamsLink(e.target.value)}
+                  placeholder="https://teams.microsoft.com/..."
+                  className="mt-1"
                 />
               </div>
               <div>

@@ -25,7 +25,6 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
   const handleLike = async () => {
     setSwipeDirection('like');
     const updatedLikedStartups = [...likedStartups, currentStartup];
-    setLikedStartups(updatedLikedStartups);
     
     // Record the interaction immediately
     if (profile) {
@@ -49,6 +48,9 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
           ...prev,
           [currentStartup.id]: data.id
         }));
+        
+        // Update state after successful DB operation
+        setLikedStartups(updatedLikedStartups);
       } catch (error) {
         console.error('Error creating swiper interaction:', error);
       }
@@ -88,36 +90,35 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
     if (currentIndex < startups.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      // Check if only one startup was liked - auto-assign 100 coins
-      if (likedStartups.length === 1 && profile) {
-        const startupId = likedStartups[0].id;
-        const interactionId = interactionIds[startupId];
-        
-        if (interactionId) {
-          try {
-            await updateSwiperInteraction(interactionId, {
-              coin_allocation: 100
-            });
-            console.log('Auto-assigned 100 coins to single liked startup');
-          } catch (error) {
-            console.error('Error auto-assigning coins:', error);
+      // Use a callback to ensure we have the latest state
+      setTimeout(() => {
+        setLikedStartups((currentLikedStartups) => {
+          // Check if only one startup was liked - auto-assign 100 coins
+          if (currentLikedStartups.length === 1 && profile) {
+            const startupId = currentLikedStartups[0].id;
+            const interactionId = interactionIds[startupId];
+            
+            if (interactionId) {
+              updateSwiperInteraction(interactionId, {
+                coin_allocation: 100
+              }).then(() => {
+                console.log('Auto-assigned 100 coins to single liked startup');
+              }).catch((error) => {
+                console.error('Error auto-assigning coins:', error);
+              });
+            }
           }
-        }
-        
-        // Skip allocation phase and go directly to results
-        const initialFeedbackPreferences: Record<string, FeedbackType> = {};
-        likedStartups.forEach((startup) => {
-          initialFeedbackPreferences[startup.id] = 'all';
+          
+          // Create feedback preferences
+          const initialFeedbackPreferences: Record<string, FeedbackType> = {};
+          currentLikedStartups.forEach((startup) => {
+            initialFeedbackPreferences[startup.id] = 'all';
+          });
+          
+          onComplete(currentLikedStartups, initialFeedbackPreferences);
+          return currentLikedStartups;
         });
-        onComplete(likedStartups, initialFeedbackPreferences);
-      } else {
-        // Normal flow - go to allocation phase
-        const initialFeedbackPreferences: Record<string, FeedbackType> = {};
-        likedStartups.forEach((startup) => {
-          initialFeedbackPreferences[startup.id] = 'all';
-        });
-        onComplete(likedStartups, initialFeedbackPreferences);
-      }
+      }, 100);
     }
   };
 

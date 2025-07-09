@@ -17,6 +17,7 @@ export type Database = {
       feedback_requests: {
         Row: {
           created_at: string
+          feedback_session_type: string
           feedback_type: string
           id: string
           message: string | null
@@ -30,6 +31,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          feedback_session_type?: string
           feedback_type?: string
           id?: string
           message?: string | null
@@ -43,6 +45,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          feedback_session_type?: string
           feedback_type?: string
           id?: string
           message?: string | null

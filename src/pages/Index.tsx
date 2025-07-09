@@ -11,7 +11,7 @@ import { useSupabaseData, Profile } from "@/contexts/SupabaseDataContext";
 import { WelcomePage, UserRole } from "@/components/WelcomePage";
 
 export type Startup = Profile;
-export type FeedbackType = "no" | "group" | "all";
+export type FeedbackType = "no" | "individual" | "group" | "all";
 
 const Index = () => {
   const navigate = useNavigate();

@@ -1,13 +1,14 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Calendar as CalendarIcon, Clock, MapPin, X, ExternalLink } from "lucide-react";
-import { format, isSameDay } from "date-fns";
+import { format, isSameDay, parseISO } from "date-fns";
 import { useSupabaseData } from "@/contexts/SupabaseDataContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Meeting {
   id: string;
@@ -25,20 +26,52 @@ export const MeetingCalendar = () => {
   const { profile } = useSupabaseData();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isOpen, setIsOpen] = useState(false);
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
 
-  // Get meetings from accepted feedback requests - simplified for now
-  const getMeetingsFromRequests = (): Meeting[] => {
-    return []; // Return empty array for now
+  // Fetch meetings from accepted feedback requests
+  useEffect(() => {
+    if (profile && isOpen) {
+      fetchMeetings();
+    }
+  }, [profile, isOpen]);
+
+  const fetchMeetings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('feedback_requests')
+        .select(`
+          *,
+          startup:profiles!feedback_requests_startup_id_fkey(name, logo)
+        `)
+        .eq('swiper_id', profile?.id)
+        .eq('status', 'accepted')
+        .order('scheduled_date', { ascending: true });
+
+      if (error) throw error;
+
+      const meetingData: Meeting[] = (data || []).map(request => ({
+        id: request.id,
+        startupName: request.startup?.name || 'Unknown Startup',
+        startupLogo: request.startup?.logo || '🚀',
+        date: parseISO(request.scheduled_date),
+        time: request.scheduled_time,
+        duration: '45 minutes',
+        type: 'Video Call' as const,
+        teamsLink: request.teams_link || undefined
+      }));
+
+      setMeetings(meetingData);
+    } catch (error) {
+      console.error('Error fetching meetings:', error);
+    }
   };
 
-  const mockMeetings = getMeetingsFromRequests();
-
   const getMeetingsForDate = (date: Date) => {
-    return mockMeetings.filter(meeting => isSameDay(meeting.date, date));
+    return meetings.filter(meeting => isSameDay(meeting.date, date));
   };
 
   const getDatesWithMeetings = () => {
-    return mockMeetings.map(meeting => meeting.date);
+    return meetings.map(meeting => meeting.date);
   };
 
   const selectedDateMeetings = selectedDate ? getMeetingsForDate(selectedDate) : [];

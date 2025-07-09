@@ -1,10 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, MessageCircle, CheckCircle, XCircle, Clock, ExternalLink } from "lucide-react";
 import { useSupabaseData } from "@/contexts/SupabaseDataContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface FeedbackRequestsProps {
   onBack: () => void;
@@ -12,18 +14,92 @@ interface FeedbackRequestsProps {
 
 export const FeedbackRequests = ({ onBack }: FeedbackRequestsProps) => {
   const { profile } = useSupabaseData();
-  
-  // For now, show empty state since we need to implement feedback requests
-  const requests: any[] = [];
+  const { toast } = useToast();
+  const [requests, setRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleAcceptRequest = (requestId: string) => {
-    // Simplified - just log for now
-    console.log('Accept request:', requestId);
+  // Fetch feedback requests for current swiper
+  useEffect(() => {
+    if (profile) {
+      fetchFeedbackRequests();
+    }
+  }, [profile]);
+
+  const fetchFeedbackRequests = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('feedback_requests')
+        .select(`
+          *,
+          startup:profiles!feedback_requests_startup_id_fkey(name, logo)
+        `)
+        .eq('swiper_id', profile?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setRequests(data || []);
+    } catch (error) {
+      console.error('Error fetching feedback requests:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load feedback requests",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDeclineRequest = (requestId: string) => {
-    // Simplified - just log for now  
-    console.log('Decline request:', requestId);
+  const handleAcceptRequest = async (requestId: string) => {
+    try {
+      const { error } = await supabase
+        .from('feedback_requests')
+        .update({ status: 'accepted' })
+        .eq('id', requestId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Request Accepted",
+        description: "The meeting has been added to your calendar",
+        variant: "default"
+      });
+
+      fetchFeedbackRequests();
+    } catch (error) {
+      console.error('Error accepting request:', error);
+      toast({
+        title: "Error",
+        description: "Failed to accept request",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeclineRequest = async (requestId: string) => {
+    try {
+      const { error } = await supabase
+        .from('feedback_requests')
+        .update({ status: 'declined' })
+        .eq('id', requestId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Request Declined",
+        description: "The meeting request has been declined",
+        variant: "default"
+      });
+
+      fetchFeedbackRequests();
+    } catch (error) {
+      console.error('Error declining request:', error);
+      toast({
+        title: "Error",
+        description: "Failed to decline request",
+        variant: "destructive"
+      });
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -56,19 +132,30 @@ export const FeedbackRequests = ({ onBack }: FeedbackRequestsProps) => {
           </div>
         </div>
 
-        {requests.length > 0 ? (
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
+            <p className="text-gray-600 mt-4">Loading requests...</p>
+          </div>
+        ) : requests.length > 0 ? (
           <div className="space-y-6">
             {requests.map((request) => (
               <Card key={request.id} className="shadow-lg border-purple-200">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle className="text-xl text-purple-800">{request.startupName}</CardTitle>
+                      <CardTitle className="text-xl text-purple-800 flex items-center gap-2">
+                        <span className="text-2xl">{request.startup?.logo}</span>
+                        {request.startup?.name}
+                      </CardTitle>
                       <div className="flex items-center gap-2 mt-2">
                         {getStatusBadge(request.status)}
                         <Badge variant="outline" className="text-xs">
                           <Calendar className="w-3 h-3 mr-1" />
-                          {request.scheduledDate} at {request.scheduledTime}
+                          {request.scheduled_date} at {request.scheduled_time}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs bg-blue-50">
+                          {request.feedback_session_type === 'individual' ? '1-on-1' : 'Group'} Session
                         </Badge>
                       </div>
                     </div>
@@ -104,13 +191,13 @@ export const FeedbackRequests = ({ onBack }: FeedbackRequestsProps) => {
                     </div>
                   )}
 
-                  {request.status === 'accepted' && request.teamsLink && (
+                  {request.status === 'accepted' && request.teams_link && (
                     <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                       <p className="text-sm text-green-800 mb-3">
                         ✅ Meeting accepted! Join the call at the scheduled time:
                       </p>
                       <Button
-                        onClick={() => window.open(request.teamsLink, '_blank')}
+                        onClick={() => window.open(request.teams_link, '_blank')}
                         className="bg-blue-600 hover:bg-blue-700"
                       >
                         <ExternalLink className="w-4 h-4 mr-2" />
