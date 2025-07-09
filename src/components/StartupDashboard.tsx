@@ -54,47 +54,78 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
       try {
         setLoading(true);
         
-        // Get swiper interactions for this startup with swiper profile data
-        const { data: interactions, error } = await supabase
+        console.log('Loading swiper data for startup:', profile.id, profile.name);
+        
+        // First get all interactions for this startup
+        const { data: interactions, error: interactionsError } = await supabase
           .from('swiper_interactions')
-          .select(`
-            *,
-            profiles!swiper_interactions_swiper_id_fkey (
-              id,
-              name,
-              age,
-              study,
-              gender
-            )
-          `)
+          .select('*')
           .eq('startup_id', profile.id)
           .eq('has_liked', true);
 
-        if (error) throw error;
+        if (interactionsError) {
+          console.error('Error fetching interactions:', interactionsError);
+          throw interactionsError;
+        }
 
-        // Transform the data to include swiper info
-        const interactionsWithSwipers: SwiperInteractionWithProfile[] = interactions?.map(interaction => ({
-          ...interaction,
-          swiper_name: interaction.profiles?.name || 'Unknown Swiper',
-          swiper_age: interaction.profiles?.age,
-          swiper_study: interaction.profiles?.study,
-          swiper_gender: interaction.profiles?.gender
-        })) || [];
+        console.log('Found interactions:', interactions?.length || 0);
 
-        // Filter those who gave coins (actual investors)
+        if (!interactions || interactions.length === 0) {
+          setSwipersWhoLiked([]);
+          setSwipersOpenToFeedback([]);
+          setTotalCoins(0);
+          setAverageCoins(0);
+          return;
+        }
+
+        // Get all swiper profile data separately for better reliability
+        const swiperIds = interactions.map(i => i.swiper_id);
+        const { data: swiperProfiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, name, age, study, gender')
+          .in('id', swiperIds);
+
+        if (profilesError) {
+          console.error('Error fetching swiper profiles:', profilesError);
+          throw profilesError;
+        }
+
+        console.log('Found swiper profiles:', swiperProfiles?.length || 0);
+
+        // Combine interaction data with profile data
+        const interactionsWithSwipers: SwiperInteractionWithProfile[] = interactions.map(interaction => {
+          const swiperProfile = swiperProfiles?.find(p => p.id === interaction.swiper_id);
+          return {
+            ...interaction,
+            swiper_name: swiperProfile?.name || 'Unknown Swiper',
+            swiper_age: swiperProfile?.age,
+            swiper_study: swiperProfile?.study,
+            swiper_gender: swiperProfile?.gender
+          };
+        });
+
+        console.log('Combined interactions with profiles:', interactionsWithSwipers);
+
+        // Show all interactions that were liked, regardless of coin allocation
+        setSwipersWhoLiked(interactionsWithSwipers);
+        console.log('All liked interactions:', interactionsWithSwipers.length);
+
+        // Filter those who gave coins (actual investors with coins)
         const investors = interactionsWithSwipers.filter(interaction => interaction.coin_allocation > 0);
-        setSwipersWhoLiked(investors);
+        console.log('Investors with coins:', investors.length);
 
         // Filter those open to feedback (not 'no' preference)
         const openToFeedback = interactionsWithSwipers.filter(interaction => 
-          interaction.feedback_preference !== 'no' && interaction.coin_allocation > 0
+          interaction.feedback_preference !== 'no'
         );
         setSwipersOpenToFeedback(openToFeedback);
+        console.log('Open to feedback:', openToFeedback.length);
 
-        // Calculate statistics
+        // Calculate statistics based on investors who actually allocated coins
         const total = investors.reduce((sum, interaction) => sum + interaction.coin_allocation, 0);
         setTotalCoins(total);
         setAverageCoins(investors.length > 0 ? Math.round(total / investors.length) : 0);
+        console.log('Total coins:', total, 'Average:', investors.length > 0 ? Math.round(total / investors.length) : 0);
 
       } catch (error) {
         console.error('Error loading swiper data:', error);
@@ -107,6 +138,7 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
 
     // Set up real-time subscription for swiper interactions
     if (profile?.role === 'startup') {
+      console.log('Setting up real-time subscription for startup:', profile.id);
       const channel = supabase
         .channel('startup-interactions')
         .on(
@@ -117,7 +149,8 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
             table: 'swiper_interactions',
             filter: `startup_id=eq.${profile.id}`
           },
-          () => {
+          (payload) => {
+            console.log('Real-time update received:', payload);
             // Reload data when interactions change
             loadSwiperData();
           }
@@ -221,14 +254,14 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <Card className="border-l-4 border-l-blue-500">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <Eye className="w-4 h-4" />
-                Total Investors
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{swipersWhoLiked.length}</div>
-              <p className="text-xs text-gray-500">Who invested coins</p>
+               <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                 <Eye className="w-4 h-4" />
+                 Total Likes
+               </CardTitle>
+             </CardHeader>
+             <CardContent>
+               <div className="text-2xl font-bold text-blue-600">{swipersWhoLiked.length}</div>
+               <p className="text-xs text-gray-500">Swipers who liked you</p>
             </CardContent>
           </Card>
 
@@ -276,10 +309,10 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
         <div className="grid md:grid-cols-2 gap-8">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Heart className="w-5 h-5 text-red-500" />
-                Investors & Their Votes
-              </CardTitle>
+               <CardTitle className="flex items-center gap-2">
+                 <Heart className="w-5 h-5 text-red-500" />
+                 Swipers Who Liked You
+               </CardTitle>
             </CardHeader>
             <CardContent>
               {swipersWhoLiked.length > 0 ? (
@@ -313,8 +346,8 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <Heart className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>No investors yet</p>
-                  <p className="text-sm">Swipers who invest coins in your startup will appear here</p>
+                   <p>No likes yet</p>
+                   <p className="text-sm">Swipers who like your startup will appear here</p>
                 </div>
               )}
             </CardContent>
