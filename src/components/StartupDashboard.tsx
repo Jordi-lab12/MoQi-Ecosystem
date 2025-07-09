@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,26 +8,98 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { Users, TrendingUp, MessageCircle, Calendar, Eye, Heart, Coins, Send, Clock, User } from "lucide-react";
 import { useSupabaseData } from "@/contexts/SupabaseDataContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface StartupDashboardProps {
   startupName?: string;
 }
 
+interface SwiperInteractionWithProfile {
+  id: string;
+  swiper_id: string;
+  startup_id: string;
+  has_liked: boolean;
+  coin_allocation: number;
+  feedback_preference: string;
+  created_at: string;
+  swiper_name: string;
+  swiper_age?: string;
+  swiper_study?: string;
+  swiper_gender?: string;
+}
+
 export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
   const { profile } = useSupabaseData();
+  const [swipersWhoLiked, setSwipersWhoLiked] = useState<SwiperInteractionWithProfile[]>([]);
+  const [swipersOpenToFeedback, setSwipersOpenToFeedback] = useState<SwiperInteractionWithProfile[]>([]);
+  const [totalCoins, setTotalCoins] = useState(0);
+  const [averageCoins, setAverageCoins] = useState(0);
+  const [loading, setLoading] = useState(true);
   
-  // Simplified for display purposes
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
   const [selectedSwiperId, setSelectedSwiperId] = useState("");
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [scheduledDate, setScheduledDate] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
 
-  // Mock data for demonstration
-  const swipersWhoLiked: any[] = [];
-  const swipersOpenToFeedback: any[] = [];
-  const totalCoins = 0;
-  const averageCoins = 0;
+  useEffect(() => {
+    const loadSwiperData = async () => {
+      if (!profile || profile.role !== 'startup') return;
+
+      try {
+        setLoading(true);
+        
+        // Get swiper interactions for this startup with swiper profile data
+        const { data: interactions, error } = await supabase
+          .from('swiper_interactions')
+          .select(`
+            *,
+            profiles!swiper_interactions_swiper_id_fkey (
+              id,
+              name,
+              age,
+              study,
+              gender
+            )
+          `)
+          .eq('startup_id', profile.id)
+          .eq('has_liked', true);
+
+        if (error) throw error;
+
+        // Transform the data to include swiper info
+        const interactionsWithSwipers: SwiperInteractionWithProfile[] = interactions?.map(interaction => ({
+          ...interaction,
+          swiper_name: interaction.profiles?.name || 'Unknown Swiper',
+          swiper_age: interaction.profiles?.age,
+          swiper_study: interaction.profiles?.study,
+          swiper_gender: interaction.profiles?.gender
+        })) || [];
+
+        // Filter those who gave coins (actual investors)
+        const investors = interactionsWithSwipers.filter(interaction => interaction.coin_allocation > 0);
+        setSwipersWhoLiked(investors);
+
+        // Filter those open to feedback (not 'no' preference)
+        const openToFeedback = interactionsWithSwipers.filter(interaction => 
+          interaction.feedback_preference !== 'no' && interaction.coin_allocation > 0
+        );
+        setSwipersOpenToFeedback(openToFeedback);
+
+        // Calculate statistics
+        const total = investors.reduce((sum, interaction) => sum + interaction.coin_allocation, 0);
+        setTotalCoins(total);
+        setAverageCoins(investors.length > 0 ? Math.round(total / investors.length) : 0);
+
+      } catch (error) {
+        console.error('Error loading swiper data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSwiperData();
+  }, [profile]);
 
   const handleSendFeedbackRequest = () => {
     console.log('Sending feedback request...');
@@ -41,6 +112,17 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Startup Dashboard</h2>
           <p className="text-gray-600">Please log in as a startup to access this dashboard.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -59,13 +141,6 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
               <p className="text-gray-600 text-lg">{profile.tagline || 'Your startup tagline'}</p>
             </div>
           </div>
-        </div>
-
-        {/* Debug Info */}
-        <div className="mb-8 p-4 bg-yellow-100 rounded-lg">
-          <h3 className="font-bold text-yellow-800 mb-2">Startup Dashboard:</h3>
-          <p className="text-yellow-700">Profile loaded successfully!</p>
-          <p className="text-yellow-700">Role: {profile.role}</p>
         </div>
 
         {/* Analytics Overview */}
@@ -135,7 +210,31 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
             <CardContent>
               {swipersWhoLiked.length > 0 ? (
                 <div className="space-y-4">
-                  <p className="text-gray-500">No real data yet - this will show swipers who invested in your startup</p>
+                  {swipersWhoLiked.map((interaction) => (
+                    <div key={interaction.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                          {interaction.swiper_name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900">{interaction.swiper_name}</h4>
+                          <div className="flex gap-2 text-xs text-gray-500">
+                            {interaction.swiper_age && <span>Age: {interaction.swiper_age}</span>}
+                            {interaction.swiper_study && <span>• {interaction.swiper_study}</span>}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center gap-1 text-green-600 font-bold">
+                          <Coins className="w-4 h-4" />
+                          {interaction.coin_allocation}
+                        </div>
+                        <Badge className="text-xs mt-1" variant="outline">
+                          {interaction.feedback_preference}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">
@@ -158,7 +257,33 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
             <CardContent>
               {swipersOpenToFeedback.length > 0 ? (
                 <div className="space-y-4">
-                  <p className="text-gray-500">No real data yet - this will show swipers open to feedback</p>
+                  {swipersOpenToFeedback.map((interaction) => (
+                    <div key={interaction.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                          {interaction.swiper_name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900">{interaction.swiper_name}</h4>
+                          <div className="flex gap-2 text-xs text-gray-500">
+                            {interaction.swiper_age && <span>Age: {interaction.swiper_age}</span>}
+                            {interaction.swiper_study && <span>• {interaction.swiper_study}</span>}
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => {
+                          setSelectedSwiperId(interaction.swiper_id);
+                          setFeedbackDialogOpen(true);
+                        }}
+                        size="sm"
+                        className="bg-blue-500 hover:bg-blue-600"
+                      >
+                        <Calendar className="w-4 h-4 mr-1" />
+                        Request Meeting
+                      </Button>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">

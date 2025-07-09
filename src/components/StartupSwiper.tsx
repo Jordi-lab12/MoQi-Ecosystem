@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, X, Info, Sparkles, Zap } from "lucide-react";
 import { StartupModal } from "./StartupModal";
 import { useSupabaseData } from "@/contexts/SupabaseDataContext";
+import { supabase } from "@/integrations/supabase/client";
 import type { Startup, FeedbackType } from "@/pages/Index";
 
 interface StartupSwiperProps {
@@ -12,11 +13,12 @@ interface StartupSwiperProps {
 }
 
 export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
-  const { createSwiperInteraction, profile } = useSupabaseData();
+  const { createSwiperInteraction, updateSwiperInteraction, profile } = useSupabaseData();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likedStartups, setLikedStartups] = useState<Startup[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'like' | 'dislike' | null>(null);
+  const [interactionIds, setInteractionIds] = useState<Record<string, string>>({});
 
   const currentStartup = startups[currentIndex];
 
@@ -28,13 +30,25 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
     // Record the interaction immediately
     if (profile) {
       try {
-        await createSwiperInteraction({
-          swiper_id: profile.id,
-          startup_id: currentStartup.id,
-          coin_allocation: 0, // Will be set later in allocation phase
-          feedback_preference: 'all', // Default preference
-          has_liked: true
-        });
+        const { data, error } = await supabase
+          .from('swiper_interactions')
+          .insert({
+            swiper_id: profile.id,
+            startup_id: currentStartup.id,
+            coin_allocation: 0, // Will be set later in allocation phase or auto-assigned
+            feedback_preference: 'all', // Default preference
+            has_liked: true
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        
+        // Store the interaction ID for later updates
+        setInteractionIds(prev => ({
+          ...prev,
+          [currentStartup.id]: data.id
+        }));
       } catch (error) {
         console.error('Error creating swiper interaction:', error);
       }
@@ -70,16 +84,40 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
     }, 300);
   };
 
-  const nextStartup = () => {
+  const nextStartup = async () => {
     if (currentIndex < startups.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      // Initialize feedback preferences to 'all' for all startups
-      const initialFeedbackPreferences: Record<string, FeedbackType> = {};
-      startups.forEach((startup) => {
-        initialFeedbackPreferences[startup.id] = 'all';
-      });
-      onComplete(likedStartups, initialFeedbackPreferences);
+      // Check if only one startup was liked - auto-assign 100 coins
+      if (likedStartups.length === 1 && profile) {
+        const startupId = likedStartups[0].id;
+        const interactionId = interactionIds[startupId];
+        
+        if (interactionId) {
+          try {
+            await updateSwiperInteraction(interactionId, {
+              coin_allocation: 100
+            });
+            console.log('Auto-assigned 100 coins to single liked startup');
+          } catch (error) {
+            console.error('Error auto-assigning coins:', error);
+          }
+        }
+        
+        // Skip allocation phase and go directly to results
+        const initialFeedbackPreferences: Record<string, FeedbackType> = {};
+        likedStartups.forEach((startup) => {
+          initialFeedbackPreferences[startup.id] = 'all';
+        });
+        onComplete(likedStartups, initialFeedbackPreferences);
+      } else {
+        // Normal flow - go to allocation phase
+        const initialFeedbackPreferences: Record<string, FeedbackType> = {};
+        likedStartups.forEach((startup) => {
+          initialFeedbackPreferences[startup.id] = 'all';
+        });
+        onComplete(likedStartups, initialFeedbackPreferences);
+      }
     }
   };
 
