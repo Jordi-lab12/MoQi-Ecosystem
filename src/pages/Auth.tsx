@@ -7,11 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sparkles, LogIn, UserPlus, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
 
 export const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -20,7 +21,9 @@ export const Auth = () => {
   // Form states
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"swiper" | "startup">("swiper");
+  const [role, setRole] = useState<"swiper" | "startup">(
+    (searchParams.get('role') as "swiper" | "startup") || "swiper"
+  );
   
   // Profile fields
   const [name, setName] = useState("");
@@ -239,18 +242,20 @@ export const Auth = () => {
 
             {!isLogin && (
               <>
-                <div>
-                  <Label htmlFor="role">I am a...</Label>
-                  <Select value={role} onValueChange={(value: "swiper" | "startup") => setRole(value)}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="swiper">Swiper (Student)</SelectItem>
-                      <SelectItem value="startup">Startup</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+{!searchParams.get('role') && (
+                  <div>
+                    <Label htmlFor="role">I am a...</Label>
+                    <Select value={role} onValueChange={(value: "swiper" | "startup") => setRole(value)}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="swiper">Swiper (Student)</SelectItem>
+                        <SelectItem value="startup">Startup</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 <div>
                   <Label htmlFor="name">Name</Label>

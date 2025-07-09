@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Briefcase, Star, TrendingUp, Calendar } from "lucide-react";
 import { Startup, FeedbackType } from "@/pages/Index";
 import { useSupabaseData } from "@/contexts/SupabaseDataContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PortfolioProps {
   likedStartups: Startup[];
@@ -41,6 +42,27 @@ export const Portfolio = ({ likedStartups, coinAllocations, feedbackPreferences 
 
     if (isOpen) {
       loadPortfolioData();
+      
+      // Set up real-time subscription for portfolio updates
+      const channel = supabase
+        .channel('portfolio-updates')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'swiper_interactions'
+          },
+          () => {
+            // Reload portfolio when any interaction changes
+            loadPortfolioData();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [isOpen, getLikedStartupsWithAllocations]);
 

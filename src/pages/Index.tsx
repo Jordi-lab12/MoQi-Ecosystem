@@ -56,7 +56,7 @@ const Index = () => {
   };
 
   const handleRoleSelection = (role: UserRole) => {
-    navigate('/auth');
+    navigate(`/auth?role=${role}`);
   };
 
   const handleLogout = async () => {

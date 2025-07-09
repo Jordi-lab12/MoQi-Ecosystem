@@ -104,6 +104,30 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
     };
 
     loadSwiperData();
+
+    // Set up real-time subscription for swiper interactions
+    if (profile?.role === 'startup') {
+      const channel = supabase
+        .channel('startup-interactions')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'swiper_interactions',
+            filter: `startup_id=eq.${profile.id}`
+          },
+          () => {
+            // Reload data when interactions change
+            loadSwiperData();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
   }, [profile]);
 
   const handleSendFeedbackRequest = async () => {
