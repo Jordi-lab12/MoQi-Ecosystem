@@ -325,15 +325,6 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
         {/* Analytics Dashboard */}
         <StartupAnalytics interactions={swipersWhoLiked} />
 
-        {/* Profile Image Upload */}
-        <StartupImageUpload 
-          currentImage={profile.image || undefined}
-          onImageUpdate={(url) => {
-            // Update profile state would go here
-            window.location.reload(); // Simple refresh for now
-          }}
-        />
-
         {/* Detailed Swiper Data */}
         <div className="grid md:grid-cols-2 gap-8">
           <Card>

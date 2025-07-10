@@ -43,7 +43,7 @@ export const RegistrationForm = ({ userRole, onComplete, onBack }: RegistrationF
     
     if (userRole === "startup") {
       if (name.trim() && tagline.trim() && description.trim() && usp.trim() && 
-          mission.trim() && vision.trim() && industry.trim() && founded.trim() && employees.trim()) {
+          mission.trim() && vision.trim() && industry.trim() && founded.trim() && employees.trim() && imageUrl.trim()) {
         onComplete({ 
           username: username.trim(),
           password: password.trim(),
@@ -283,7 +283,7 @@ export const RegistrationForm = ({ userRole, onComplete, onBack }: RegistrationF
                 </div>
                 
                 <div>
-                  <Label htmlFor="imageUrl">Startup Image URL (Optional)</Label>
+                  <Label htmlFor="imageUrl">Startup Image URL *</Label>
                   <Input
                     id="imageUrl"
                     type="url"
@@ -291,6 +291,7 @@ export const RegistrationForm = ({ userRole, onComplete, onBack }: RegistrationF
                     onChange={(e) => setImageUrl(e.target.value)}
                     placeholder="https://example.com/your-startup-image.jpg"
                     className="mt-1"
+                    required
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     Add an image URL that represents your startup. This will be shown to swipers.
