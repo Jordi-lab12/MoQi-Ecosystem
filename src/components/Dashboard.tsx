@@ -1,7 +1,8 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Sparkles, Info, MessageCircle, Play, Star, TrendingUp, Users, ChevronDown, ChevronUp } from "lucide-react";
 import { MeetingCalendar } from "./MeetingCalendar";
@@ -9,6 +10,7 @@ import { Portfolio } from "./Portfolio";
 import { FeedbackRequests } from "./FeedbackRequests";
 import { Startup, FeedbackType } from "@/pages/Index";
 import { useSupabaseData } from "@/contexts/SupabaseDataContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DashboardProps {
   onStartSwiping: () => void;
@@ -29,10 +31,56 @@ export const Dashboard = ({
   totalStartupsCount,
   availableStartups
 }: DashboardProps) => {
-  const { getAllStartups, getSwipedStartupIds } = useSupabaseData();
+  const { getAllStartups, getSwipedStartupIds, profile } = useSupabaseData();
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   const [isWhyMoQiOpen, setIsWhyMoQiOpen] = useState(false);
   const [showFeedbackRequests, setShowFeedbackRequests] = useState(false);
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
+
+  // Fetch pending feedback requests count for notification badge
+  useEffect(() => {
+    const fetchPendingRequests = async () => {
+      if (!profile || profile.role !== 'swiper') return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('feedback_requests')
+          .select('id')
+          .eq('swiper_id', profile.id)
+          .eq('status', 'pending');
+        
+        if (error) throw error;
+        setPendingRequestsCount(data?.length || 0);
+      } catch (error) {
+        console.error('Error fetching pending requests:', error);
+      }
+    };
+
+    fetchPendingRequests();
+
+    // Set up real-time subscription for feedback requests
+    if (profile?.role === 'swiper') {
+      const channel = supabase
+        .channel('feedback-requests-notifications')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'feedback_requests',
+            filter: `swiper_id=eq.${profile.id}`
+          },
+          () => {
+            fetchPendingRequests();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [profile]);
 
   const handleContact = () => {
     // For now, just show an alert - can be replaced with actual contact functionality
@@ -108,13 +156,22 @@ export const Dashboard = ({
             <Portfolio likedStartups={likedStartups} coinAllocations={coinAllocations} feedbackPreferences={feedbackPreferences} />
           </div>
           <div className="text-center">
-            <Button 
-              onClick={() => setShowFeedbackRequests(true)}
-              className="px-12 py-6 text-xl font-bold rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-xl hover:shadow-green-500/25 transform hover:scale-105 transition-all duration-300 flex items-center gap-4 mx-auto"
-            >
-              <MessageCircle className="w-8 h-8" />
-              Feedback Requests
-            </Button>
+            <div className="relative inline-block">
+              <Button 
+                onClick={() => setShowFeedbackRequests(true)}
+                className="px-12 py-6 text-xl font-bold rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-xl hover:shadow-green-500/25 transform hover:scale-105 transition-all duration-300 flex items-center gap-4 mx-auto"
+              >
+                <MessageCircle className="w-8 h-8" />
+                Feedback Requests
+              </Button>
+              {pendingRequestsCount > 0 && (
+                <Badge 
+                  className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-[20px] h-5 flex items-center justify-center"
+                >
+                  {pendingRequestsCount}
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
 

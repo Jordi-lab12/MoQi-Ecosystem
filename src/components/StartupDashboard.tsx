@@ -124,11 +124,12 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
         setSwipersOpenToFeedback(openToFeedback);
         console.log('Open to feedback:', openToFeedback.length);
 
-        // Calculate statistics based on investors who actually allocated coins
-        const total = investors.reduce((sum, interaction) => sum + interaction.coin_allocation, 0);
+        // Calculate statistics - sum of all coins allocated to this startup
+        const total = interactionsWithSwipers.reduce((sum, interaction) => sum + interaction.coin_allocation, 0);
+        const coinsInvestors = interactionsWithSwipers.filter(i => i.coin_allocation > 0);
         setTotalCoins(total);
-        setAverageCoins(investors.length > 0 ? Math.round(total / investors.length) : 0);
-        console.log('Total coins:', total, 'Average:', investors.length > 0 ? Math.round(total / investors.length) : 0);
+        setAverageCoins(coinsInvestors.length > 0 ? Math.round(total / coinsInvestors.length) : 0);
+        console.log('Total coins:', total, 'Average:', coinsInvestors.length > 0 ? Math.round(total / coinsInvestors.length) : 0);
 
       } catch (error) {
         console.error('Error loading swiper data:', error);

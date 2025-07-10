@@ -31,6 +31,7 @@ export const RegistrationForm = ({ userRole, onComplete, onBack }: RegistrationF
   const [industry, setIndustry] = useState("");
   const [founded, setFounded] = useState("");
   const [employees, setEmployees] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +56,7 @@ export const RegistrationForm = ({ userRole, onComplete, onBack }: RegistrationF
           industry: industry.trim(),
           founded: founded.trim(),
           employees: employees.trim(),
+          image: imageUrl.trim() || undefined,
           role: userRole 
         });
       }
@@ -278,6 +280,21 @@ export const RegistrationForm = ({ userRole, onComplete, onBack }: RegistrationF
                       required
                     />
                   </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="imageUrl">Startup Image URL (Optional)</Label>
+                  <Input
+                    id="imageUrl"
+                    type="url"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    placeholder="https://example.com/your-startup-image.jpg"
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Add an image URL that represents your startup. This will be shown to swipers.
+                  </p>
                 </div>
               </>
             ) : (
