@@ -8,6 +8,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Users, TrendingUp, MessageCircle, Calendar, Eye, Heart, Coins, Send, Clock, User } from "lucide-react";
+import { TimeSlotPicker } from "./TimeSlotPicker";
+import { StartupAnalytics } from "./StartupAnalytics";
+import { StartupImageUpload } from "./StartupImageUpload";
 import { useSupabaseData } from "@/contexts/SupabaseDataContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -173,6 +176,19 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
       return;
     }
 
+    // Check if the selected swiper's feedback preference matches the session type
+    const selectedSwiper = swipersOpenToFeedback.find(s => s.swiper_id === selectedSwiperId);
+    if (selectedSwiper) {
+      if (feedbackSessionType === 'group' && selectedSwiper.feedback_preference !== 'all') {
+        toast({
+          title: "Invalid Session Type",
+          description: "This swiper only accepts individual feedback sessions",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
     try {
       const { error } = await supabase
         .from('feedback_requests')
@@ -305,6 +321,18 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
           </Card>
         </div>
 
+        {/* Analytics Dashboard */}
+        <StartupAnalytics interactions={swipersWhoLiked} />
+
+        {/* Profile Image Upload */}
+        <StartupImageUpload 
+          currentImage={profile.image || undefined}
+          onImageUpdate={(url) => {
+            // Update profile state would go here
+            window.location.reload(); // Simple refresh for now
+          }}
+        />
+
         {/* Detailed Swiper Data */}
         <div className="grid md:grid-cols-2 gap-8">
           <Card>
@@ -385,17 +413,21 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
                           </div>
                         </div>
                       </div>
-                      <Button
-                        onClick={() => {
-                          setSelectedSwiperId(interaction.swiper_id);
-                          setFeedbackDialogOpen(true);
-                        }}
-                        size="sm"
-                        className="bg-blue-500 hover:bg-blue-600"
-                      >
-                        <Calendar className="w-4 h-4 mr-1" />
-                        Request Meeting
-                      </Button>
+                       <Button
+                         onClick={() => {
+                           setSelectedSwiperId(interaction.swiper_id);
+                           setFeedbackDialogOpen(true);
+                           // Set appropriate session type based on swiper's preference
+                           if (interaction.feedback_preference === 'individual') {
+                             setFeedbackSessionType('individual');
+                           }
+                         }}
+                         size="sm"
+                         className="bg-blue-500 hover:bg-blue-600"
+                       >
+                         <Calendar className="w-4 h-4 mr-1" />
+                         Request Meeting
+                       </Button>
                     </div>
                   ))}
                 </div>
@@ -457,17 +489,11 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
                   required
                 />
               </div>
-              <div>
-                <Label htmlFor="time">Time</Label>
-                <Input
-                  id="time"
-                  type="time"
-                  value={scheduledTime}
-                  onChange={(e) => setScheduledTime(e.target.value)}
-                  className="mt-1"
-                  required
-                />
-              </div>
+              <TimeSlotPicker
+                selectedDate={scheduledDate}
+                selectedTime={scheduledTime}
+                onTimeChange={setScheduledTime}
+              />
               <div>
                 <Label htmlFor="teamsLink">Teams Meeting Link (Optional)</Label>
                 <Input

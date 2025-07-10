@@ -68,6 +68,11 @@ const Index = () => {
   };
 
   const handleStartSwiping = () => {
+    // Check if at least 3 startups are available
+    if (availableStartups.length < 3) {
+      alert("You need at least 3 startups available to start swiping. Please wait for more startups to register.");
+      return;
+    }
     setCurrentStage("swiping");
   };
 
@@ -176,14 +181,15 @@ const Index = () => {
       {profile.role === "swiper" && (
         <>
           {currentStage === "dashboard" && (
-            <Dashboard 
-              onStartSwiping={handleStartSwiping}
-              likedStartups={likedStartups}
-              coinAllocations={coinAllocations}
-              feedbackPreferences={feedbackPreferences}
-              availableStartupsCount={availableStartups.length}
-              totalStartupsCount={allStartups.length}
-            />
+        <Dashboard 
+          onStartSwiping={handleStartSwiping}
+          likedStartups={likedStartups}
+          coinAllocations={coinAllocations}
+          feedbackPreferences={feedbackPreferences}
+          availableStartupsCount={availableStartups.length}
+          totalStartupsCount={allStartups.length}
+          availableStartups={availableStartups}
+        />
           )}
           
           {currentStage === "swiping" && availableStartups.length > 0 && (

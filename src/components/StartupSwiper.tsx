@@ -19,6 +19,7 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
   const [showModal, setShowModal] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'like' | 'dislike' | null>(null);
   const [interactionIds, setInteractionIds] = useState<Record<string, string>>({});
+  const [batchCount, setBatchCount] = useState(0);
 
   const currentStartup = startups[currentIndex];
 
@@ -87,6 +88,15 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
   };
 
   const nextStartup = async () => {
+    const newBatchCount = batchCount + 1;
+    setBatchCount(newBatchCount);
+
+    // Check if we've completed a batch of 3
+    if (newBatchCount % 3 === 0 && currentIndex < startups.length - 1) {
+      // Show a batch completion message or pause
+      console.log('Completed batch of 3');
+    }
+
     if (currentIndex < startups.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
@@ -173,6 +183,9 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
               className={`w-full h-full object-cover transition-all duration-300 ${
                 swipeDirection ? 'blur-sm' : 'group-hover:scale-110'
               }`}
+              onError={(e) => {
+                e.currentTarget.src = `https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&h=400&fit=crop&crop=center`;
+              }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
             

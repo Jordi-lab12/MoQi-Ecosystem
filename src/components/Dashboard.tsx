@@ -17,6 +17,7 @@ interface DashboardProps {
   feedbackPreferences: Record<string, FeedbackType>;
   availableStartupsCount: number;
   totalStartupsCount: number;
+  availableStartups: Startup[];
 }
 
 export const Dashboard = ({
@@ -25,7 +26,8 @@ export const Dashboard = ({
   coinAllocations,
   feedbackPreferences,
   availableStartupsCount,
-  totalStartupsCount
+  totalStartupsCount,
+  availableStartups
 }: DashboardProps) => {
   const { getAllStartups, getSwipedStartupIds } = useSupabaseData();
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
@@ -72,15 +74,24 @@ export const Dashboard = ({
         <div className="text-center mb-12">
           <Button 
             onClick={onStartSwiping} 
-            disabled={availableStartupsCount === 0}
-            className="px-16 py-8 text-3xl font-bold rounded-3xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-2xl hover:shadow-purple-500/25 transform hover:scale-110 transition-all duration-300 flex items-center gap-6 mx-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            disabled={availableStartups.length < 3}
+            className={`px-16 py-8 text-3xl font-bold rounded-3xl shadow-2xl transform transition-all duration-300 flex items-center gap-6 mx-auto ${
+              availableStartups.length < 3 
+                ? 'bg-gray-400 cursor-not-allowed opacity-50' 
+                : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 hover:shadow-purple-500/25 hover:scale-110'
+            }`}
           >
             <Play className="w-10 h-10" />
-            Start Swiping ✨
+            {availableStartups.length < 3 
+              ? `Need ${3 - availableStartups.length} more startups` 
+              : 'Start Swiping ✨'
+            }
           </Button>
           <p className="text-gray-500 mt-6 text-lg">
-            {availableStartupsCount > 0 
+            {availableStartups.length >= 3 
               ? `Discover and invest in ${availableStartupsCount} new startups` 
+              : availableStartups.length > 0
+              ? `${availableStartups.length} startups available (minimum 3 required to start)`
               : totalStartupsCount > 0
               ? "You've seen all startups - check back for new ones!"
               : "No startups available to swipe on yet"
