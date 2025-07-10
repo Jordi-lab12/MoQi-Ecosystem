@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut, User, UserPlus } from "lucide-react";
 import { useSupabaseData, Profile } from "@/contexts/SupabaseDataContext";
 import { WelcomePage, UserRole } from "@/components/WelcomePage";
+import { supabase } from "@/integrations/supabase/client";
 
 export type Startup = Profile;
 export type FeedbackType = "no" | "individual" | "group" | "all";
@@ -96,8 +97,19 @@ const Index = () => {
       try {
         for (const [startupId, coinAllocation] of Object.entries(allocations)) {
           if (coinAllocation > 0) {
-            // Note: We would need to update the existing interaction, but for now let's just store it locally
-            // In a real implementation, you'd need to get the interaction ID and update it
+            // Update the existing interaction with the coin allocation
+            const { error } = await supabase
+              .from('swiper_interactions')
+              .update({ coin_allocation: coinAllocation })
+              .eq('swiper_id', profile.id)
+              .eq('startup_id', startupId)
+              .eq('has_liked', true);
+            
+            if (error) {
+              console.error('Error updating coin allocation for startup:', startupId, error);
+            } else {
+              console.log(`Successfully updated ${coinAllocation} coins for startup ${startupId}`);
+            }
           }
         }
       } catch (error) {
