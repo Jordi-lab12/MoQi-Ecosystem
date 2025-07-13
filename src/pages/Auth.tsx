@@ -42,7 +42,48 @@ export const Auth = () => {
   const [industry, setIndustry] = useState("");
   const [founded, setFounded] = useState("");
   const [employees, setEmployees] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+
+  // Handle file upload
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Upload file to Supabase storage
+  const uploadImage = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from('startup-images')
+        .upload(fileName, file);
+
+      if (error) {
+        console.error('Upload error:', error);
+        return null;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('startup-images')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('File upload failed:', error);
+      return null;
+    }
+  };
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -115,6 +156,17 @@ export const Auth = () => {
         console.log('Login successful, waiting for redirect...');
       } else {
         // Sign up
+        let imageUrl = '';
+        
+        // If startup and image file exists, upload it first
+        if (role === 'startup' && imageFile) {
+          setError("Uploading image...");
+          imageUrl = await uploadImage(imageFile) || '';
+          if (!imageUrl) {
+            throw new Error('Failed to upload image. Please try again.');
+          }
+        }
+        
         // Generate a unique username by adding timestamp if needed
         const uniqueUsername = username + '_' + Date.now().toString().slice(-4);
         
@@ -150,30 +202,8 @@ export const Auth = () => {
         if (error) throw error;
         
         if (data.user) {
-          // Profile will be created automatically by trigger
-          // Now update it with the additional fields
-          const updateData: any = { role, name, username };
-          
-          if (role === 'swiper') {
-            updateData.age = age;
-            updateData.study = study;
-            updateData.gender = 'Male';
-          } else {
-            updateData.tagline = tagline;
-            updateData.description = description;
-            updateData.usp = usp;
-            updateData.mission = mission;
-            updateData.vision = vision;
-            updateData.industry = industry;
-            updateData.founded = founded;
-            updateData.employees = employees;
-            updateData.logo = '🚀';
-            updateData.image = imageUrl || `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000000)}?w=400&h=300&fit=crop`;
-          }
-          
           // Profile will be created automatically by trigger with the metadata
           console.log('Profile created via trigger with user data');
-          
           navigate('/');
         }
       }
@@ -188,7 +218,7 @@ export const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
-      <Card className="w-full max-w-md shadow-2xl">
+      <Card className="w-full max-w-2xl shadow-2xl">{/* Increased width for startup form */}
         <CardHeader className="text-center">
           <div className="flex items-center justify-between mb-4">
             <Button onClick={() => navigate('/')} variant="ghost" size="sm">
@@ -309,17 +339,32 @@ export const Auth = () => {
                   </>
                 ) : (
                   <>
-                    <div>
-                      <Label htmlFor="tagline">Tagline</Label>
-                      <Input
-                        id="tagline"
-                        value={tagline}
-                        onChange={(e) => setTagline(e.target.value)}
-                        placeholder="Your startup's tagline"
-                        className="mt-1"
-                        required
-                      />
+                    {/* Compact Grid Layout for Startup Fields */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="tagline">Tagline</Label>
+                        <Input
+                          id="tagline"
+                          value={tagline}
+                          onChange={(e) => setTagline(e.target.value)}
+                          placeholder="Your startup's tagline"
+                          className="mt-1"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="industry">Industry</Label>
+                        <Input
+                          id="industry"
+                          value={industry}
+                          onChange={(e) => setIndustry(e.target.value)}
+                          placeholder="Your industry"
+                          className="mt-1"
+                          required
+                        />
+                      </div>
                     </div>
+
                     <div>
                       <Label htmlFor="description">Description</Label>
                       <Textarea
@@ -327,72 +372,100 @@ export const Auth = () => {
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder="Describe your startup"
-                        className="mt-1"
+                        className="mt-1 h-20"
                         required
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="industry">Industry</Label>
-                      <Input
-                        id="industry"
-                        value={industry}
-                        onChange={(e) => setIndustry(e.target.value)}
-                        placeholder="Your industry"
-                        className="mt-1"
-                        required
-                      />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="founded">Founded</Label>
+                        <Input
+                          id="founded"
+                          value={founded}
+                          onChange={(e) => setFounded(e.target.value)}
+                          placeholder="Year founded"
+                          className="mt-1"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="employees">Team Size</Label>
+                        <Input
+                          id="employees"
+                          value={employees}
+                          onChange={(e) => setEmployees(e.target.value)}
+                          placeholder="Number of employees"
+                          className="mt-1"
+                          required
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="founded">Founded</Label>
-                      <Input
-                        id="founded"
-                        value={founded}
-                        onChange={(e) => setFounded(e.target.value)}
-                        placeholder="Year founded"
-                        className="mt-1"
-                        required
-                      />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="usp">Unique Selling Point</Label>
+                        <Textarea
+                          id="usp"
+                          value={usp}
+                          onChange={(e) => setUsp(e.target.value)}
+                          placeholder="What makes you unique?"
+                          className="mt-1 h-16"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="mission">Mission</Label>
+                        <Textarea
+                          id="mission"
+                          value={mission}
+                          onChange={(e) => setMission(e.target.value)}
+                          placeholder="Your mission"
+                          className="mt-1 h-16"
+                          required
+                        />
+                      </div>
                     </div>
+
                     <div>
-                      <Label htmlFor="employees">Employees</Label>
-                      <Input
-                        id="employees"
-                        value={employees}
-                        onChange={(e) => setEmployees(e.target.value)}
-                        placeholder="Number of employees"
-                        className="mt-1"
+                      <Label htmlFor="vision">Vision</Label>
+                      <Textarea
+                        id="vision"
+                        value={vision}
+                        onChange={(e) => setVision(e.target.value)}
+                        placeholder="Your vision"
+                        className="mt-1 h-16"
                         required
                       />
                     </div>
                     
-                    <div className="border-2 border-dashed border-purple-300 rounded-lg p-4 bg-purple-50/50">
-                      <Label htmlFor="imageUrl" className="text-sm font-semibold text-gray-800">
-                        📸 Startup Image URL *
-                      </Label>
-                      <Input
-                        id="imageUrl"
-                        type="url"
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
-                        placeholder="https://example.com/your-startup-image.jpg"
-                        className="mt-2"
-                        required
-                      />
-                      <p className="text-xs text-gray-600 mt-1">
-                        This image will represent your startup to swipers
-                      </p>
-                      {imageUrl && (
-                        <div className="mt-2 flex justify-center">
-                          <img 
-                            src={imageUrl} 
-                            alt="Startup preview" 
-                            className="w-20 h-20 object-cover rounded-lg border"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
-                          />
-                        </div>
-                      )}
+                    {/* File Upload Section */}
+                    <div className="border-2 border-dashed border-purple-300 rounded-lg p-6 bg-purple-50/50">
+                      <div className="text-center">
+                        <Label className="text-sm font-semibold text-gray-800 mb-2 block">
+                          📸 Upload Startup Image *
+                        </Label>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileUpload}
+                          className="mt-2"
+                          required
+                        />
+                        <p className="text-xs text-gray-600 mt-2">
+                          Choose an image from your computer to represent your startup
+                        </p>
+                        {imagePreview && (
+                          <div className="mt-4">
+                            <p className="text-sm font-medium text-green-600 mb-2">Preview:</p>
+                            <img 
+                              src={imagePreview} 
+                              alt="Startup preview" 
+                              className="w-24 h-24 mx-auto object-cover rounded-lg border-2 border-gray-200"
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </>
                 )}
