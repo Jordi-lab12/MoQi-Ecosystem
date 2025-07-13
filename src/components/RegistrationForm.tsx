@@ -137,242 +137,272 @@ export const RegistrationForm = ({ userRole, onComplete, onBack }: RegistrationF
           <p className="text-gray-600">Create your account</p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="username">Username</Label>
-                <Input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Choose a username"
-                  className="mt-1"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Choose a password"
-                  className="mt-1"
-                  required
-                />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Basic Account Info */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800">Account Information</h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Choose a username"
+                    className="mt-1"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Choose a password"
+                    className="mt-1"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
             {userRole === "startup" ? (
               <>
-                <div>
-                  <Label htmlFor="name">Startup Name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter your startup name"
-                    className="mt-1"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="tagline">Tagline</Label>
-                  <Input
-                    id="tagline"
-                    type="text"
-                    value={tagline}
-                    onChange={(e) => setTagline(e.target.value)}
-                    placeholder="e.g. AI-powered mental wellness"
-                    className="mt-1"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Brief description of what your startup does"
-                    className="mt-1"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="usp">Unique Selling Proposition</Label>
-                  <Textarea
-                    id="usp"
-                    value={usp}
-                    onChange={(e) => setUsp(e.target.value)}
-                    placeholder="What makes your startup unique?"
-                    className="mt-1"
-                    required
-                  />
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="mission">Mission</Label>
-                    <Textarea
-                      id="mission"
-                      value={mission}
-                      onChange={(e) => setMission(e.target.value)}
-                      placeholder="Your startup's mission"
-                      className="mt-1"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="vision">Vision</Label>
-                    <Textarea
-                      id="vision"
-                      value={vision}
-                      onChange={(e) => setVision(e.target.value)}
-                      placeholder="Your startup's vision"
-                      className="mt-1"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="industry">Industry</Label>
-                  <Input
-                    id="industry"
-                    type="text"
-                    value={industry}
-                    onChange={(e) => setIndustry(e.target.value)}
-                    placeholder="e.g. FinTech, HealthTech, EdTech"
-                    className="mt-1"
-                    required
-                  />
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="founded">Founded Year</Label>
-                    <Input
-                      id="founded"
-                      type="text"
-                      value={founded}
-                      onChange={(e) => setFounded(e.target.value)}
-                      placeholder="e.g. 2023"
-                      className="mt-1"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="employees">Team Size</Label>
-                    <Input
-                      id="employees"
-                      type="text"
-                      value={employees}
-                      onChange={(e) => setEmployees(e.target.value)}
-                      placeholder="e.g. 5-10, 15-25"
-                      className="mt-1"
-                      required
-                    />
-                  </div>
-                </div>
-                
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
-                  <Label htmlFor="imageUrl" className="text-base font-semibold">Startup Image URL *</Label>
-                  <Input
-                    id="imageUrl"
-                    type="url"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    placeholder="https://example.com/your-startup-image.jpg"
-                    className="mt-2"
-                    required
-                  />
-                  <p className="text-sm text-gray-600 mt-2">
-                    📸 Add an image URL that represents your startup. This will be shown to swipers during the evaluation process.
-                  </p>
-                  {imageUrl && (
-                    <div className="mt-3">
-                      <p className="text-sm text-green-600 mb-2">Preview:</p>
-                      <img 
-                        src={imageUrl} 
-                        alt="Startup preview" 
-                        className="w-32 h-32 object-cover rounded-lg border"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
+                {/* Basic Startup Info */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800">Basic Information</h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="name">Startup Name</Label>
+                      <Input
+                        id="name"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Enter your startup name"
+                        className="mt-1"
+                        required
                       />
                     </div>
-                  )}
+                    <div>
+                      <Label htmlFor="industry">Industry</Label>
+                      <Input
+                        id="industry"
+                        type="text"
+                        value={industry}
+                        onChange={(e) => setIndustry(e.target.value)}
+                        placeholder="e.g. FinTech, HealthTech, EdTech"
+                        className="mt-1"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="tagline">Tagline</Label>
+                    <Input
+                      id="tagline"
+                      type="text"
+                      value={tagline}
+                      onChange={(e) => setTagline(e.target.value)}
+                      placeholder="e.g. AI-powered mental wellness"
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="founded">Founded Year</Label>
+                      <Input
+                        id="founded"
+                        type="text"
+                        value={founded}
+                        onChange={(e) => setFounded(e.target.value)}
+                        placeholder="e.g. 2023"
+                        className="mt-1"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="employees">Team Size</Label>
+                      <Input
+                        id="employees"
+                        type="text"
+                        value={employees}
+                        onChange={(e) => setEmployees(e.target.value)}
+                        placeholder="e.g. 5-10, 15-25"
+                        className="mt-1"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Startup Image Upload */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800">Startup Image</h3>
+                  <div className="border-2 border-dashed border-purple-300 rounded-lg p-6 bg-purple-50/50">
+                    <div className="text-center">
+                      <div className="w-16 h-16 mx-auto bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                        <Building2 className="w-8 h-8 text-purple-600" />
+                      </div>
+                      <Label htmlFor="imageUrl" className="text-base font-semibold text-gray-800">
+                        Upload Your Startup Image *
+                      </Label>
+                      <Input
+                        id="imageUrl"
+                        type="url"
+                        value={imageUrl}
+                        onChange={(e) => setImageUrl(e.target.value)}
+                        placeholder="https://example.com/your-startup-image.jpg"
+                        className="mt-3"
+                        required
+                      />
+                      <p className="text-sm text-gray-600 mt-2">
+                        📸 This image will represent your startup to potential swipers
+                      </p>
+                      {imageUrl && (
+                        <div className="mt-4">
+                          <p className="text-sm font-medium text-green-600 mb-2">Preview:</p>
+                          <img 
+                            src={imageUrl} 
+                            alt="Startup preview" 
+                            className="w-24 h-24 mx-auto object-cover rounded-lg border-2 border-gray-200"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Detailed Information */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800">About Your Startup</h3>
+                  <div>
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Brief description of what your startup does"
+                      className="mt-1 h-20"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="usp">Unique Selling Proposition</Label>
+                    <Textarea
+                      id="usp"
+                      value={usp}
+                      onChange={(e) => setUsp(e.target.value)}
+                      placeholder="What makes your startup unique?"
+                      className="mt-1 h-20"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="mission">Mission</Label>
+                      <Textarea
+                        id="mission"
+                        value={mission}
+                        onChange={(e) => setMission(e.target.value)}
+                        placeholder="Your startup's mission"
+                        className="mt-1 h-20"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="vision">Vision</Label>
+                      <Textarea
+                        id="vision"
+                        value={vision}
+                        onChange={(e) => setVision(e.target.value)}
+                        placeholder="Your startup's vision"
+                        className="mt-1 h-20"
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
               </>
             ) : (
               <>
-                <div>
-                  <Label>I am a:</Label>
-                  <RadioGroup value={swiperType} onValueChange={(value: "student" | "professor") => setSwiperType(value)} className="mt-2">
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="student" id="student" />
-                      <Label htmlFor="student">Student</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="professor" id="professor" />
-                      <Label htmlFor="professor">Professor</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800">Personal Information</h3>
+                  <div>
+                    <Label>I am a:</Label>
+                    <RadioGroup value={swiperType} onValueChange={(value: "student" | "professor") => setSwiperType(value)} className="mt-2">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="student" id="student" />
+                        <Label htmlFor="student">Student</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="professor" id="professor" />
+                        <Label htmlFor="professor">Professor</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
 
-                <div>
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter your full name"
-                    className="mt-1"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="age">Age</Label>
-                  <Input
-                    id="age"
-                    type="number"
-                    value={age}
-                    onChange={(e) => setAge(e.target.value)}
-                    placeholder="Enter your age"
-                    className="mt-1"
-                    min="16"
-                    max="100"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="study">{getStudyLabel()}</Label>
-                  <Input
-                    id="study"
-                    type="text"
-                    value={study}
-                    onChange={(e) => setStudy(e.target.value)}
-                    placeholder={getStudyPlaceholder()}
-                    className="mt-1"
-                    required
-                  />
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="name">Full Name</Label>
+                      <Input
+                        id="name"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Enter your full name"
+                        className="mt-1"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="age">Age</Label>
+                      <Input
+                        id="age"
+                        type="number"
+                        value={age}
+                        onChange={(e) => setAge(e.target.value)}
+                        placeholder="Enter your age"
+                        className="mt-1"
+                        min="16"
+                        max="100"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="study">{getStudyLabel()}</Label>
+                    <Input
+                      id="study"
+                      type="text"
+                      value={study}
+                      onChange={(e) => setStudy(e.target.value)}
+                      placeholder={getStudyPlaceholder()}
+                      className="mt-1"
+                      required
+                    />
+                  </div>
                 </div>
               </>
             )}
             
             <Button 
               type="submit" 
-              className={`w-full bg-gradient-to-r ${getRoleButtonColor()}`}
+              className={`w-full bg-gradient-to-r ${getRoleButtonColor()} py-3 text-lg font-semibold`}
             >
-              <User className="w-4 h-4 mr-2" />
+              <User className="w-5 h-5 mr-2" />
               Create Account
             </Button>
           </form>
