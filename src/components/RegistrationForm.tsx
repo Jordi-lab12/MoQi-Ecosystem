@@ -282,20 +282,33 @@ export const RegistrationForm = ({ userRole, onComplete, onBack }: RegistrationF
                   </div>
                 </div>
                 
-                <div>
-                  <Label htmlFor="imageUrl">Startup Image URL *</Label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
+                  <Label htmlFor="imageUrl" className="text-base font-semibold">Startup Image URL *</Label>
                   <Input
                     id="imageUrl"
                     type="url"
                     value={imageUrl}
                     onChange={(e) => setImageUrl(e.target.value)}
                     placeholder="https://example.com/your-startup-image.jpg"
-                    className="mt-1"
+                    className="mt-2"
                     required
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Add an image URL that represents your startup. This will be shown to swipers.
+                  <p className="text-sm text-gray-600 mt-2">
+                    📸 Add an image URL that represents your startup. This will be shown to swipers during the evaluation process.
                   </p>
+                  {imageUrl && (
+                    <div className="mt-3">
+                      <p className="text-sm text-green-600 mb-2">Preview:</p>
+                      <img 
+                        src={imageUrl} 
+                        alt="Startup preview" 
+                        className="w-32 h-32 object-cover rounded-lg border"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               </>
             ) : (
