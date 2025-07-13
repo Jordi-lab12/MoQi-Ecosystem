@@ -173,17 +173,20 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
   // Filter feedback swipers based on selected filter
   useEffect(() => {
     if (feedbackFilter === 'all') {
+      // Show all swipers open to feedback (group or all)
       setFilteredFeedbackSwipers(swipersOpenToFeedback);
-    } else if (feedbackFilter === 'individual') {
-      setFilteredFeedbackSwipers(
-        swipersOpenToFeedback.filter(swiper => 
-          swiper.feedback_preference === 'individual' || swiper.feedback_preference === 'all'
-        )
-      );
     } else if (feedbackFilter === 'group') {
+      // Show swipers who accept group feedback (both 'group' and 'all' preferences)
       setFilteredFeedbackSwipers(
         swipersOpenToFeedback.filter(swiper => 
           swiper.feedback_preference === 'group' || swiper.feedback_preference === 'all'
+        )
+      );
+    } else if (feedbackFilter === 'individual') {
+      // Show only swipers who accept individual feedback (only 'all' preference)
+      setFilteredFeedbackSwipers(
+        swipersOpenToFeedback.filter(swiper => 
+          swiper.feedback_preference === 'all'
         )
       );
     }
@@ -411,15 +414,15 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
                  Available for Feedback
                </CardTitle>
                <div className="mt-4">
-                 <Label htmlFor="feedback-filter" className="text-sm font-medium">Filter by feedback type:</Label>
+                 <Label htmlFor="feedback-filter" className="text-sm font-medium">Filter by session type:</Label>
                  <Select value={feedbackFilter} onValueChange={(value: 'all' | 'individual' | 'group') => setFeedbackFilter(value)}>
                    <SelectTrigger className="w-full mt-1">
-                     <SelectValue placeholder="Select feedback type" />
+                     <SelectValue placeholder="Select session type" />
                    </SelectTrigger>
                    <SelectContent>
-                     <SelectItem value="all">All feedback types</SelectItem>
-                     <SelectItem value="individual">Individual feedback only</SelectItem>
-                     <SelectItem value="group">Group feedback only</SelectItem>
+                     <SelectItem value="all">All available swipers</SelectItem>
+                     <SelectItem value="group">Group sessions</SelectItem>
+                     <SelectItem value="individual">Individual sessions</SelectItem>
                    </SelectContent>
                  </Select>
                </div>
@@ -439,13 +442,13 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
                             {interaction.swiper_age && <span>Age: {interaction.swiper_age}</span>}
                             {interaction.swiper_study && <span>• {interaction.swiper_study}</span>}
                           </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline" className="text-xs">
-                              {interaction.feedback_preference === 'all' ? 'All Feedback' : 
-                               interaction.feedback_preference === 'individual' ? '1-on-1 Only' : 
-                               interaction.feedback_preference === 'group' ? 'Group Only' : 'No Preference'}
-                            </Badge>
-                          </div>
+                           <div className="flex items-center gap-2 mt-1">
+                             <Badge variant="outline" className="text-xs">
+                               {interaction.feedback_preference === 'all' ? 'All Feedback' : 
+                                interaction.feedback_preference === 'group' ? 'Group Only' : 
+                                'No Feedback'}
+                             </Badge>
+                           </div>
                         </div>
                       </div>
                         <Button
