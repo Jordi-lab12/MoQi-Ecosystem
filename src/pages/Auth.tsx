@@ -42,6 +42,7 @@ export const Auth = () => {
   const [industry, setIndustry] = useState("");
   const [founded, setFounded] = useState("");
   const [employees, setEmployees] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -140,7 +141,7 @@ export const Auth = () => {
                 founded,
                 employees,
                 logo: '🚀',
-                image: `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000000)}?w=400&h=300&fit=crop`
+                image: imageUrl || `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000000)}?w=400&h=300&fit=crop`
               })
             }
           }
@@ -167,7 +168,7 @@ export const Auth = () => {
             updateData.founded = founded;
             updateData.employees = employees;
             updateData.logo = '🚀';
-            updateData.image = `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000000)}?w=400&h=300&fit=crop`;
+            updateData.image = imageUrl || `https://images.unsplash.com/photo-${Math.floor(Math.random() * 1000000000)}?w=400&h=300&fit=crop`;
           }
           
           // Profile will be created automatically by trigger with the metadata
@@ -362,6 +363,36 @@ export const Auth = () => {
                         className="mt-1"
                         required
                       />
+                    </div>
+                    
+                    <div className="border-2 border-dashed border-purple-300 rounded-lg p-4 bg-purple-50/50">
+                      <Label htmlFor="imageUrl" className="text-sm font-semibold text-gray-800">
+                        📸 Startup Image URL *
+                      </Label>
+                      <Input
+                        id="imageUrl"
+                        type="url"
+                        value={imageUrl}
+                        onChange={(e) => setImageUrl(e.target.value)}
+                        placeholder="https://example.com/your-startup-image.jpg"
+                        className="mt-2"
+                        required
+                      />
+                      <p className="text-xs text-gray-600 mt-1">
+                        This image will represent your startup to swipers
+                      </p>
+                      {imageUrl && (
+                        <div className="mt-2 flex justify-center">
+                          <img 
+                            src={imageUrl} 
+                            alt="Startup preview" 
+                            className="w-20 h-20 object-cover rounded-lg border"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
                   </>
                 )}
