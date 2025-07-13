@@ -7,7 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Users, TrendingUp, MessageCircle, Calendar, Eye, Heart, Coins, Send, Clock, User } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Users, TrendingUp, MessageCircle, Calendar, Eye, Heart, Coins, Send, Clock, User, Filter } from "lucide-react";
 import { TimeSlotPicker } from "./TimeSlotPicker";
 import { StartupAnalytics } from "./StartupAnalytics";
 import { StartupImageUpload } from "./StartupImageUpload";
@@ -38,6 +39,8 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
   const { toast } = useToast();
   const [swipersWhoLiked, setSwipersWhoLiked] = useState<SwiperInteractionWithProfile[]>([]);
   const [swipersOpenToFeedback, setSwipersOpenToFeedback] = useState<SwiperInteractionWithProfile[]>([]);
+  const [filteredFeedbackSwipers, setFilteredFeedbackSwipers] = useState<SwiperInteractionWithProfile[]>([]);
+  const [feedbackFilter, setFeedbackFilter] = useState<'all' | 'individual' | 'group'>('all');
   const [totalCoins, setTotalCoins] = useState(0);
   const [averageCoins, setAverageCoins] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -167,6 +170,25 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
     }
   }, [profile]);
 
+  // Filter feedback swipers based on selected filter
+  useEffect(() => {
+    if (feedbackFilter === 'all') {
+      setFilteredFeedbackSwipers(swipersOpenToFeedback);
+    } else if (feedbackFilter === 'individual') {
+      setFilteredFeedbackSwipers(
+        swipersOpenToFeedback.filter(swiper => 
+          swiper.feedback_preference === 'individual' || swiper.feedback_preference === 'all'
+        )
+      );
+    } else if (feedbackFilter === 'group') {
+      setFilteredFeedbackSwipers(
+        swipersOpenToFeedback.filter(swiper => 
+          swiper.feedback_preference === 'group' || swiper.feedback_preference === 'all'
+        )
+      );
+    }
+  }, [swipersOpenToFeedback, feedbackFilter]);
+
   const handleSendFeedbackRequest = async () => {
     if (!profile || !selectedSwiperId || !scheduledDate || !scheduledTime) {
       toast({
@@ -180,7 +202,15 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
     // Check if the selected swiper's feedback preference matches the session type
     const selectedSwiper = swipersOpenToFeedback.find(s => s.swiper_id === selectedSwiperId);
     if (selectedSwiper) {
-      if (feedbackSessionType === 'group' && selectedSwiper.feedback_preference !== 'all') {
+      if (feedbackSessionType === 'individual' && selectedSwiper.feedback_preference === 'group') {
+        toast({
+          title: "Invalid Session Type",
+          description: "This swiper only accepts group feedback sessions",
+          variant: "destructive"
+        });
+        return;
+      }
+      if (feedbackSessionType === 'group' && selectedSwiper.feedback_preference === 'individual') {
         toast({
           title: "Invalid Session Type",
           description: "This swiper only accepts individual feedback sessions",
@@ -376,15 +406,28 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
           {/* Swipers Open to Feedback */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageCircle className="w-5 h-5 text-blue-500" />
-                Available for Feedback
-              </CardTitle>
+               <CardTitle className="flex items-center gap-2">
+                 <MessageCircle className="w-5 h-5 text-blue-500" />
+                 Available for Feedback
+               </CardTitle>
+               <div className="mt-4">
+                 <Label htmlFor="feedback-filter" className="text-sm font-medium">Filter by feedback type:</Label>
+                 <Select value={feedbackFilter} onValueChange={(value: 'all' | 'individual' | 'group') => setFeedbackFilter(value)}>
+                   <SelectTrigger className="w-full mt-1">
+                     <SelectValue placeholder="Select feedback type" />
+                   </SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="all">All feedback types</SelectItem>
+                     <SelectItem value="individual">Individual feedback only</SelectItem>
+                     <SelectItem value="group">Group feedback only</SelectItem>
+                   </SelectContent>
+                 </Select>
+               </div>
             </CardHeader>
             <CardContent>
-              {swipersOpenToFeedback.length > 0 ? (
+              {filteredFeedbackSwipers.length > 0 ? (
                 <div className="space-y-4">
-                  {swipersOpenToFeedback.map((interaction) => (
+                  {filteredFeedbackSwipers.map((interaction) => (
                     <div key={interaction.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold">
@@ -405,13 +448,15 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
                           </div>
                         </div>
                       </div>
-                       <Button
+                        <Button
                          onClick={() => {
                            setSelectedSwiperId(interaction.swiper_id);
                            setFeedbackDialogOpen(true);
                            // Set appropriate session type based on swiper's preference
                            if (interaction.feedback_preference === 'individual') {
                              setFeedbackSessionType('individual');
+                           } else if (interaction.feedback_preference === 'group') {
+                             setFeedbackSessionType('group');
                            }
                          }}
                          size="sm"
