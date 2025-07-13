@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { StartupSwiper } from "@/components/StartupSwiper";
+import { FeedbackPreferences } from "@/components/FeedbackPreferences";
 import { CoinAllocation } from "@/components/CoinAllocation";
 import { ResultsOverview } from "@/components/ResultsOverview";
 import { Dashboard } from "@/components/Dashboard";
@@ -27,7 +28,7 @@ const Index = () => {
     signOut
   } = useSupabaseData();
 
-  const [currentStage, setCurrentStage] = useState<"dashboard" | "swiping" | "allocation" | "results">("dashboard");
+  const [currentStage, setCurrentStage] = useState<"dashboard" | "swiping" | "feedback" | "allocation" | "results">("dashboard");
   const [availableStartups, setAvailableStartups] = useState<Startup[]>([]);
   const [allStartups, setAllStartups] = useState<Startup[]>([]);
   const [likedStartups, setLikedStartups] = useState<Startup[]>([]);
@@ -80,11 +81,30 @@ const Index = () => {
   const handleSwipeComplete = (liked: Startup[], preferences: Record<string, FeedbackType>) => {
     console.log("Swipe complete - liked startups:", liked);
     setLikedStartups(liked);
-    setFeedbackPreferences(preferences);
+    
     if (liked.length > 0) {
-      setCurrentStage("allocation");
+      // Initialize feedback preferences with default 'all' values
+      const initialPreferences: Record<string, FeedbackType> = {};
+      liked.forEach(startup => {
+        initialPreferences[startup.id] = 'all';
+      });
+      setFeedbackPreferences(initialPreferences);
+      setCurrentStage("feedback");
     } else {
       setCurrentStage("results");
+    }
+  };
+
+  const handleFeedbackComplete = (preferences: Record<string, FeedbackType>) => {
+    console.log("Feedback preferences complete:", preferences);
+    setFeedbackPreferences(preferences);
+    
+    if (likedStartups.length === 1) {
+      // Auto-allocate 100 coins for single startup and go to results
+      const allocations = { [likedStartups[0].id]: 100 };
+      handleAllocationComplete(allocations);
+    } else {
+      setCurrentStage("allocation");
     }
   };
 
@@ -92,28 +112,34 @@ const Index = () => {
     console.log("Allocation complete:", allocations);
     setCoinAllocations(allocations);
 
-    // Update interactions with coin allocations
+    // Update interactions with coin allocations and feedback preferences
     if (profile) {
       try {
         for (const [startupId, coinAllocation] of Object.entries(allocations)) {
           if (coinAllocation > 0) {
-            // Update the existing interaction with the coin allocation
+            // Get the feedback preference for this startup
+            const feedbackPreference = feedbackPreferences[startupId] || 'all';
+            
+            // Update the existing interaction with the coin allocation and feedback preference
             const { error } = await supabase
               .from('swiper_interactions')
-              .update({ coin_allocation: coinAllocation })
+              .update({ 
+                coin_allocation: coinAllocation,
+                feedback_preference: feedbackPreference
+              })
               .eq('swiper_id', profile.id)
               .eq('startup_id', startupId)
               .eq('has_liked', true);
             
             if (error) {
-              console.error('Error updating coin allocation for startup:', startupId, error);
+              console.error('Error updating interaction for startup:', startupId, error);
             } else {
-              console.log(`Successfully updated ${coinAllocation} coins for startup ${startupId}`);
+              console.log(`Successfully updated ${coinAllocation} coins and '${feedbackPreference}' feedback preference for startup ${startupId}`);
             }
           }
         }
       } catch (error) {
-        console.error('Error updating coin allocations:', error);
+        console.error('Error updating interactions:', error);
       }
     }
     
@@ -204,23 +230,22 @@ const Index = () => {
         />
           )}
           
-          {currentStage === "swiping" && availableStartups.length > 0 && (
-            <StartupSwiper startups={availableStartups} onComplete={handleSwipeComplete} />
+          {currentStage === "swiping" && (
+            <StartupSwiper 
+              startups={availableStartups} 
+              onComplete={handleSwipeComplete}
+            />
           )}
 
-          {currentStage === "swiping" && availableStartups.length === 0 && (
-            <div className="min-h-screen flex items-center justify-center p-4">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">No Startups Available</h2>
-                <p className="text-gray-600 mb-6">You've swiped on all available startups!</p>
-                <Button onClick={() => setCurrentStage("dashboard")} className="bg-purple-500 hover:bg-purple-600">
-                  Back to Dashboard
-                </Button>
-              </div>
-            </div>
+          {currentStage === "feedback" && (
+            <FeedbackPreferences
+              startups={likedStartups}
+              initialPreferences={feedbackPreferences}
+              onComplete={handleFeedbackComplete}
+            />
           )}
-          
-          {currentStage === "allocation" && (
+
+          {currentStage === "allocation" && likedStartups.length > 1 && (
             <CoinAllocation 
               startups={likedStartups} 
               onComplete={handleAllocationComplete}
