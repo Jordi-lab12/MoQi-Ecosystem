@@ -318,23 +318,46 @@ export const Auth = () => {
                       <Label htmlFor="age">Age</Label>
                       <Input
                         id="age"
+                        type="number"
                         value={age}
-                        onChange={(e) => setAge(e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          // Only allow numbers
+                          if (value === '' || /^\d+$/.test(value)) {
+                            setAge(value);
+                          }
+                        }}
                         placeholder="Your age"
                         className="mt-1"
+                        min="16"
+                        max="100"
                         required
                       />
                     </div>
                     <div>
                       <Label htmlFor="study">Study</Label>
-                      <Input
-                        id="study"
-                        value={study}
-                        onChange={(e) => setStudy(e.target.value)}
-                        placeholder="What you study"
-                        className="mt-1"
-                        required
-                      />
+                      <Select value={study} onValueChange={setStudy}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select your field of study" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white z-50">
+                          <SelectItem value="computer-science">Computer Science</SelectItem>
+                          <SelectItem value="business">Business</SelectItem>
+                          <SelectItem value="engineering">Engineering</SelectItem>
+                          <SelectItem value="marketing">Marketing</SelectItem>
+                          <SelectItem value="psychology">Psychology</SelectItem>
+                          <SelectItem value="economics">Economics</SelectItem>
+                          <SelectItem value="medicine">Medicine</SelectItem>
+                          <SelectItem value="law">Law</SelectItem>
+                          <SelectItem value="mathematics">Mathematics</SelectItem>
+                          <SelectItem value="physics">Physics</SelectItem>
+                          <SelectItem value="chemistry">Chemistry</SelectItem>
+                          <SelectItem value="biology">Biology</SelectItem>
+                          <SelectItem value="communications">Communications</SelectItem>
+                          <SelectItem value="design">Design</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </>
                 ) : (
