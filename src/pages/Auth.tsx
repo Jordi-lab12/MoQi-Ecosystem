@@ -403,25 +403,41 @@ export const Auth = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="founded">Founded</Label>
-                        <Input
-                          id="founded"
-                          value={founded}
-                          onChange={(e) => setFounded(e.target.value)}
-                          placeholder="Year founded"
-                          className="mt-1"
-                          required
-                        />
+                        <Select value={founded} onValueChange={setFounded}>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Select founding year" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white z-50">
+                            <SelectItem value="2024">2024</SelectItem>
+                            <SelectItem value="2023">2023</SelectItem>
+                            <SelectItem value="2022">2022</SelectItem>
+                            <SelectItem value="2021">2021</SelectItem>
+                            <SelectItem value="2020">2020</SelectItem>
+                            <SelectItem value="2019">2019</SelectItem>
+                            <SelectItem value="2018">2018</SelectItem>
+                            <SelectItem value="2017">2017</SelectItem>
+                            <SelectItem value="2016">2016</SelectItem>
+                            <SelectItem value="2015">2015</SelectItem>
+                            <SelectItem value="before-2015">Before 2015</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div>
                         <Label htmlFor="employees">Team Size</Label>
-                        <Input
-                          id="employees"
-                          value={employees}
-                          onChange={(e) => setEmployees(e.target.value)}
-                          placeholder="Number of employees"
-                          className="mt-1"
-                          required
-                        />
+                        <Select value={employees} onValueChange={setEmployees}>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Select team size" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white z-50">
+                            <SelectItem value="1">Just me (1)</SelectItem>
+                            <SelectItem value="2-5">Small team (2-5)</SelectItem>
+                            <SelectItem value="6-10">Growing team (6-10)</SelectItem>
+                            <SelectItem value="11-25">Medium team (11-25)</SelectItem>
+                            <SelectItem value="26-50">Large team (26-50)</SelectItem>
+                            <SelectItem value="51-100">Big company (51-100)</SelectItem>
+                            <SelectItem value="100+">Enterprise (100+)</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
 

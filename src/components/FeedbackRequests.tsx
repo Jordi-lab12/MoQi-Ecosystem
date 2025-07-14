@@ -10,9 +10,10 @@ import { useToast } from "@/hooks/use-toast";
 
 interface FeedbackRequestsProps {
   onBack: () => void;
+  onRequestStatusChange?: () => void;
 }
 
-export const FeedbackRequests = ({ onBack }: FeedbackRequestsProps) => {
+export const FeedbackRequests = ({ onBack, onRequestStatusChange }: FeedbackRequestsProps) => {
   const { profile } = useSupabaseData();
   const { toast } = useToast();
   const [requests, setRequests] = useState<any[]>([]);
@@ -66,6 +67,7 @@ export const FeedbackRequests = ({ onBack }: FeedbackRequestsProps) => {
       });
 
       fetchFeedbackRequests();
+      onRequestStatusChange?.();
     } catch (error) {
       console.error('Error accepting request:', error);
       toast({
@@ -92,6 +94,7 @@ export const FeedbackRequests = ({ onBack }: FeedbackRequestsProps) => {
       });
 
       fetchFeedbackRequests();
+      onRequestStatusChange?.();
     } catch (error) {
       console.error('Error declining request:', error);
       toast({

@@ -38,24 +38,24 @@ export const Dashboard = ({
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
 
   // Fetch pending feedback requests count for notification badge
-  useEffect(() => {
-    const fetchPendingRequests = async () => {
-      if (!profile || profile.role !== 'swiper') return;
+  const fetchPendingRequests = async () => {
+    if (!profile || profile.role !== 'swiper') return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('feedback_requests')
+        .select('id')
+        .eq('swiper_id', profile.id)
+        .eq('status', 'pending');
       
-      try {
-        const { data, error } = await supabase
-          .from('feedback_requests')
-          .select('id')
-          .eq('swiper_id', profile.id)
-          .eq('status', 'pending');
-        
-        if (error) throw error;
-        setPendingRequestsCount(data?.length || 0);
-      } catch (error) {
-        console.error('Error fetching pending requests:', error);
-      }
-    };
+      if (error) throw error;
+      setPendingRequestsCount(data?.length || 0);
+    } catch (error) {
+      console.error('Error fetching pending requests:', error);
+    }
+  };
 
+  useEffect(() => {
     fetchPendingRequests();
 
     // Set up real-time subscription for feedback requests
@@ -88,7 +88,10 @@ export const Dashboard = ({
   };
 
   if (showFeedbackRequests) {
-    return <FeedbackRequests onBack={() => setShowFeedbackRequests(false)} />;
+    return <FeedbackRequests 
+      onBack={() => setShowFeedbackRequests(false)} 
+      onRequestStatusChange={fetchPendingRequests}
+    />;
   }
 
   return (
