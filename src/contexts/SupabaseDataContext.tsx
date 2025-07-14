@@ -62,7 +62,7 @@ interface SupabaseDataContextType {
   createSwiperInteraction: (interaction: Omit<SwiperInteraction, 'id' | 'created_at'>) => Promise<void>;
   updateSwiperInteraction: (id: string, updates: Partial<SwiperInteraction>) => Promise<void>;
   getSwiperInteractions: (startupId?: string) => Promise<SwiperInteraction[]>;
-  getLikedStartupsWithAllocations: () => Promise<{ startup: Profile; allocation: number }[]>;
+  getLikedStartupsWithAllocations: () => Promise<{ startup: Profile; allocation: number; date: string }[]>;
   createFeedbackRequest: (request: Omit<FeedbackRequest, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
   
   // Auth
@@ -218,12 +218,12 @@ export const SupabaseDataProvider: React.FC<{ children: ReactNode }> = ({ childr
     return (data || []) as SwiperInteraction[];
   };
 
-  const getLikedStartupsWithAllocations = async (): Promise<{ startup: Profile; allocation: number }[]> => {
+  const getLikedStartupsWithAllocations = async (): Promise<{ startup: Profile; allocation: number; date: string }[]> => {
     if (!profile || profile.role !== 'swiper') return [];
     
     const { data: interactions, error: interactionsError } = await supabase
       .from('swiper_interactions')
-      .select('coin_allocation, startup_id')
+      .select('coin_allocation, startup_id, created_at')
       .eq('swiper_id', profile.id)
       .eq('has_liked', true)
       .gt('coin_allocation', 0);
@@ -245,7 +245,8 @@ export const SupabaseDataProvider: React.FC<{ children: ReactNode }> = ({ childr
       const startup = startups?.find(s => s.id === interaction.startup_id);
       return {
         startup: startup as Profile,
-        allocation: interaction.coin_allocation
+        allocation: interaction.coin_allocation,
+        date: interaction.created_at
       };
     }).filter(item => item.startup);
   };

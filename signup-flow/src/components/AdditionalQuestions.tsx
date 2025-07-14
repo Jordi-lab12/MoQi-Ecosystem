@@ -157,7 +157,13 @@ const AdditionalQuestions = ({ studentData }: AdditionalQuestionsProps) => {
                   id="age"
                   type="number"
                   value={formData.age}
-                  onChange={(e) => handleInputChange("age", e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Only allow numbers
+                    if (value === '' || /^\d+$/.test(value)) {
+                      handleInputChange("age", value);
+                    }
+                  }}
                   className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500"
                   placeholder="Enter your age"
                   min="16"
@@ -212,15 +218,30 @@ const AdditionalQuestions = ({ studentData }: AdditionalQuestionsProps) => {
 
               <div className="space-y-2">
                 <Label htmlFor="department" className="text-gray-300">
-                  Department/Field of Study
+                  Field of Study
                 </Label>
-                <Input
-                  id="department"
-                  value={formData.department}
-                  onChange={(e) => handleInputChange("department", e.target.value)}
-                  className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Computer Science, Business, etc."
-                />
+                <Select onValueChange={(value) => handleInputChange("department", value)}>
+                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500">
+                    <SelectValue placeholder="Select your field of study" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-700 border-gray-600">
+                    <SelectItem value="computer-science" className="text-white hover:bg-gray-600">Computer Science</SelectItem>
+                    <SelectItem value="business" className="text-white hover:bg-gray-600">Business</SelectItem>
+                    <SelectItem value="engineering" className="text-white hover:bg-gray-600">Engineering</SelectItem>
+                    <SelectItem value="marketing" className="text-white hover:bg-gray-600">Marketing</SelectItem>
+                    <SelectItem value="psychology" className="text-white hover:bg-gray-600">Psychology</SelectItem>
+                    <SelectItem value="economics" className="text-white hover:bg-gray-600">Economics</SelectItem>
+                    <SelectItem value="medicine" className="text-white hover:bg-gray-600">Medicine</SelectItem>
+                    <SelectItem value="law" className="text-white hover:bg-gray-600">Law</SelectItem>
+                    <SelectItem value="mathematics" className="text-white hover:bg-gray-600">Mathematics</SelectItem>
+                    <SelectItem value="physics" className="text-white hover:bg-gray-600">Physics</SelectItem>
+                    <SelectItem value="chemistry" className="text-white hover:bg-gray-600">Chemistry</SelectItem>
+                    <SelectItem value="biology" className="text-white hover:bg-gray-600">Biology</SelectItem>
+                    <SelectItem value="communications" className="text-white hover:bg-gray-600">Communications</SelectItem>
+                    <SelectItem value="design" className="text-white hover:bg-gray-600">Design</SelectItem>
+                    <SelectItem value="other" className="text-white hover:bg-gray-600">Other</SelectItem>
+                  </SelectContent>
+                </Select>
                 {errors.department && (
                   <p className="text-red-400 text-sm">{errors.department}</p>
                 )}

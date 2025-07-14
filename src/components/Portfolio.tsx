@@ -24,46 +24,41 @@ export const Portfolio = ({ likedStartups, coinAllocations, feedbackPreferences 
     const loadPortfolioData = async () => {
       try {
         const data = await getLikedStartupsWithAllocations();
-        // Convert to the format we need with date information
-        const portfolioData = data.map(item => ({
-          startup: item.startup,
-          allocation: item.allocation,
-          date: new Date().toISOString() // Using current date as fallback, ideally this would come from interaction date
-        }));
+        console.log('Portfolio data from database:', data);
         
         // Sort by date (most recent first)
-        portfolioData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        const portfolioData = data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         
+        console.log('Portfolio data formatted:', portfolioData);
         setPortfolioStartups(portfolioData);
       } catch (error) {
         console.error('Error loading portfolio data:', error);
       }
     };
 
-    if (isOpen) {
-      loadPortfolioData();
-      
-      // Set up real-time subscription for portfolio updates
-      const channel = supabase
-        .channel('portfolio-updates')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'swiper_interactions'
-          },
-          () => {
-            // Reload portfolio when any interaction changes
-            loadPortfolioData();
-          }
-        )
-        .subscribe();
+    // Load immediately when component opens or mounts
+    loadPortfolioData();
+    
+    // Set up real-time subscription for portfolio updates
+    const channel = supabase
+      .channel('portfolio-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'swiper_interactions'
+        },
+        () => {
+          // Reload portfolio when any interaction changes
+          loadPortfolioData();
+        }
+      )
+      .subscribe();
 
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [isOpen, getLikedStartupsWithAllocations]);
 
   const getFeedbackLabel = (type: FeedbackType) => {

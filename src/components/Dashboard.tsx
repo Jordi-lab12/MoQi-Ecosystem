@@ -102,20 +102,6 @@ export const Dashboard = ({
             <Sparkles className="w-10 h-10 text-pink-500" />
           </div>
           <p className="text-gray-600 text-xl">Welcome back! Ready to discover amazing startups?</p>
-          {availableStartupsCount === 0 && totalStartupsCount > 0 && (
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-blue-800 text-sm">
-                🎉 You've swiped on all available startups! New startups will appear here when they register.
-              </p>
-            </div>
-          )}
-          {totalStartupsCount === 0 && (
-            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-yellow-800 text-sm">
-                ℹ️ No startups are currently registered. You'll need some startups to swipe on first!
-              </p>
-            </div>
-          )}
         </div>
 
         {/* Main action button - central and biggest */}

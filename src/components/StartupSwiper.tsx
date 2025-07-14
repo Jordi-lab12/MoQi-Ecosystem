@@ -176,12 +176,12 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
           }`}
           onClick={() => setShowModal(true)}
         >
-          <div className="relative h-48 overflow-hidden">
+          <div className="relative h-64 overflow-hidden rounded-t-lg">
             <img 
               src={currentStartup.image} 
               alt={currentStartup.name}
-              className={`w-full h-full object-cover transition-all duration-300 ${
-                swipeDirection ? 'blur-sm' : 'group-hover:scale-110'
+              className={`w-full h-full object-contain bg-gradient-to-br from-gray-50 to-gray-100 transition-all duration-300 ${
+                swipeDirection ? 'blur-sm' : 'group-hover:scale-105'
               }`}
               onError={(e) => {
                 e.currentTarget.src = `https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&h=400&fit=crop&crop=center`;
