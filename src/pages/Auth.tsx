@@ -235,7 +235,7 @@ export const Auth = () => {
             <div className="w-8" />
           </div>
           <p className="text-gray-600">
-            {isLogin ? "Sign in to your account" : "Create your account"}
+            {isLogin ? "Sign in to your account" : "Create an account"}
           </p>
         </CardHeader>
         <CardContent>
