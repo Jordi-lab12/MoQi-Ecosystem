@@ -225,20 +225,15 @@ export const Auth = () => {
             <Button onClick={() => navigate('/')} variant="ghost" size="sm">
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <img 
                 src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
                 alt="MoQi Logo" 
-                className="w-8 h-8"
+                className="w-12 h-12"
               />
-              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <CardTitle className="text-3xl font-bold text-gray-800">
                 MoQi
               </CardTitle>
-              <img 
-                src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
-                alt="MoQi Logo" 
-                className="w-8 h-8"
-              />
             </div>
             <div className="w-8" />
           </div>

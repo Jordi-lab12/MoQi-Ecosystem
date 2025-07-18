@@ -44,13 +44,13 @@ export const ContactPage = ({ onBack }: ContactPageProps) => {
           <Button onClick={onBack} variant="ghost" size="sm">
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <img 
               src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
               alt="MoQi Logo" 
-              className="w-8 h-8"
+              className="w-12 h-12"
             />
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold text-gray-800">
               Contact MoQi
             </h1>
           </div>
@@ -63,7 +63,7 @@ export const ContactPage = ({ onBack }: ContactPageProps) => {
               <img 
                 src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
                 alt="MoQi Logo" 
-                className="w-20 h-20 mx-auto"
+                className="w-24 h-24 mx-auto"
               />
             </div>
             <CardTitle className="text-2xl text-gray-800">Get in Touch</CardTitle>

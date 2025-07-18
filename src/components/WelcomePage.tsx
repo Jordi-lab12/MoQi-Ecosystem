@@ -41,20 +41,15 @@ export const WelcomePage = ({ onRoleSelected }: WelcomePageProps) => {
       <div className="w-full max-w-6xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-3 mb-6">
+          <div className="flex items-center justify-center gap-4 mb-6">
             <img 
               src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
               alt="MoQi Logo" 
-              className="w-12 h-12 animate-pulse filter brightness-0 invert"
+              className="w-20 h-20 filter brightness-0 invert"
             />
-            <h1 className="text-6xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <h1 className="text-6xl font-bold text-white">
               MoQi
             </h1>
-            <img 
-              src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
-              alt="MoQi Logo" 
-              className="w-12 h-12 animate-pulse filter brightness-0 invert"
-            />
           </div>
           <p className="text-xl text-gray-300 mb-2">Welcome to the future of startup connections</p>
           <p className="text-lg text-gray-400">Choose your role to get started</p>

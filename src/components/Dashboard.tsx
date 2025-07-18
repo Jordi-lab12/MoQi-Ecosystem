@@ -104,18 +104,13 @@ export const Dashboard = ({
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-2 mb-6">
+          <div className="flex items-center justify-center gap-4 mb-6">
             <img 
               src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
               alt="MoQi Logo" 
-              className="w-10 h-10"
+              className="w-16 h-16"
             />
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">MoQi</h1>
-            <img 
-              src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
-              alt="MoQi Logo" 
-              className="w-10 h-10"
-            />
+            <h1 className="text-5xl font-bold text-gray-800">MoQi</h1>
           </div>
           <p className="text-gray-600 text-xl">Welcome back! Ready to discover amazing startups?</p>
         </div>
