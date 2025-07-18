@@ -162,31 +162,48 @@ export const Portfolio = ({ likedStartups, coinAllocations, feedbackPreferences 
                     <CardContent className="p-6">
                       <div className="flex items-start gap-4">
                         <div className="text-3xl">{item.startup.logo}</div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-xl font-bold text-green-800">{item.startup.name}</h3>
-                            <Badge className="bg-green-100 text-green-800 border-0">
-                              #{index + 1}
-                            </Badge>
-                            <div className="flex items-center gap-1 text-sm text-gray-500">
-                              <Calendar className="w-4 h-4" />
-                              {formatDate(item.date)}
-                            </div>
-                          </div>
-                          <p className="text-gray-600 mb-3">{item.startup.tagline}</p>
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2">
-                              <Star className="w-4 h-4 text-yellow-500" />
-                              <span className="font-semibold text-green-700">{item.allocation} MoQi-points</span>
-                            </div>
-                            <Badge className={`${getFeedbackColor(feedback)} border-0`}>
-                              {getFeedbackLabel(feedback)}
-                            </Badge>
-                            <Badge variant="outline" className="text-xs">
-                              {item.startup.industry}
-                            </Badge>
-                          </div>
-                        </div>
+                         <div className="flex-1">
+                           <div className="flex items-center gap-3 mb-2">
+                             <h3 className="text-xl font-bold text-green-800">{item.startup.name}</h3>
+                             <Badge className="bg-green-100 text-green-800 border-0">
+                               #{index + 1}
+                             </Badge>
+                             <div className="flex items-center gap-1 text-sm text-gray-500">
+                               <Calendar className="w-4 h-4" />
+                               {formatDate(item.date)}
+                             </div>
+                             {startupUpdates[item.startup.id]?.hasUpdates && (
+                               <Badge className="bg-blue-100 text-blue-800 border-0 animate-pulse">
+                                 New Update!
+                               </Badge>
+                             )}
+                           </div>
+                           <p className="text-gray-600 mb-3">{item.startup.tagline}</p>
+                           <div className="flex items-center gap-4 mb-3">
+                             <div className="flex items-center gap-2">
+                               <Star className="w-4 h-4 text-yellow-500" />
+                               <span className="font-semibold text-green-700">{item.allocation} MoQi-points</span>
+                             </div>
+                             <Badge className={`${getFeedbackColor(feedback)} border-0`}>
+                               {getFeedbackLabel(feedback)}
+                             </Badge>
+                             <Badge variant="outline" className="text-xs">
+                               {item.startup.industry}
+                             </Badge>
+                           </div>
+                           {startupUpdates[item.startup.id]?.hasUpdates && (
+                             <Button
+                               onClick={() => setSelectedStartupForUpdates({ id: item.startup.id, name: item.startup.name })}
+                               variant="outline"
+                               size="sm"
+                               className="flex items-center gap-2 hover:bg-blue-50"
+                             >
+                               <FileText className="w-4 h-4" />
+                               View Latest Update
+                               <ArrowRight className="w-4 h-4" />
+                             </Button>
+                           )}
+                         </div>
                       </div>
                     </CardContent>
                   </Card>
