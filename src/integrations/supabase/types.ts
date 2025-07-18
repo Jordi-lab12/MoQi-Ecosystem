@@ -143,6 +143,54 @@ export type Database = {
         }
         Relationships: []
       }
+      startup_updates: {
+        Row: {
+          challenges_faced: string | null
+          created_at: string
+          id: string
+          images: string[] | null
+          is_published: boolean
+          key_achievements: string | null
+          metrics_update: string | null
+          startup_id: string
+          team_highlights: string | null
+          title: string
+          upcoming_goals: string | null
+          updated_at: string
+          week_ending: string
+        }
+        Insert: {
+          challenges_faced?: string | null
+          created_at?: string
+          id?: string
+          images?: string[] | null
+          is_published?: boolean
+          key_achievements?: string | null
+          metrics_update?: string | null
+          startup_id: string
+          team_highlights?: string | null
+          title: string
+          upcoming_goals?: string | null
+          updated_at?: string
+          week_ending: string
+        }
+        Update: {
+          challenges_faced?: string | null
+          created_at?: string
+          id?: string
+          images?: string[] | null
+          is_published?: boolean
+          key_achievements?: string | null
+          metrics_update?: string | null
+          startup_id?: string
+          team_highlights?: string | null
+          title?: string
+          upcoming_goals?: string | null
+          updated_at?: string
+          week_ending?: string
+        }
+        Relationships: []
+      }
       swiper_interactions: {
         Row: {
           coin_allocation: number

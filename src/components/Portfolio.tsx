@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Briefcase, Star, TrendingUp, Calendar } from "lucide-react";
+import { Briefcase, Star, TrendingUp, Calendar, FileText, ArrowRight } from "lucide-react";
 import { Startup, FeedbackType } from "@/pages/Index";
+import { StartupUpdateViewer } from "./StartupUpdateViewer";
 import { useSupabaseData } from "@/contexts/SupabaseDataContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -18,23 +19,59 @@ interface PortfolioProps {
 export const Portfolio = ({ likedStartups, coinAllocations, feedbackPreferences }: PortfolioProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [portfolioStartups, setPortfolioStartups] = useState<Array<{ startup: Startup; allocation: number; date: string }>>([]);
+  const [selectedStartupForUpdates, setSelectedStartupForUpdates] = useState<{ id: string; name: string } | null>(null);
+  const [startupUpdates, setStartupUpdates] = useState<Record<string, { hasUpdates: boolean; latestUpdate?: any }>>({});
   const { getLikedStartupsWithAllocations } = useSupabaseData();
 
+  const loadStartupUpdates = async (portfolioData: Array<{ startup: Startup; allocation: number; date: string }>) => {
+    try {
+      const startupIds = portfolioData.map(p => p.startup.id);
+      if (startupIds.length === 0) return;
+
+      const { data: updates, error } = await supabase
+        .from('startup_updates')
+        .select('startup_id, title, created_at, week_ending')
+        .in('startup_id', startupIds)
+        .eq('is_published', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Group updates by startup and get latest for each
+      const updatesByStartup: Record<string, { hasUpdates: boolean; latestUpdate?: any }> = {};
+      
+      startupIds.forEach(id => {
+        const startupUpdates = updates?.filter(u => u.startup_id === id) || [];
+        updatesByStartup[id] = {
+          hasUpdates: startupUpdates.length > 0,
+          latestUpdate: startupUpdates[0] || null
+        };
+      });
+
+      setStartupUpdates(updatesByStartup);
+    } catch (error) {
+      console.error('Error loading startup updates:', error);
+    }
+  };
+
   useEffect(() => {
-    const loadPortfolioData = async () => {
-      try {
-        const data = await getLikedStartupsWithAllocations();
-        console.log('Portfolio data from database:', data);
-        
-        // Sort by date (most recent first)
-        const portfolioData = data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        
-        console.log('Portfolio data formatted:', portfolioData);
-        setPortfolioStartups(portfolioData);
-      } catch (error) {
-        console.error('Error loading portfolio data:', error);
-      }
-    };
+  const loadPortfolioData = async () => {
+    try {
+      const data = await getLikedStartupsWithAllocations();
+      console.log('Portfolio data from database:', data);
+      
+      // Sort by date (most recent first)
+      const portfolioData = data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      
+      console.log('Portfolio data formatted:', portfolioData);
+      setPortfolioStartups(portfolioData);
+      
+      // Load weekly updates for each startup
+      await loadStartupUpdates(portfolioData);
+    } catch (error) {
+      console.error('Error loading portfolio data:', error);
+    }
+  };
 
     // Load immediately when component opens or mounts
     loadPortfolioData();
@@ -86,6 +123,16 @@ export const Portfolio = ({ likedStartups, coinAllocations, feedbackPreferences 
       year: 'numeric'
     });
   };
+
+  if (selectedStartupForUpdates) {
+    return (
+      <StartupUpdateViewer
+        onBack={() => setSelectedStartupForUpdates(null)}
+        startupId={selectedStartupForUpdates.id}
+        startupName={selectedStartupForUpdates.name}
+      />
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

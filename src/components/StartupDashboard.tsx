@@ -8,10 +8,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, TrendingUp, MessageCircle, Calendar, Eye, Heart, Coins, Send, Clock, User, Filter } from "lucide-react";
+import { Users, TrendingUp, MessageCircle, Calendar, Eye, Heart, Coins, Send, Clock, User, Filter, FileText, Plus, Bell } from "lucide-react";
 import { TimeSlotPicker } from "./TimeSlotPicker";
 import { StartupAnalytics } from "./StartupAnalytics";
 import { StartupImageUpload } from "./StartupImageUpload";
+import { StartupUpdateForm } from "./StartupUpdateForm";
 import { useSupabaseData } from "@/contexts/SupabaseDataContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -45,6 +46,11 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
   const [averageCoins, setAverageCoins] = useState(0);
   const [loading, setLoading] = useState(true);
   
+  // Weekly updates state
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [needsWeeklyUpdate, setNeedsWeeklyUpdate] = useState(false);
+  const [recentUpdates, setRecentUpdates] = useState<any[]>([]);
+  
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
   const [selectedSwiperId, setSelectedSwiperId] = useState("");
   const [feedbackMessage, setFeedbackMessage] = useState("");
@@ -53,12 +59,51 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
   const [feedbackSessionType, setFeedbackSessionType] = useState<'individual' | 'group'>('individual');
   const [teamsLink, setTeamsLink] = useState("");
 
+  // Load weekly updates data
+  const loadUpdatesData = async () => {
+    if (!profile?.id) return;
+    
+    try {
+      // Fetch recent updates
+      const { data: updates, error } = await supabase
+        .from('startup_updates')
+        .select('id, title, week_ending, is_published, created_at')
+        .eq('startup_id', profile.id)
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      if (error) throw error;
+      setRecentUpdates(updates || []);
+
+      // Check if weekly update is needed
+      const today = new Date();
+      const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() - today.getDay()); // Start of current week
+      
+      const { data: thisWeekUpdate, error: weekError } = await supabase
+        .from('startup_updates')
+        .select('id')
+        .eq('startup_id', profile.id)
+        .gte('week_ending', weekStart.toISOString().split('T')[0])
+        .eq('is_published', true);
+
+      if (weekError) throw weekError;
+      
+      setNeedsWeeklyUpdate(!thisWeekUpdate || thisWeekUpdate.length === 0);
+    } catch (error) {
+      console.error('Error loading updates data:', error);
+    }
+  };
+
   useEffect(() => {
     const loadSwiperData = async () => {
       if (!profile || profile.role !== 'startup') return;
 
       try {
         setLoading(true);
+        
+        // Load updates data
+        await loadUpdatesData();
         
         console.log('Loading swiper data for startup:', profile.id, profile.name);
         
@@ -263,6 +308,18 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
     }
   };
 
+  if (showUpdateForm) {
+    return (
+      <StartupUpdateForm
+        onBack={() => {
+          setShowUpdateForm(false);
+          loadUpdatesData();
+        }}
+        startupId={profile?.id || ''}
+      />
+    );
+  }
+
   if (!profile || profile.role !== 'startup') {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -286,7 +343,16 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
   }
 
   return (
-    <div className="min-h-screen p-6 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+    <div className="min-h-screen p-6 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 relative">
+      {/* Logo in top left corner */}
+      <div className="absolute top-4 left-4 z-10">
+        <img 
+          src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
+          alt="MoQi Logo" 
+          className="w-20 h-20"
+        />
+      </div>
+      
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
@@ -299,6 +365,61 @@ export const StartupDashboard = ({ startupName }: StartupDashboardProps) => {
             </div>
           </div>
         </div>
+
+        {/* Weekly Update Reminder */}
+        {needsWeeklyUpdate && (
+          <Card className="mb-8 border-orange-200 bg-orange-50">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                  <Bell className="w-6 h-6 text-orange-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-orange-800">Weekly Update Reminder</h3>
+                  <p className="text-orange-700">
+                    Keep your supporters engaged! Share your latest progress, challenges, and wins.
+                  </p>
+                </div>
+                <Button
+                  onClick={() => setShowUpdateForm(true)}
+                  className="bg-orange-500 hover:bg-orange-600 text-white"
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Create Update
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Weekly Update Quick Action */}
+        <Card className="mb-8 shadow-lg border-purple-200">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
+                <FileText className="w-8 h-8 text-purple-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-semibold text-gray-800">Weekly Updates</h3>
+                <p className="text-gray-600">
+                  Share your progress with supporters through engaging weekly articles
+                </p>
+                {recentUpdates.length > 0 && (
+                  <p className="text-sm text-green-600 mt-1">
+                    Last update: {new Date(recentUpdates[0].created_at).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+              <Button
+                onClick={() => setShowUpdateForm(true)}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Update
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Analytics Overview */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
