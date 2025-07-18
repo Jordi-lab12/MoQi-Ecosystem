@@ -8,6 +8,7 @@ import { Sparkles, Info, MessageCircle, Play, Star, TrendingUp, Users, ChevronDo
 import { MeetingCalendar } from "./MeetingCalendar";
 import { Portfolio } from "./Portfolio";
 import { FeedbackRequests } from "./FeedbackRequests";
+import { ContactPage } from "./ContactPage";
 import { Startup, FeedbackType } from "@/pages/Index";
 import { useSupabaseData } from "@/contexts/SupabaseDataContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,6 +36,7 @@ export const Dashboard = ({
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   const [isWhyMoQiOpen, setIsWhyMoQiOpen] = useState(false);
   const [showFeedbackRequests, setShowFeedbackRequests] = useState(false);
+  const [showContactPage, setShowContactPage] = useState(false);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
 
   // Fetch pending feedback requests count for notification badge
@@ -83,9 +85,12 @@ export const Dashboard = ({
   }, [profile]);
 
   const handleContact = () => {
-    // For now, just show an alert - can be replaced with actual contact functionality
-    alert("Contact us at: hello@moqi.com");
+    setShowContactPage(true);
   };
+
+  if (showContactPage) {
+    return <ContactPage onBack={() => setShowContactPage(false)} />;
+  }
 
   if (showFeedbackRequests) {
     return <FeedbackRequests 
@@ -100,9 +105,17 @@ export const Dashboard = ({
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-2 mb-6">
-            <Sparkles className="w-10 h-10 text-purple-500" />
+            <img 
+              src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
+              alt="MoQi Logo" 
+              className="w-10 h-10"
+            />
             <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">MoQi</h1>
-            <Sparkles className="w-10 h-10 text-pink-500" />
+            <img 
+              src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
+              alt="MoQi Logo" 
+              className="w-10 h-10"
+            />
           </div>
           <p className="text-gray-600 text-xl">Welcome back! Ready to discover amazing startups?</p>
         </div>

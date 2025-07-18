@@ -226,11 +226,19 @@ export const Auth = () => {
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div className="flex items-center gap-2">
-              <Sparkles className="w-8 h-8 text-purple-500" />
+              <img 
+                src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
+                alt="MoQi Logo" 
+                className="w-8 h-8"
+              />
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                 MoQi
               </CardTitle>
-              <Sparkles className="w-8 h-8 text-pink-500" />
+              <img 
+                src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
+                alt="MoQi Logo" 
+                className="w-8 h-8"
+              />
             </div>
             <div className="w-8" />
           </div>
