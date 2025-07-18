@@ -32,6 +32,7 @@ export const Auth = () => {
   // Swiper fields
   const [age, setAge] = useState("");
   const [study, setStudy] = useState("");
+  const [gender, setGender] = useState("");
   
   // Startup fields
   const [tagline, setTagline] = useState("");
@@ -182,7 +183,7 @@ export const Auth = () => {
               ...(role === 'swiper' ? {
                 age,
                 study,
-                gender: 'Male' // Default
+                gender
               } : {
                 tagline,
                 description,
@@ -356,6 +357,19 @@ export const Auth = () => {
                           <SelectItem value="communications">Communications</SelectItem>
                           <SelectItem value="design">Design</SelectItem>
                           <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="gender">Gender</Label>
+                      <Select value={gender} onValueChange={setGender}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select your gender" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white z-50">
+                          <SelectItem value="Male">Male</SelectItem>
+                          <SelectItem value="Female">Female</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
