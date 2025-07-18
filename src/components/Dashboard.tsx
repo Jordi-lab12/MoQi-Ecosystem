@@ -100,17 +100,21 @@ export const Dashboard = ({
   }
 
   return (
-    <div className="min-h-screen p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
+    <div className="min-h-screen p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50 relative">
+      {/* Logo in top left corner */}
+      <div className="absolute top-4 left-4 z-10">
+        <img 
+          src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
+          alt="MoQi Logo" 
+          className="w-20 h-20"
+        />
+      </div>
+      
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <img 
-              src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
-              alt="MoQi Logo" 
-              className="w-16 h-16"
-            />
-            <h1 className="text-5xl font-bold text-gray-800">MoQi</h1>
+          <div className="flex items-center justify-center mb-6">
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">MoQi</h1>
           </div>
           <p className="text-gray-600 text-xl">Welcome back! Ready to discover amazing startups?</p>
         </div>

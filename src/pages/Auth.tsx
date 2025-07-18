@@ -218,20 +218,24 @@ export const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50 relative">
+      {/* Logo in top left corner */}
+      <div className="absolute top-4 left-4 z-10">
+        <img 
+          src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
+          alt="MoQi Logo" 
+          className="w-20 h-20"
+        />
+      </div>
+      
       <Card className="w-full max-w-2xl shadow-2xl">{/* Increased width for startup form */}
         <CardHeader className="text-center">
           <div className="flex items-center justify-between mb-4">
             <Button onClick={() => navigate('/')} variant="ghost" size="sm">
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <div className="flex items-center gap-3">
-              <img 
-                src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
-                alt="MoQi Logo" 
-                className="w-12 h-12"
-              />
-              <CardTitle className="text-3xl font-bold text-gray-800">
+            <div className="flex items-center justify-center">
+              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                 MoQi
               </CardTitle>
             </div>

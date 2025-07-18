@@ -37,20 +37,24 @@ export const ContactPage = ({ onBack }: ContactPageProps) => {
   };
 
   return (
-    <div className="min-h-screen p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
+    <div className="min-h-screen p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50 relative">
+      {/* Logo in top left corner */}
+      <div className="absolute top-4 left-4 z-10">
+        <img 
+          src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
+          alt="MoQi Logo" 
+          className="w-20 h-20"
+        />
+      </div>
+      
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Button onClick={onBack} variant="ghost" size="sm">
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <div className="flex items-center gap-3">
-            <img 
-              src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
-              alt="MoQi Logo" 
-              className="w-12 h-12"
-            />
-            <h1 className="text-3xl font-bold text-gray-800">
+          <div className="flex items-center justify-center flex-1">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
               Contact MoQi
             </h1>
           </div>

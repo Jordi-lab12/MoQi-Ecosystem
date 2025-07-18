@@ -37,17 +37,21 @@ export const WelcomePage = ({ onRoleSelected }: WelcomePageProps) => {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative">
+      {/* Logo in top left corner */}
+      <div className="absolute top-4 left-4 z-10">
+        <img 
+          src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
+          alt="MoQi Logo" 
+          className="w-24 h-24 filter brightness-0 invert"
+        />
+      </div>
+      
       <div className="w-full max-w-6xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <img 
-              src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
-              alt="MoQi Logo" 
-              className="w-20 h-20 filter brightness-0 invert"
-            />
-            <h1 className="text-6xl font-bold text-white">
+          <div className="flex items-center justify-center mb-6">
+            <h1 className="text-6xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
               MoQi
             </h1>
           </div>
