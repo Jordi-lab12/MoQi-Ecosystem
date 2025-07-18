@@ -18,7 +18,7 @@ export const WelcomePage = ({ onRoleSelected }: WelcomePageProps) => {
       id: "swiper" as UserRole,
       title: "Swiper",
       subtitle: "Student & Professor Hub",
-      description: "Discover amazing startups and find your perfect match for internships or jobs",
+      description: "For students and professors that want to innovate and help ideas to flourish",
       icon: Heart,
       color: "from-pink-500 to-red-500",
       hoverColor: "hover:from-pink-600 hover:to-red-600",
