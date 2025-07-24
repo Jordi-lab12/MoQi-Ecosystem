@@ -104,189 +104,215 @@ export const StartupUpdateViewer = ({ onBack, startupId, startupName }: StartupU
   }
 
   return (
-    <div className="min-h-screen p-4 bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50 relative">
-      {/* Logo in top left corner */}
-      <div className="absolute top-4 left-4 z-10">
-        <img 
-          src="/lovable-uploads/70545324-72aa-4d39-9b13-d0f991dc6d19.png" 
-          alt="MoQi Logo" 
-          className="w-20 h-20"
-        />
-      </div>
-      
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button onClick={onBack} variant="ghost" size="sm">
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              {startupName} Updates
-            </h1>
-            <p className="text-gray-600">Weekly progress reports</p>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
+            <Button onClick={onBack} variant="ghost" size="sm" className="flex items-center gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                {startupName.charAt(0)}
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-foreground">{startupName} Updates</h1>
+                <p className="text-sm text-muted-foreground">Weekly progress reports</p>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
 
+      <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="grid lg:grid-cols-4 gap-6">
-          {/* Updates List */}
+          {/* Updates Sidebar */}
           <div className="lg:col-span-1">
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-lg">All Updates</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {updates.map((update) => (
-                  <div
-                    key={update.id}
-                    onClick={() => {
-                      setSelectedUpdate(update);
-                      // Mark update as read when clicked
-                      if (profile) {
-                        markUpdateAsRead(update.id, startupId);
-                      }
-                    }}
-                    className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
-                      selectedUpdate?.id === update.id
-                        ? 'bg-purple-100 border-purple-300'
-                        : 'bg-white border-gray-200 hover:border-purple-200'
-                    }`}
-                  >
-                    <h3 className="font-semibold text-sm truncate">{update.title}</h3>
-                    <div className="flex items-center gap-1 mt-1">
-                      <Calendar className="w-3 h-3 text-gray-400" />
-                      <span className="text-xs text-gray-500">
-                        {new Date(update.week_ending).toLocaleDateString()}
-                      </span>
+            <div className="sticky top-24">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                    All Updates ({updates.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {updates.map((update) => (
+                    <div
+                      key={update.id}
+                      onClick={() => {
+                        setSelectedUpdate(update);
+                        if (profile) {
+                          markUpdateAsRead(update.id, startupId);
+                        }
+                      }}
+                      className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
+                        selectedUpdate?.id === update.id
+                          ? 'bg-primary/5 border-primary/20 shadow-sm'
+                          : 'border-border hover:border-primary/40 hover:bg-muted/50'
+                      }`}
+                    >
+                      <h3 className="font-medium text-sm mb-1 line-clamp-2">{update.title}</h3>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(update.week_ending).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
-          {/* Article View */}
+          {/* Main Content */}
           <div className="lg:col-span-3">
             {selectedUpdate && (
-              <div className="bg-white shadow-2xl rounded-lg overflow-hidden">
+              <Card className="overflow-hidden">
                 {/* Article Header */}
-                <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white p-8">
+                <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground p-8">
                   <div className="flex items-center justify-between mb-4">
-                    <Badge variant="outline" className="bg-white/10 text-white border-white/20">
-                      Week ending {new Date(selectedUpdate.week_ending).toLocaleDateString()}
-                    </Badge>
-                    <span className="text-sm text-gray-300">
-                      {new Date(selectedUpdate.created_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
+                    <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                      Week of {new Date(selectedUpdate.week_ending).toLocaleDateString('en-US', {
                         month: 'long',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
+                    </Badge>
+                    <span className="text-sm text-primary-foreground/80">
+                      Published {new Date(selectedUpdate.created_at).toLocaleDateString('en-US', {
+                        month: 'short',
                         day: 'numeric'
                       })}
                     </span>
                   </div>
-                  <h1 className="text-4xl font-bold leading-tight mb-2">{selectedUpdate.title}</h1>
-                  <p className="text-xl text-gray-300">Weekly Progress Report by {startupName}</p>
+                  <h1 className="text-3xl font-bold mb-2">{selectedUpdate.title}</h1>
+                  <p className="text-lg text-primary-foreground/90">
+                    Weekly Progress Report • {startupName}
+                  </p>
                 </div>
 
                 {/* Article Content */}
-                <div className="p-8 prose prose-lg max-w-none">
-                  {/* Lead paragraph */}
-                  {selectedUpdate.key_achievements && (
-                    <div className="mb-8">
-                      <p className="text-xl leading-relaxed text-gray-700 font-medium border-l-4 border-green-500 pl-6 mb-6">
-                        This week marked significant progress for {startupName}, with notable achievements across multiple fronts.
-                      </p>
-                      <div className="mb-6">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">Key Achievements</h2>
-                        <div className="text-gray-700 leading-relaxed space-y-4">
-                          {selectedUpdate.key_achievements.split('\n').map((paragraph, index) => (
-                            paragraph.trim() && <p key={index}>{paragraph}</p>
+                <CardContent className="p-8">
+                  <div className="prose prose-lg max-w-none">
+                    {/* Key Achievements */}
+                    {selectedUpdate.key_achievements && (
+                      <section className="mb-8">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Trophy className="w-5 h-5 text-green-600" />
+                          <h2 className="text-xl font-bold text-foreground">Key Achievements</h2>
+                        </div>
+                        <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
+                          <div className="text-foreground space-y-3">
+                            {selectedUpdate.key_achievements.split('\n').map((paragraph, index) => (
+                              paragraph.trim() && <p key={index}>{paragraph}</p>
+                            ))}
+                          </div>
+                        </div>
+                      </section>
+                    )}
+
+                    {/* Metrics */}
+                    {selectedUpdate.metrics_update && (
+                      <section className="mb-8">
+                        <div className="flex items-center gap-2 mb-4">
+                          <TrendingUp className="w-5 h-5 text-blue-600" />
+                          <h2 className="text-xl font-bold text-foreground">Performance Metrics</h2>
+                        </div>
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                          <div className="text-foreground space-y-3">
+                            {selectedUpdate.metrics_update.split('\n').map((paragraph, index) => (
+                              paragraph.trim() && <p key={index}>{paragraph}</p>
+                            ))}
+                          </div>
+                        </div>
+                      </section>
+                    )}
+
+                    {/* Images */}
+                    {selectedUpdate.images && selectedUpdate.images.length > 0 && (
+                      <section className="mb-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {selectedUpdate.images.map((image, index) => (
+                            <figure key={index} className="group">
+                              <img
+                                src={image}
+                                alt={`${startupName} update ${index + 1}`}
+                                className="w-full h-48 object-cover rounded-lg border shadow-sm group-hover:shadow-md transition-shadow"
+                              />
+                              <figcaption className="text-sm text-muted-foreground mt-2 text-center">
+                                Behind the scenes at {startupName}
+                              </figcaption>
+                            </figure>
                           ))}
                         </div>
-                      </div>
-                    </div>
-                  )}
+                      </section>
+                    )}
 
-                  {/* Metrics section woven into narrative */}
-                  {selectedUpdate.metrics_update && (
-                    <div className="mb-8">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-4">Performance Metrics</h2>
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
-                        <div className="text-gray-700 leading-relaxed space-y-4">
-                          {selectedUpdate.metrics_update.split('\n').map((paragraph, index) => (
-                            paragraph.trim() && <p key={index}>{paragraph}</p>
-                          ))}
+                    {/* Challenges */}
+                    {selectedUpdate.challenges_faced && (
+                      <section className="mb-8">
+                        <div className="flex items-center gap-2 mb-4">
+                          <AlertTriangle className="w-5 h-5 text-orange-600" />
+                          <h2 className="text-xl font-bold text-foreground">Challenges & Solutions</h2>
                         </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Images in the middle of the article */}
-                  {selectedUpdate.images && selectedUpdate.images.length > 0 && (
-                    <div className="my-10">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {selectedUpdate.images.map((image, index) => (
-                          <figure key={index} className="mb-6">
-                            <img
-                              src={image}
-                              alt={`${startupName} update ${index + 1}`}
-                              className="w-full h-64 object-cover rounded-lg shadow-lg"
-                            />
-                            <figcaption className="text-sm text-gray-500 mt-2 text-center italic">
-                              Behind the scenes at {startupName}
-                            </figcaption>
-                          </figure>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Challenges section */}
-                  {selectedUpdate.challenges_faced && (
-                    <div className="mb-8">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-4">Overcoming Challenges</h2>
-                      <div className="text-gray-700 leading-relaxed space-y-4">
-                        <p className="text-lg text-gray-600 italic mb-4">
-                          "Every startup faces obstacles, but it's how we address them that defines our path forward."
-                        </p>
-                        {selectedUpdate.challenges_faced.split('\n').map((paragraph, index) => (
-                          paragraph.trim() && <p key={index}>{paragraph}</p>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Team highlights */}
-                  {selectedUpdate.team_highlights && (
-                    <div className="mb-8">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-4">Team Spotlight</h2>
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                        <div className="text-gray-700 leading-relaxed space-y-4">
-                          {selectedUpdate.team_highlights.split('\n').map((paragraph, index) => (
-                            paragraph.trim() && <p key={index}>{paragraph}</p>
-                          ))}
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                          <div className="text-foreground space-y-3">
+                            {selectedUpdate.challenges_faced.split('\n').map((paragraph, index) => (
+                              paragraph.trim() && <p key={index}>{paragraph}</p>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  )}
+                      </section>
+                    )}
 
-                  {/* Future goals */}
-                  {selectedUpdate.upcoming_goals && (
-                    <div className="mb-8">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-4">Looking Ahead</h2>
-                      <div className="text-gray-700 leading-relaxed space-y-4">
-                        <p className="text-lg">
-                          As we move into the next week, {startupName} has set ambitious goals:
-                        </p>
-                        {selectedUpdate.upcoming_goals.split('\n').map((paragraph, index) => (
-                          paragraph.trim() && <p key={index}>{paragraph}</p>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                    {/* Team Highlights */}
+                    {selectedUpdate.team_highlights && (
+                      <section className="mb-8">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Users className="w-5 h-5 text-purple-600" />
+                          <h2 className="text-xl font-bold text-foreground">Team Spotlight</h2>
+                        </div>
+                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                          <div className="text-foreground space-y-3">
+                            {selectedUpdate.team_highlights.split('\n').map((paragraph, index) => (
+                              paragraph.trim() && <p key={index}>{paragraph}</p>
+                            ))}
+                          </div>
+                        </div>
+                      </section>
+                    )}
 
-                  {/* Article footer */}
-                  <div className="border-t border-gray-200 pt-6 mt-10">
-                    <div className="flex items-center justify-between text-sm text-gray-500">
+                    {/* Upcoming Goals */}
+                    {selectedUpdate.upcoming_goals && (
+                      <section className="mb-8">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Target className="w-5 h-5 text-indigo-600" />
+                          <h2 className="text-xl font-bold text-foreground">Looking Ahead</h2>
+                        </div>
+                        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                          <div className="text-foreground space-y-3">
+                            <p className="font-medium">
+                              Our focus for the upcoming week:
+                            </p>
+                            {selectedUpdate.upcoming_goals.split('\n').map((paragraph, index) => (
+                              paragraph.trim() && <p key={index}>{paragraph}</p>
+                            ))}
+                          </div>
+                        </div>
+                      </section>
+                    )}
+                  </div>
+
+                  {/* Footer */}
+                  <div className="border-t pt-6 mt-8">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground">
                       <span>Published by {startupName}</span>
                       <span>
                         {new Date(selectedUpdate.created_at).toLocaleDateString('en-US', {
@@ -299,8 +325,8 @@ export const StartupUpdateViewer = ({ onBack, startupId, startupName }: StartupU
                       </span>
                     </div>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             )}
           </div>
         </div>
