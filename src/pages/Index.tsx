@@ -85,59 +85,37 @@ const Index = () => {
     if (liked.length === 0) {
       setCurrentStage("results");
     } else if (liked.length === 1) {
-      // Skip allocation for single startup, go directly to feedback preferences
+      // Auto-allocate 100 coins for single startup and go directly to results
       const allocations = { [liked[0].id]: 100 };
       setCoinAllocations(allocations);
-      // Initialize feedback preferences with default 'all' values
-      const initialPreferences: Record<string, FeedbackType> = {};
-      liked.forEach(startup => {
-        initialPreferences[startup.id] = 'all';
-      });
-      setFeedbackPreferences(initialPreferences);
-      setCurrentStage("feedback");
+      handleAllocationComplete(allocations);
     } else {
       setCurrentStage("allocation");
     }
-  };
-
-  const handleFeedbackComplete = (preferences: Record<string, FeedbackType>) => {
-    console.log("Feedback preferences complete:", preferences);
-    setFeedbackPreferences(preferences);
-    setCurrentStage("results");
   };
 
   const handleAllocationComplete = async (allocations: Record<string, number>) => {
     console.log("Allocation complete:", allocations);
     setCoinAllocations(allocations);
 
-    // Initialize feedback preferences with default 'all' values for allocation
-    const initialPreferences: Record<string, FeedbackType> = {};
+    // Set default feedback preferences to 'all'
+    const defaultPreferences: Record<string, FeedbackType> = {};
     likedStartups.forEach(startup => {
-      initialPreferences[startup.id] = 'all';
+      defaultPreferences[startup.id] = 'all';
     });
-    setFeedbackPreferences(initialPreferences);
-    
-    setCurrentStage("feedback");
-  };
+    setFeedbackPreferences(defaultPreferences);
 
-  const handleFeedbackCompleteWithAllocation = async (preferences: Record<string, FeedbackType>) => {
-    console.log("Feedback preferences complete:", preferences);
-    setFeedbackPreferences(preferences);
-
-    // Update interactions with coin allocations and feedback preferences
+    // Update interactions with coin allocations and default feedback preferences
     if (profile) {
       try {
-        for (const [startupId, coinAllocation] of Object.entries(coinAllocations)) {
+        for (const [startupId, coinAllocation] of Object.entries(allocations)) {
           if (coinAllocation > 0) {
-            // Get the feedback preference for this startup
-            const feedbackPreference = preferences[startupId] || 'all';
-            
-            // Update the existing interaction with the coin allocation and feedback preference
+            // Update the existing interaction with the coin allocation and default feedback preference
             const { error } = await supabase
               .from('swiper_interactions')
               .update({ 
                 coin_allocation: coinAllocation,
-                feedback_preference: feedbackPreference
+                feedback_preference: 'all' // Default to 'all' feedback
               })
               .eq('swiper_id', profile.id)
               .eq('startup_id', startupId)
@@ -146,7 +124,7 @@ const Index = () => {
             if (error) {
               console.error('Error updating interaction for startup:', startupId, error);
             } else {
-              console.log(`Successfully updated ${coinAllocation} coins and '${feedbackPreference}' feedback preference for startup ${startupId}`);
+              console.log(`Successfully updated ${coinAllocation} coins and 'all' feedback preference for startup ${startupId}`);
             }
           }
         }
@@ -246,14 +224,6 @@ const Index = () => {
             <StartupSwiper 
               startups={availableStartups} 
               onComplete={handleSwipeComplete}
-            />
-          )}
-
-          {currentStage === "feedback" && (
-            <FeedbackPreferences
-              startups={likedStartups}
-              initialPreferences={feedbackPreferences}
-              onComplete={likedStartups.length === 1 ? handleFeedbackComplete : handleFeedbackCompleteWithAllocation}
             />
           )}
 
