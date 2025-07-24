@@ -9,19 +9,22 @@ import { Startup, FeedbackType } from "@/pages/Index";
 import { StartupUpdateViewer } from "./StartupUpdateViewer";
 import { useSupabaseData } from "@/contexts/SupabaseDataContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useUnreadUpdates } from "@/hooks/useUnreadUpdates";
 
 interface PortfolioProps {
   likedStartups: Startup[];
   coinAllocations: Record<string, number>;
   feedbackPreferences: Record<string, FeedbackType>;
+  hasUnreadUpdates?: boolean;
 }
 
-export const Portfolio = ({ likedStartups, coinAllocations, feedbackPreferences }: PortfolioProps) => {
+export const Portfolio = ({ likedStartups, coinAllocations, feedbackPreferences, hasUnreadUpdates }: PortfolioProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [portfolioStartups, setPortfolioStartups] = useState<Array<{ startup: Startup; allocation: number; date: string }>>([]);
   const [selectedStartupForUpdates, setSelectedStartupForUpdates] = useState<{ id: string; name: string } | null>(null);
-  const [startupUpdates, setStartupUpdates] = useState<Record<string, { hasUpdates: boolean; latestUpdate?: any }>>({});
+  const [startupUpdates, setStartupUpdates] = useState<Record<string, { hasUpdates: boolean; latestUpdate?: any; unreadCount?: number }>>({});
   const { getLikedStartupsWithAllocations } = useSupabaseData();
+  const { unreadUpdates } = useUnreadUpdates();
 
   const loadStartupUpdates = async (portfolioData: Array<{ startup: Startup; allocation: number; date: string }>) => {
     try {
@@ -38,13 +41,15 @@ export const Portfolio = ({ likedStartups, coinAllocations, feedbackPreferences 
       if (error) throw error;
 
       // Group updates by startup and get latest for each
-      const updatesByStartup: Record<string, { hasUpdates: boolean; latestUpdate?: any }> = {};
+      const updatesByStartup: Record<string, { hasUpdates: boolean; latestUpdate?: any; unreadCount?: number }> = {};
       
       startupIds.forEach(id => {
         const startupUpdates = updates?.filter(u => u.startup_id === id) || [];
+        const unreadCount = unreadUpdates.find(u => u.startup_id === id)?.update_count || 0;
         updatesByStartup[id] = {
           hasUpdates: startupUpdates.length > 0,
-          latestUpdate: startupUpdates[0] || null
+          latestUpdate: startupUpdates[0] || null,
+          unreadCount
         };
       });
 
@@ -137,12 +142,21 @@ export const Portfolio = ({ likedStartups, coinAllocations, feedbackPreferences 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button 
-          className="px-12 py-6 text-xl font-bold rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-xl hover:shadow-green-500/25 transform hover:scale-105 transition-all duration-300 flex items-center gap-4 mx-auto"
-        >
-          <Briefcase className="w-8 h-8" />
-          My Portfolio
-        </Button>
+        <div className="relative inline-block">
+          <Button 
+            className="px-12 py-6 text-xl font-bold rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-xl hover:shadow-green-500/25 transform hover:scale-105 transition-all duration-300 flex items-center gap-4 mx-auto"
+          >
+            <Briefcase className="w-8 h-8" />
+            My Portfolio
+          </Button>
+          {hasUnreadUpdates && (
+            <Badge 
+              className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full min-w-[20px] h-5 flex items-center justify-center animate-pulse"
+            >
+              New!
+            </Badge>
+          )}
+        </div>
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
         <DialogHeader>
@@ -172,11 +186,11 @@ export const Portfolio = ({ likedStartups, coinAllocations, feedbackPreferences 
                                <Calendar className="w-4 h-4" />
                                {formatDate(item.date)}
                              </div>
-                             {startupUpdates[item.startup.id]?.hasUpdates && (
-                               <Badge className="bg-blue-100 text-blue-800 border-0 animate-pulse">
-                                 New Update!
-                               </Badge>
-                             )}
+                              {startupUpdates[item.startup.id]?.unreadCount > 0 && (
+                                <Badge className="bg-blue-500 text-white border-0 animate-pulse">
+                                  {startupUpdates[item.startup.id].unreadCount} New Update{startupUpdates[item.startup.id].unreadCount > 1 ? 's' : ''}!
+                                </Badge>
+                              )}
                            </div>
                            <p className="text-gray-600 mb-3">{item.startup.tagline}</p>
                            <div className="flex items-center gap-4 mb-3">
@@ -191,18 +205,22 @@ export const Portfolio = ({ likedStartups, coinAllocations, feedbackPreferences 
                                {item.startup.industry}
                              </Badge>
                            </div>
-                           {startupUpdates[item.startup.id]?.hasUpdates && (
-                             <Button
-                               onClick={() => setSelectedStartupForUpdates({ id: item.startup.id, name: item.startup.name })}
-                               variant="outline"
-                               size="sm"
-                               className="flex items-center gap-2 hover:bg-blue-50"
-                             >
-                               <FileText className="w-4 h-4" />
-                               View Latest Update
-                               <ArrowRight className="w-4 h-4" />
-                             </Button>
-                           )}
+                            {startupUpdates[item.startup.id]?.hasUpdates && (
+                              <Button
+                                onClick={() => setSelectedStartupForUpdates({ id: item.startup.id, name: item.startup.name })}
+                                variant={startupUpdates[item.startup.id]?.unreadCount > 0 ? "default" : "outline"}
+                                size="sm"
+                                className={`flex items-center gap-2 ${
+                                  startupUpdates[item.startup.id]?.unreadCount > 0 
+                                    ? "bg-blue-500 hover:bg-blue-600 text-white animate-pulse" 
+                                    : "hover:bg-blue-50"
+                                }`}
+                              >
+                                <FileText className="w-4 h-4" />
+                                {startupUpdates[item.startup.id]?.unreadCount > 0 ? "Read New Updates" : "View Updates"}
+                                <ArrowRight className="w-4 h-4" />
+                              </Button>
+                            )}
                          </div>
                       </div>
                     </CardContent>

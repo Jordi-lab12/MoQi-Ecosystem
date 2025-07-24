@@ -34,45 +34,45 @@ export const StartupUpdateForm = ({ onBack, startupId }: StartupUpdateFormProps)
   const questions = [
     {
       step: 1,
-      title: "Weekly Update Details",
+      title: "Article Headline & Timeline",
       fields: [
-        { key: "title", label: "Update Title", placeholder: "Week of [Date] - Company Progress Update", type: "input" },
+        { key: "title", label: "What's your story headline this week?", placeholder: "e.g., 'Breaking New Ground: How We Scaled Our User Base by 200%'", type: "input" },
         { key: "week_ending", label: "Week Ending", type: "date" }
       ]
     },
     {
       step: 2,
-      title: "Achievements & Progress",
+      title: "The Big Wins Story",
       fields: [
-        { key: "key_achievements", label: "What were your key achievements this week?", placeholder: "Describe your major wins, milestones reached, or goals accomplished...", type: "textarea" }
+        { key: "key_achievements", label: "Tell the story of your biggest achievements this week. What breakthrough moments did you experience?", placeholder: "This week marked a pivotal moment for our company when we... Share the narrative of your wins, the people involved, and why these achievements matter for your mission. Make it engaging and storytelling-focused.", type: "textarea" }
       ]
     },
     {
       step: 3,
-      title: "Challenges & Learnings",
+      title: "Numbers That Tell Your Story",
       fields: [
-        { key: "challenges_faced", label: "What challenges did you face and how did you overcome them?", placeholder: "Share any obstacles and your solutions...", type: "textarea" }
+        { key: "metrics_update", label: "What do your metrics reveal about your journey this week? Share the data that supports your story.", placeholder: "Our user engagement soared to new heights with... Include specific numbers, percentages, growth rates, or any KPIs that paint a picture of your progress. Explain what these numbers mean for your future.", type: "textarea" }
       ]
     },
     {
       step: 4,
-      title: "Metrics & Data",
+      title: "Overcoming the Obstacles",
       fields: [
-        { key: "metrics_update", label: "Share your key metrics and performance data", placeholder: "Revenue, user growth, engagement rates, or other relevant KPIs...", type: "textarea" }
+        { key: "challenges_faced", label: "Every great story has challenges. What obstacles did you face and how did you turn them into opportunities?", placeholder: "When we encountered unexpected challenges with... Tell the story of how your team adapted, what you learned, and how these challenges made you stronger. Focus on resilience and growth.", type: "textarea" }
       ]
     },
     {
       step: 5,
-      title: "Future Goals",
+      title: "The People Behind the Magic",
       fields: [
-        { key: "upcoming_goals", label: "What are your goals for next week?", placeholder: "Outline your priorities and objectives...", type: "textarea" }
+        { key: "team_highlights", label: "Who are the heroes in your story this week? Celebrate your team's contributions and culture moments.", placeholder: "This week, our team showed incredible dedication when... Highlight individual contributions, team achievements, new additions, or special moments that showcase your company culture.", type: "textarea" }
       ]
     },
     {
       step: 6,
-      title: "Team Highlights",
+      title: "What's Next in Your Journey",
       fields: [
-        { key: "team_highlights", label: "Any team updates or highlights?", placeholder: "New hires, team achievements, culture moments...", type: "textarea" }
+        { key: "upcoming_goals", label: "As your story continues, what exciting chapters are you writing next week?", placeholder: "Looking ahead, we're laser-focused on... Paint a picture of your upcoming priorities, ambitious goals, and what readers can expect in your next update. Create anticipation for what's coming.", type: "textarea" }
       ]
     }
   ];

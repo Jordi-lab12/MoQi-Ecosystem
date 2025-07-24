@@ -143,6 +143,33 @@ export type Database = {
         }
         Relationships: []
       }
+      startup_update_reads: {
+        Row: {
+          created_at: string
+          id: string
+          read_at: string
+          startup_id: string
+          swiper_id: string
+          update_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          read_at?: string
+          startup_id: string
+          swiper_id: string
+          update_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          read_at?: string
+          startup_id?: string
+          swiper_id?: string
+          update_id?: string
+        }
+        Relationships: []
+      }
       startup_updates: {
         Row: {
           challenges_faced: string | null

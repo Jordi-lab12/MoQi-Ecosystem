@@ -12,6 +12,7 @@ import { ContactPage } from "./ContactPage";
 import { Startup, FeedbackType } from "@/pages/Index";
 import { useSupabaseData } from "@/contexts/SupabaseDataContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useUnreadUpdates } from "@/hooks/useUnreadUpdates";
 
 interface DashboardProps {
   onStartSwiping: () => void;
@@ -38,6 +39,7 @@ export const Dashboard = ({
   const [showFeedbackRequests, setShowFeedbackRequests] = useState(false);
   const [showContactPage, setShowContactPage] = useState(false);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
+  const { totalUnreadCount } = useUnreadUpdates();
 
   // Fetch pending feedback requests count for notification badge
   const fetchPendingRequests = async () => {
@@ -154,7 +156,12 @@ export const Dashboard = ({
             <MeetingCalendar />
           </div>
           <div className="text-center">
-            <Portfolio likedStartups={likedStartups} coinAllocations={coinAllocations} feedbackPreferences={feedbackPreferences} />
+            <Portfolio 
+              likedStartups={likedStartups} 
+              coinAllocations={coinAllocations} 
+              feedbackPreferences={feedbackPreferences}
+              hasUnreadUpdates={totalUnreadCount > 0}
+            />
           </div>
           <div className="text-center">
             <div className="relative inline-block">

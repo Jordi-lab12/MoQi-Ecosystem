@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, TrendingUp, AlertTriangle, Target, Users, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useUnreadUpdates } from "@/hooks/useUnreadUpdates";
+import { useSupabaseData } from "@/contexts/SupabaseDataContext";
 
 interface StartupUpdate {
   id: string;
@@ -28,6 +30,8 @@ export const StartupUpdateViewer = ({ onBack, startupId, startupName }: StartupU
   const [updates, setUpdates] = useState<StartupUpdate[]>([]);
   const [selectedUpdate, setSelectedUpdate] = useState<StartupUpdate | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { markUpdateAsRead } = useUnreadUpdates();
+  const { profile } = useSupabaseData();
 
   useEffect(() => {
     fetchUpdates();
@@ -46,6 +50,10 @@ export const StartupUpdateViewer = ({ onBack, startupId, startupName }: StartupU
       setUpdates(data || []);
       if (data && data.length > 0) {
         setSelectedUpdate(data[0]); // Show latest update by default
+        // Mark the latest update as read when viewer opens
+        if (profile) {
+          await markUpdateAsRead(data[0].id, startupId);
+        }
       }
     } catch (error) {
       console.error('Error fetching updates:', error);
@@ -131,7 +139,13 @@ export const StartupUpdateViewer = ({ onBack, startupId, startupName }: StartupU
                 {updates.map((update) => (
                   <div
                     key={update.id}
-                    onClick={() => setSelectedUpdate(update)}
+                    onClick={() => {
+                      setSelectedUpdate(update);
+                      // Mark update as read when clicked
+                      if (profile) {
+                        markUpdateAsRead(update.id, startupId);
+                      }
+                    }}
                     className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
                       selectedUpdate?.id === update.id
                         ? 'bg-purple-100 border-purple-300'
