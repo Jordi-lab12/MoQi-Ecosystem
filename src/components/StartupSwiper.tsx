@@ -119,13 +119,7 @@ export const StartupSwiper = ({ startups, onComplete }: StartupSwiperProps) => {
             }
           }
           
-          // Create feedback preferences
-          const initialFeedbackPreferences: Record<string, FeedbackType> = {};
-          currentLikedStartups.forEach((startup) => {
-            initialFeedbackPreferences[startup.id] = 'all';
-          });
-          
-          onComplete(currentLikedStartups, initialFeedbackPreferences);
+          onComplete(currentLikedStartups, {});
           return currentLikedStartups;
         });
       }, 100);

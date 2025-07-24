@@ -82,7 +82,12 @@ const Index = () => {
     console.log("Swipe complete - liked startups:", liked);
     setLikedStartups(liked);
     
-    if (liked.length > 0) {
+    if (liked.length === 0) {
+      setCurrentStage("results");
+    } else if (liked.length === 1) {
+      // Skip allocation for single startup, go directly to feedback preferences
+      const allocations = { [liked[0].id]: 100 };
+      setCoinAllocations(allocations);
       // Initialize feedback preferences with default 'all' values
       const initialPreferences: Record<string, FeedbackType> = {};
       liked.forEach(startup => {
@@ -91,34 +96,41 @@ const Index = () => {
       setFeedbackPreferences(initialPreferences);
       setCurrentStage("feedback");
     } else {
-      setCurrentStage("results");
+      setCurrentStage("allocation");
     }
   };
 
   const handleFeedbackComplete = (preferences: Record<string, FeedbackType>) => {
     console.log("Feedback preferences complete:", preferences);
     setFeedbackPreferences(preferences);
-    
-    if (likedStartups.length === 1) {
-      // Auto-allocate 100 coins for single startup and go to results
-      const allocations = { [likedStartups[0].id]: 100 };
-      handleAllocationComplete(allocations);
-    } else {
-      setCurrentStage("allocation");
-    }
+    setCurrentStage("results");
   };
 
   const handleAllocationComplete = async (allocations: Record<string, number>) => {
     console.log("Allocation complete:", allocations);
     setCoinAllocations(allocations);
 
+    // Initialize feedback preferences with default 'all' values for allocation
+    const initialPreferences: Record<string, FeedbackType> = {};
+    likedStartups.forEach(startup => {
+      initialPreferences[startup.id] = 'all';
+    });
+    setFeedbackPreferences(initialPreferences);
+    
+    setCurrentStage("feedback");
+  };
+
+  const handleFeedbackCompleteWithAllocation = async (preferences: Record<string, FeedbackType>) => {
+    console.log("Feedback preferences complete:", preferences);
+    setFeedbackPreferences(preferences);
+
     // Update interactions with coin allocations and feedback preferences
     if (profile) {
       try {
-        for (const [startupId, coinAllocation] of Object.entries(allocations)) {
+        for (const [startupId, coinAllocation] of Object.entries(coinAllocations)) {
           if (coinAllocation > 0) {
             // Get the feedback preference for this startup
-            const feedbackPreference = feedbackPreferences[startupId] || 'all';
+            const feedbackPreference = preferences[startupId] || 'all';
             
             // Update the existing interaction with the coin allocation and feedback preference
             const { error } = await supabase
@@ -241,7 +253,7 @@ const Index = () => {
             <FeedbackPreferences
               startups={likedStartups}
               initialPreferences={feedbackPreferences}
-              onComplete={handleFeedbackComplete}
+              onComplete={likedStartups.length === 1 ? handleFeedbackComplete : handleFeedbackCompleteWithAllocation}
             />
           )}
 
