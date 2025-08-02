@@ -115,7 +115,7 @@ export const SwiperUpdateViewer = ({ onBack, startupId, startupName }: SwiperUpd
       </div>
 
       {/* Article Content - Full Width and Height */}
-      <article className="flex-1 w-full px-4 py-6">
+      <article className="flex-1 w-full pl-0 pr-4 py-6">
         {/* Header */}
         <header className="mb-12 text-center">
           <div className="flex items-center justify-center gap-4 mb-6">
