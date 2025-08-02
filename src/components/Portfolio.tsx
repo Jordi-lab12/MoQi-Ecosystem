@@ -65,8 +65,13 @@ export const Portfolio = ({ likedStartups, coinAllocations, feedbackPreferences,
       const data = await getLikedStartupsWithAllocations();
       console.log('Portfolio data from database:', data);
       
-      // Sort by date (most recent first)
-      const portfolioData = data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      // Sort by allocation amount (highest points first), then by date if allocations are equal
+      const portfolioData = data.sort((a, b) => {
+        if (b.allocation !== a.allocation) {
+          return b.allocation - a.allocation;
+        }
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      });
       
       console.log('Portfolio data formatted:', portfolioData);
       setPortfolioStartups(portfolioData);
