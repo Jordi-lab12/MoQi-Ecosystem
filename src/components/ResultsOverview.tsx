@@ -215,7 +215,7 @@ export const ResultsOverview = ({
             className="px-6 py-3 text-base font-bold rounded-2xl flex items-center gap-2 mx-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-xl hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-300"
           >
             <RefreshCw className="w-4 h-4" />
-            Discover More Startups ✨
+            Confirm your preferences
           </Button>
         </div>
       </div>
