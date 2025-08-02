@@ -120,11 +120,6 @@ export const CoinAllocation = ({ startups, onComplete }: CoinAllocationProps) =>
           >
             Complete Allocation <ArrowRight className="w-5 h-5" />
           </Button>
-          {totalAllocated !== 100 && (
-            <p className="text-red-500 mt-4">
-              Please allocate exactly 100 MoQi-points to continue ({100 - totalAllocated} MoQi-points remaining)
-            </p>
-          )}
         </div>
       </div>
     </div>
