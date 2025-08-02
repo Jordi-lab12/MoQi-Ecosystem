@@ -22,11 +22,7 @@ interface Meeting {
   teamsLink?: string;
 }
 
-interface MeetingCalendarProps {
-  hideButton?: boolean;
-}
-
-export const MeetingCalendar = ({ hideButton = false }: MeetingCalendarProps) => {
+export const MeetingCalendar = () => {
   const { profile } = useSupabaseData();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isOpen, setIsOpen] = useState(false);
@@ -91,16 +87,14 @@ export const MeetingCalendar = ({ hideButton = false }: MeetingCalendarProps) =>
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      {!hideButton && (
-        <DialogTrigger asChild>
-          <Button 
-            className="px-12 py-6 text-xl font-bold rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 shadow-xl hover:shadow-blue-500/25 transform hover:scale-105 transition-all duration-300 flex items-center gap-4 mx-auto"
-          >
-            <CalendarIcon className="w-8 h-8" />
-            My Meetings
-          </Button>
-        </DialogTrigger>
-      )}
+      <DialogTrigger asChild>
+        <Button 
+          className="px-12 py-6 text-xl font-bold rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 shadow-xl hover:shadow-blue-500/25 transform hover:scale-105 transition-all duration-300 flex items-center gap-4 mx-auto"
+        >
+          <CalendarIcon className="w-8 h-8" />
+          My Meetings
+        </Button>
+      </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
