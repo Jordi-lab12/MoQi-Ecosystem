@@ -153,7 +153,7 @@ export const Dashboard = ({
         {/* Large central buttons for My Meetings, My Portfolio, and Feedback Requests */}
         <div className="grid md:grid-cols-3 gap-6 mb-12">
           <div className="text-center">
-            <MeetingCalendar />
+            <MeetingCalendar hideButton={true} />
           </div>
           <div className="text-center">
             <Portfolio 
