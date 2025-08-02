@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Trophy, Target, Users, TrendingUp, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useUnreadUpdates } from "@/hooks/useUnreadUpdates";
@@ -27,6 +25,7 @@ interface SwiperUpdateViewerProps {
 
 export const SwiperUpdateViewer = ({ onBack, startupId, startupName }: SwiperUpdateViewerProps) => {
   const [updates, setUpdates] = useState<StartupUpdate[]>([]);
+  const [selectedUpdateIndex, setSelectedUpdateIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const { markUpdateAsRead } = useUnreadUpdates();
   const { profile } = useSupabaseData();
@@ -82,138 +81,173 @@ export const SwiperUpdateViewer = ({ onBack, startupId, startupName }: SwiperUpd
 
   if (updates.length === 0) {
     return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-4xl mx-auto">
-          <Button onClick={onBack} variant="ghost" className="mb-6">
-            <ArrowLeft className="w-4 h-4 mr-2" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-8">
+          <h2 className="text-3xl font-bold mb-4 text-foreground">No Updates Yet</h2>
+          <p className="text-muted-foreground mb-8 text-lg">
+            {startupName} hasn't published any weekly updates yet. Check back soon!
+          </p>
+          <button 
+            onClick={onBack}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
             Back to Portfolio
-          </Button>
-          
-          <Card className="text-center p-8">
-            <CardContent>
-              <h2 className="text-2xl font-bold mb-4">No Updates Yet</h2>
-              <p className="text-muted-foreground mb-6">
-                {startupName} hasn't published any weekly updates yet. Check back soon!
-              </p>
-            </CardContent>
-          </Card>
+          </button>
         </div>
       </div>
     );
   }
 
+  const currentUpdate = updates[selectedUpdateIndex];
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto p-4">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button onClick={onBack} variant="ghost">
-            <ArrowLeft className="w-4 h-4 mr-2" />
+      {/* Navigation Bar */}
+      <div className="bg-background/80 backdrop-blur-sm border-b sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+          <button 
+            onClick={onBack}
+            className="inline-flex items-center gap-2 px-4 py-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
             Back to Portfolio
-          </Button>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center text-primary-foreground font-bold">
+          </button>
+          
+          {updates.length > 1 && (
+            <div className="flex items-center gap-2">
+              {updates.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedUpdateIndex(index)}
+                  className={`w-3 h-3 rounded-full transition-colors ${
+                    index === selectedUpdateIndex ? 'bg-primary' : 'bg-muted'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Article Content */}
+      <article className="max-w-4xl mx-auto px-6 py-12">
+        {/* Header */}
+        <header className="mb-12 text-center">
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-primary to-golden rounded-2xl flex items-center justify-center text-2xl font-bold text-primary-foreground">
               {startupName.charAt(0)}
             </div>
             <div>
-              <h1 className="text-2xl font-bold">{startupName}</h1>
-              <p className="text-muted-foreground">Weekly Progress Updates</p>
+              <h1 className="text-4xl font-bold mb-2">{startupName}</h1>
+              <p className="text-xl text-muted-foreground">Weekly Progress Update</p>
             </div>
           </div>
-        </div>
+          
+          <div className="flex items-center justify-center gap-2 text-muted-foreground mb-4">
+            <Calendar className="w-5 h-5" />
+            <time className="text-lg">{formatDate(currentUpdate.week_ending)}</time>
+          </div>
+          
+          <h2 className="text-3xl font-bold text-foreground">{currentUpdate.title}</h2>
+        </header>
 
-        {/* Updates List */}
-        <div className="space-y-6">
-          {updates.map((update) => (
-            <Card key={update.id} className="overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl">{update.title}</CardTitle>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="w-4 h-4" />
-                    {formatDate(update.week_ending)}
-                  </div>
+        {/* Content Sections */}
+        <div className="prose prose-lg max-w-none">
+          {/* Key Achievements */}
+          {currentUpdate.key_achievements && (
+            <section className="mb-12">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-golden/10 rounded-xl">
+                  <Trophy className="w-6 h-6 text-golden" />
                 </div>
-              </CardHeader>
-              
-              <CardContent className="p-6 space-y-6">
-                {/* Key Achievements */}
-                {update.key_achievements && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Trophy className="w-5 h-5 text-yellow-500" />
-                      <h3 className="font-semibold text-lg">Key Achievements</h3>
-                    </div>
-                    <p className="text-muted-foreground leading-relaxed">{update.key_achievements}</p>
-                  </div>
-                )}
+                <h3 className="text-2xl font-bold text-foreground">Key Achievements</h3>
+              </div>
+              <div className="bg-golden/5 rounded-xl p-6 border border-golden/20">
+                <p className="text-lg leading-relaxed text-foreground whitespace-pre-wrap">{currentUpdate.key_achievements}</p>
+              </div>
+            </section>
+          )}
 
-                {/* Metrics Update */}
-                {update.metrics_update && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <TrendingUp className="w-5 h-5 text-blue-500" />
-                      <h3 className="font-semibold text-lg">Metrics & Progress</h3>
-                    </div>
-                    <p className="text-muted-foreground leading-relaxed">{update.metrics_update}</p>
-                  </div>
-                )}
+          {/* Metrics Update */}
+          {currentUpdate.metrics_update && (
+            <section className="mb-12">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-primary/10 rounded-xl">
+                  <TrendingUp className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">Metrics & Progress</h3>
+              </div>
+              <div className="bg-primary/5 rounded-xl p-6 border border-primary/20">
+                <p className="text-lg leading-relaxed text-foreground whitespace-pre-wrap">{currentUpdate.metrics_update}</p>
+              </div>
+            </section>
+          )}
 
-                {/* Team Highlights */}
-                {update.team_highlights && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Users className="w-5 h-5 text-green-500" />
-                      <h3 className="font-semibold text-lg">Team Highlights</h3>
-                    </div>
-                    <p className="text-muted-foreground leading-relaxed">{update.team_highlights}</p>
-                  </div>
-                )}
+          {/* Team Highlights */}
+          {currentUpdate.team_highlights && (
+            <section className="mb-12">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-accent/10 rounded-xl">
+                  <Users className="w-6 h-6 text-accent" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">Team Highlights</h3>
+              </div>
+              <div className="bg-accent/5 rounded-xl p-6 border border-accent/20">
+                <p className="text-lg leading-relaxed text-foreground whitespace-pre-wrap">{currentUpdate.team_highlights}</p>
+              </div>
+            </section>
+          )}
 
-                {/* Upcoming Goals */}
-                {update.upcoming_goals && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Target className="w-5 h-5 text-purple-500" />
-                      <h3 className="font-semibold text-lg">Upcoming Goals</h3>
-                    </div>
-                    <p className="text-muted-foreground leading-relaxed">{update.upcoming_goals}</p>
-                  </div>
-                )}
+          {/* Upcoming Goals */}
+          {currentUpdate.upcoming_goals && (
+            <section className="mb-12">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-purple/10 rounded-xl">
+                  <Target className="w-6 h-6 text-purple" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">Upcoming Goals</h3>
+              </div>
+              <div className="bg-purple/5 rounded-xl p-6 border border-purple/20">
+                <p className="text-lg leading-relaxed text-foreground whitespace-pre-wrap">{currentUpdate.upcoming_goals}</p>
+              </div>
+            </section>
+          )}
 
-                {/* Challenges */}
-                {update.challenges_faced && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <AlertCircle className="w-5 h-5 text-orange-500" />
-                      <h3 className="font-semibold text-lg">Challenges Faced</h3>
-                    </div>
-                    <p className="text-muted-foreground leading-relaxed">{update.challenges_faced}</p>
-                  </div>
-                )}
+          {/* Challenges */}
+          {currentUpdate.challenges_faced && (
+            <section className="mb-12">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-destructive/10 rounded-xl">
+                  <AlertCircle className="w-6 h-6 text-destructive" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">Challenges Faced</h3>
+              </div>
+              <div className="bg-destructive/5 rounded-xl p-6 border border-destructive/20">
+                <p className="text-lg leading-relaxed text-foreground whitespace-pre-wrap">{currentUpdate.challenges_faced}</p>
+              </div>
+            </section>
+          )}
 
-                {/* Images */}
-                {update.images && update.images.length > 0 && (
-                  <div>
-                    <h3 className="font-semibold text-lg mb-3">Visual Updates</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {update.images.map((image, index) => (
-                        <div key={index} className="rounded-lg overflow-hidden">
-                          <img 
-                            src={image} 
-                            alt={`Update image ${index + 1}`}
-                            className="w-full h-48 object-cover hover:scale-105 transition-transform duration-200"
-                          />
-                        </div>
-                      ))}
-                    </div>
+          {/* Images */}
+          {currentUpdate.images && currentUpdate.images.length > 0 && (
+            <section className="mb-12">
+              <h3 className="text-2xl font-bold text-foreground mb-6">Visual Updates</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {currentUpdate.images.map((image, index) => (
+                  <div key={index} className="rounded-xl overflow-hidden shadow-lg">
+                    <img 
+                      src={image} 
+                      alt={`Update visual ${index + 1}`}
+                      className="w-full h-64 object-cover hover:scale-105 transition-transform duration-300"
+                    />
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                ))}
+              </div>
+            </section>
+          )}
         </div>
-      </div>
+      </article>
     </div>
   );
 };
