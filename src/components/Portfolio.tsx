@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { Briefcase, Star, TrendingUp, Calendar, FileText, ArrowRight } from "lucide-react";
 import { Startup, FeedbackType } from "@/pages/Index";
-import { StartupUpdateViewer } from "./StartupUpdateViewer";
+import { SwiperUpdateViewer } from "./SwiperUpdateViewer";
 import { useSupabaseData } from "@/contexts/SupabaseDataContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useUnreadUpdates } from "@/hooks/useUnreadUpdates";
@@ -131,7 +131,7 @@ export const Portfolio = ({ likedStartups, coinAllocations, feedbackPreferences,
 
   if (selectedStartupForUpdates) {
     return (
-      <StartupUpdateViewer
+      <SwiperUpdateViewer
         onBack={() => setSelectedStartupForUpdates(null)}
         startupId={selectedStartupForUpdates.id}
         startupName={selectedStartupForUpdates.name}
