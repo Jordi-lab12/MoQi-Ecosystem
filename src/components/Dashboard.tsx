@@ -151,8 +151,7 @@ export const Dashboard = ({
         </div>
 
         {/* Large central buttons for My Portfolio and Feedback Requests */}
-        <div className="grid md:grid-cols-2 gap-6 mb-12">
-          <MeetingCalendar />
+        <div className="grid md:grid-cols-2 gap-6 mb-12 justify-center">
           <div className="text-center">
             <Portfolio 
               likedStartups={likedStartups} 
