@@ -103,43 +103,26 @@ export const SwiperUpdateViewer = ({ onBack, startupId, startupName }: SwiperUpd
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation Bar */}
-      <div className="bg-background/80 backdrop-blur-sm border-b sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <button 
-            onClick={onBack}
-            className="inline-flex items-center gap-2 px-4 py-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Portfolio
-          </button>
-          
-          {updates.length > 1 && (
-            <div className="flex items-center gap-2">
-              {updates.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedUpdateIndex(index)}
-                  className={`w-3 h-3 rounded-full transition-colors ${
-                    index === selectedUpdateIndex ? 'bg-primary' : 'bg-muted'
-                  }`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Article Content */}
+      {/* Article Content - Full Page */}
       <article className="max-w-4xl mx-auto px-6 py-12">
         {/* Header */}
         <header className="mb-12 text-center">
           <div className="flex items-center justify-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-primary to-golden rounded-2xl flex items-center justify-center text-2xl font-bold text-primary-foreground">
+            <button 
+              onClick={onBack}
+              className="w-16 h-16 bg-gradient-to-br from-primary to-golden rounded-2xl flex items-center justify-center text-2xl font-bold text-primary-foreground hover:scale-105 transition-transform cursor-pointer"
+              title="Back to Portfolio"
+            >
               {startupName.charAt(0)}
-            </div>
+            </button>
             <div>
-              <h1 className="text-4xl font-bold mb-2">{startupName}</h1>
+              <button 
+                onClick={onBack}
+                className="text-4xl font-bold mb-2 hover:text-primary transition-colors cursor-pointer"
+                title="Back to Portfolio"
+              >
+                {startupName}
+              </button>
               <p className="text-xl text-muted-foreground">Weekly Progress Update</p>
             </div>
           </div>
@@ -150,6 +133,21 @@ export const SwiperUpdateViewer = ({ onBack, startupId, startupName }: SwiperUpd
           </div>
           
           <h2 className="text-3xl font-bold text-foreground">{currentUpdate.title}</h2>
+          
+          {/* Update Navigation Dots */}
+          {updates.length > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-8">
+              {updates.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedUpdateIndex(index)}
+                  className={`w-3 h-3 rounded-full transition-colors ${
+                    index === selectedUpdateIndex ? 'bg-primary' : 'bg-muted hover:bg-muted-foreground/50'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </header>
 
         {/* Content Sections */}
