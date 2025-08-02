@@ -102,27 +102,30 @@ export const SwiperUpdateViewer = ({ onBack, startupId, startupName }: SwiperUpd
   const currentUpdate = updates[selectedUpdateIndex];
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Article Content - Full Page */}
-      <article className="w-full px-8 py-12">
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Centered Back Button */}
+      <div className="w-full flex justify-center py-6">
+        <button 
+          onClick={onBack}
+          className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Portfolio
+        </button>
+      </div>
+
+      {/* Article Content - Full Width and Height */}
+      <article className="flex-1 w-full px-4 py-6">
         {/* Header */}
         <header className="mb-12 text-center">
           <div className="flex items-center justify-center gap-4 mb-6">
-            <button 
-              onClick={onBack}
-              className="w-16 h-16 bg-gradient-to-br from-primary to-golden rounded-2xl flex items-center justify-center text-2xl font-bold text-primary-foreground hover:scale-105 transition-transform cursor-pointer"
-              title="Back to Portfolio"
-            >
+            <div className="w-16 h-16 bg-gradient-to-br from-primary to-golden rounded-2xl flex items-center justify-center text-2xl font-bold text-primary-foreground">
               {startupName.charAt(0)}
-            </button>
+            </div>
             <div>
-              <button 
-                onClick={onBack}
-                className="text-4xl font-bold mb-2 hover:text-primary transition-colors cursor-pointer"
-                title="Back to Portfolio"
-              >
+              <h1 className="text-4xl font-bold mb-2 text-foreground">
                 {startupName}
-              </button>
+              </h1>
               <p className="text-xl text-muted-foreground">Weekly Progress Update</p>
             </div>
           </div>
