@@ -104,7 +104,7 @@ export const SwiperUpdateViewer = ({ onBack, startupId, startupName }: SwiperUpd
   return (
     <div className="min-h-screen bg-background">
       {/* Article Content - Full Page */}
-      <article className="w-full px-4 py-8">
+      <article className="w-full px-8 py-12">
         {/* Header */}
         <header className="mb-12 text-center">
           <div className="flex items-center justify-center gap-4 mb-6">
